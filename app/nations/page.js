@@ -75,7 +75,7 @@ export default async function NationsPage({ searchParams }) {
           )}
 
           <div className="section-title">By Country <span className="sub">(player nationality)</span></div>
-          <StatTable columns={COLUMNS} rows={rows} rowKey="country_code" />
+          <StatTable columns={COLUMNS} rows={rows} rowKey="country_code" defaultLimit={20} />
         </>
       )}
     </div>

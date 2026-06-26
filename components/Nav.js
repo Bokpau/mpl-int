@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { Suspense } from 'react';
 import { usePathname } from 'next/navigation';
 import FilterBar from './FilterBar';
+import Search from './Search';
 
 const LINKS = [
   { href: '/', label: 'Players' },
@@ -34,6 +35,7 @@ export default function Nav({ siteName, editions }) {
             </Link>
           ))}
         </div>
+        <Search />
       </nav>
       <div className="container">
         <Suspense fallback={<div className="filterbar" />}>

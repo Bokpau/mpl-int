@@ -118,9 +118,10 @@ function Cell({ col, row, rankIndex }) {
   }
 }
 
-export default function StatTable({ columns, rows, rowHref, rowKey, initialSort }) {
+export default function StatTable({ columns, rows, rowHref, rowKey, initialSort, defaultLimit }) {
   const router = useRouter();
   const [sort, setSort] = useState(initialSort || null);
+  const [expanded, setExpanded] = useState(false);
 
   const sorted = useMemo(() => {
     if (!sort) return rows;
@@ -138,6 +139,10 @@ export default function StatTable({ columns, rows, rowHref, rowKey, initialSort 
     return arr;
   }, [rows, sort, columns]);
 
+  // Top-N by default; the full (sorted) set is revealed by "View full list".
+  const collapsed = defaultLimit && !expanded && sorted.length > defaultLimit;
+  const visible = collapsed ? sorted.slice(0, defaultLimit) : sorted;
+
   function onSort(col) {
     setSort((prev) => {
       if (prev && prev.key === col.key) return { key: col.key, dir: prev.dir === 'asc' ? 'desc' : 'asc' };
@@ -146,6 +151,7 @@ export default function StatTable({ columns, rows, rowHref, rowKey, initialSort 
   }
 
   return (
+    <>
     <div className="table-wrap">
       <table>
         <thead>
@@ -174,7 +180,7 @@ export default function StatTable({ columns, rows, rowHref, rowKey, initialSort 
           </tr>
         </thead>
         <tbody>
-          {sorted.map((row, i) => {
+          {visible.map((row, i) => {
             const href = rowHref ? `${rowHref.base}${encodeURIComponent(row[rowHref.key])}` : null;
             return (
               <tr
@@ -191,5 +197,13 @@ export default function StatTable({ columns, rows, rowHref, rowKey, initialSort 
         </tbody>
       </table>
     </div>
+    {defaultLimit && sorted.length > defaultLimit ? (
+      <div className="table-more">
+        <button type="button" className="btn" onClick={() => setExpanded((e) => !e)} aria-expanded={!collapsed}>
+          {collapsed ? `View full list (${sorted.length})` : `Show top ${defaultLimit}`}
+        </button>
+      </div>
+    ) : null}
+    </>
   );
 }

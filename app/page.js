@@ -2,6 +2,7 @@ import { api } from '../lib/api';
 import { intlQuery } from '../lib/filters';
 import ErrorBox from '../components/ErrorBox';
 import StatTable from '../components/StatTable';
+import StatLegend from '../components/StatLegend';
 
 export const metadata = { title: 'Players' };
 
@@ -25,7 +26,7 @@ export default async function PlayersPage({ searchParams }) {
   let rows = null;
   let error = null;
   try {
-    rows = await api.leaderboard(q + (q ? '&' : '?') + 'min_games=5');
+    rows = await api.leaderboard(q);
   } catch (e) {
     error = e.message;
   }
@@ -34,7 +35,7 @@ export default async function PlayersPage({ searchParams }) {
     <div className="container">
       <div className="page-head">
         <h1>Player Leaderboard</h1>
-        <p>International careers grouped by stable player — rename- and account-proof. Min. 5 games.</p>
+        <p>International careers grouped by stable player — rename- and account-proof. Use the Games filter to set a minimum.</p>
       </div>
 
       {error ? (
@@ -47,8 +48,11 @@ export default async function PlayersPage({ searchParams }) {
           rows={rows}
           rowKey="player_key"
           rowHref={{ base: '/players/', key: 'player_key' }}
+          defaultLimit={20}
         />
       )}
+
+      {rows && rows.length > 0 ? <StatLegend keys={['Win%', 'KDA', 'KP%', 'GPM', 'DPM', 'MVPs', 'Editions']} /> : null}
     </div>
   );
 }

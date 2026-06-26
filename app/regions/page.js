@@ -54,7 +54,7 @@ export default async function RegionsPage({ searchParams }) {
       ) : (
         <>
           <div className="section-title">Standings</div>
-          <StatTable columns={COLUMNS} rows={standings} rowKey="country_code" />
+          <StatTable columns={COLUMNS} rows={standings} rowKey="country_code" defaultLimit={20} />
 
           <div className="section-title">Head-to-Head</div>
           <p className="sub note-tight">

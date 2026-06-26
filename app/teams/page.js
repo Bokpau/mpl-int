@@ -2,6 +2,7 @@ import { api } from '../../lib/api';
 import { intlQuery } from '../../lib/filters';
 import ErrorBox from '../../components/ErrorBox';
 import StatTable from '../../components/StatTable';
+import StatLegend from '../../components/StatLegend';
 
 export const metadata = { title: 'Teams' };
 
@@ -47,8 +48,11 @@ export default async function TeamsPage({ searchParams }) {
           rows={rows}
           rowKey="team_key"
           rowHref={{ base: '/teams/', key: 'team_key' }}
+          defaultLimit={20}
         />
       )}
+
+      {rows && rows.length > 0 ? <StatLegend keys={['Win%', 'KDA', 'GPM', 'DPM', 'Editions']} /> : null}
     </div>
   );
 }

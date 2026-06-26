@@ -2,6 +2,7 @@ import { api } from '../../lib/api';
 import { intlQuery } from '../../lib/filters';
 import ErrorBox from '../../components/ErrorBox';
 import StatTable from '../../components/StatTable';
+import StatLegend from '../../components/StatLegend';
 
 export const metadata = { title: 'Heroes' };
 
@@ -39,8 +40,10 @@ export default async function HeroesPage({ searchParams }) {
       ) : !rows || rows.length === 0 ? (
         <div className="empty">No hero data for this selection.</div>
       ) : (
-        <StatTable columns={COLUMNS} rows={rows} rowKey="hero_id" />
+        <StatTable columns={COLUMNS} rows={rows} rowKey="hero_id" defaultLimit={20} />
       )}
+
+      {rows && rows.length > 0 ? <StatLegend keys={['Win%', 'KDA', 'Picks']} /> : null}
     </div>
   );
 }
