@@ -1,10 +1,22 @@
 import Link from 'next/link';
 import { api } from '../../lib/api';
 import { intlQuery } from '../../lib/filters';
-import { num, int, dec, pct, wrClass } from '../../lib/format';
+import { num, int, pct } from '../../lib/format';
 import ErrorBox from '../../components/ErrorBox';
+import StatTable from '../../components/StatTable';
 
 export const metadata = { title: 'Nations' };
+
+const COLUMNS = [
+  { key: '__rank', type: 'rank', label: '#' },
+  { key: 'country', type: 'country', label: 'Country', nameKey: 'country', codeKey: 'country_code', flagKey: 'flag_emoji' },
+  { key: 'region_group', type: 'text', label: 'Region' },
+  { key: 'players', label: 'Players', format: 'int' },
+  { key: 'games', label: 'Games', format: 'int' },
+  { key: 'wins', label: 'Wins', format: 'int' },
+  { key: 'win_rate', label: 'Win%', format: 'pct', wr: true, title: 'Win rate' },
+  { key: 'kda', label: 'KDA', format: 'dec', cls: 'accent', title: '(Kills + Assists) / Deaths' },
+];
 
 // "By Region" now uses the TEAM-SLOT basis (represented country -> region_group),
 // from /api/intl/regions, so these cards match the Regions page exactly. The
@@ -63,41 +75,7 @@ export default async function NationsPage({ searchParams }) {
           )}
 
           <div className="section-title">By Country <span className="sub">(player nationality)</span></div>
-          <div className="table-wrap">
-            <table>
-              <thead>
-                <tr>
-                  <th className="l">#</th>
-                  <th className="l">Country</th>
-                  <th className="l">Region</th>
-                  <th>Players</th>
-                  <th>Games</th>
-                  <th>Wins</th>
-                  <th>Win%</th>
-                  <th>KDA</th>
-                </tr>
-              </thead>
-              <tbody>
-                {rows.map((r, i) => (
-                  <tr key={r.country_code}>
-                    <td className="l rank">{i + 1}</td>
-                    <td className="l">
-                      <span className="idcell">
-                        <span style={{ fontSize: 18 }}>{r.flag_emoji || '🏳️'}</span>
-                        <span className="name">{r.country || r.country_code}</span>
-                      </span>
-                    </td>
-                    <td className="l sub">{r.region_group || '—'}</td>
-                    <td>{int(r.players)}</td>
-                    <td>{int(r.games)}</td>
-                    <td>{int(r.wins)}</td>
-                    <td className={wrClass(r.win_rate)}>{pct(r.win_rate)}</td>
-                    <td className="accent">{dec(r.kda)}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+          <StatTable columns={COLUMNS} rows={rows} rowKey="country_code" />
         </>
       )}
     </div>

@@ -7,7 +7,7 @@ export default function ErrorBox({ error }) {
       The international API didn&apos;t respond. If the backend was just deployed, give it a
       moment; otherwise confirm the <code>/api/intl/*</code> routes are live and{' '}
       <code>BACKEND_URL</code> / <code>INTERNAL_API_KEY</code> are set.
-      {error ? <div className="sub" style={{ marginTop: 8 }}>{String(error)}</div> : null}
+      {error ? <div className="sub error-detail">{String(error)}</div> : null}
     </div>
   );
 }

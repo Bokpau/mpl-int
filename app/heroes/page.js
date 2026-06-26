@@ -1,10 +1,19 @@
 import { api } from '../../lib/api';
 import { intlQuery } from '../../lib/filters';
-import { img } from '../../lib/images';
-import { int, dec, pct, wrClass } from '../../lib/format';
 import ErrorBox from '../../components/ErrorBox';
+import StatTable from '../../components/StatTable';
 
 export const metadata = { title: 'Heroes' };
+
+const COLUMNS = [
+  { key: '__rank', type: 'rank', label: '#' },
+  { key: 'hero', type: 'hero', label: 'Hero', nameKey: 'hero_name', idKey: 'hero_id' },
+  { key: 'picks', label: 'Picks', format: 'int' },
+  { key: 'wins', label: 'Wins', format: 'int' },
+  { key: 'win_rate', label: 'Win%', format: 'pct', wr: true, title: 'Win rate' },
+  { key: 'kda', label: 'KDA', format: 'dec', cls: 'accent', title: '(Kills + Assists) / Deaths' },
+  { key: 'players', label: 'Players', format: 'int', title: 'Distinct players who picked this hero' },
+];
 
 export default async function HeroesPage({ searchParams }) {
   const sp = await searchParams;
@@ -30,42 +39,7 @@ export default async function HeroesPage({ searchParams }) {
       ) : !rows || rows.length === 0 ? (
         <div className="empty">No hero data for this selection.</div>
       ) : (
-        <div className="table-wrap">
-          <table>
-            <thead>
-              <tr>
-                <th className="l">#</th>
-                <th className="l">Hero</th>
-                <th>Picks</th>
-                <th>Wins</th>
-                <th>Win%</th>
-                <th>KDA</th>
-                <th>Players</th>
-              </tr>
-            </thead>
-            <tbody>
-              {rows.map((r, i) => {
-                const portrait = img.hero(r.hero_id);
-                return (
-                  <tr key={`${r.hero_name}-${i}`}>
-                    <td className="l rank">{i + 1}</td>
-                    <td className="l">
-                      <span className="idcell">
-                        {portrait ? <img className="avatar" src={portrait} alt="" /> : null}
-                        <span className="name">{r.hero_name || '—'}</span>
-                      </span>
-                    </td>
-                    <td>{int(r.picks)}</td>
-                    <td>{int(r.wins)}</td>
-                    <td className={wrClass(r.win_rate)}>{pct(r.win_rate)}</td>
-                    <td className="accent">{dec(r.kda)}</td>
-                    <td>{int(r.players)}</td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
+        <StatTable columns={COLUMNS} rows={rows} rowKey="hero_id" />
       )}
     </div>
   );

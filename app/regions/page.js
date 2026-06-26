@@ -1,12 +1,22 @@
 import { api } from '../../lib/api';
 import { intlQuery } from '../../lib/filters';
-import { num, int, pct, wrClass } from '../../lib/format';
+import { num } from '../../lib/format';
 import ErrorBox from '../../components/ErrorBox';
+import StatTable from '../../components/StatTable';
 
 export const metadata = { title: 'Regions' };
 
 // How many countries to include in the head-to-head matrix (by games played).
 const MATRIX_N = 8;
+
+const COLUMNS = [
+  { key: '__rank', type: 'rank', label: '#' },
+  { key: 'country', type: 'country', label: 'Region', nameKey: 'country', codeKey: 'country_code', flagKey: 'flag_emoji' },
+  { key: 'region_group', type: 'text', label: 'Group' },
+  { key: 'games', label: 'Games', format: 'int' },
+  { key: 'wins', label: 'Wins', format: 'int' },
+  { key: 'win_rate', label: 'Win%', format: 'pct', wr: true, title: 'Win rate' },
+];
 
 export default async function RegionsPage({ searchParams }) {
   const sp = await searchParams;
@@ -44,40 +54,10 @@ export default async function RegionsPage({ searchParams }) {
       ) : (
         <>
           <div className="section-title">Standings</div>
-          <div className="table-wrap">
-            <table>
-              <thead>
-                <tr>
-                  <th className="l">#</th>
-                  <th className="l">Region</th>
-                  <th className="l">Group</th>
-                  <th>Games</th>
-                  <th>Wins</th>
-                  <th>Win%</th>
-                </tr>
-              </thead>
-              <tbody>
-                {standings.map((r, i) => (
-                  <tr key={r.country_code}>
-                    <td className="l rank">{i + 1}</td>
-                    <td className="l">
-                      <span className="idcell">
-                        <span style={{ fontSize: 18 }}>{r.flag_emoji || '🏳️'}</span>
-                        <span className="name">{r.country || r.country_code}</span>
-                      </span>
-                    </td>
-                    <td className="l sub">{r.region_group || '—'}</td>
-                    <td>{int(r.games)}</td>
-                    <td>{int(r.wins)}</td>
-                    <td className={wrClass(r.win_rate)}>{pct(r.win_rate)}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+          <StatTable columns={COLUMNS} rows={standings} rowKey="country_code" />
 
           <div className="section-title">Head-to-Head</div>
-          <p className="sub" style={{ margin: '0 0 10px' }}>
+          <p className="sub note-tight">
             Top {top.length} regions by games. Cell = row region&apos;s wins over the column region (win% shaded).
           </p>
           <div className="table-wrap">
@@ -87,7 +67,7 @@ export default async function RegionsPage({ searchParams }) {
                   <th className="l corner">vs</th>
                   {top.map((c) => (
                     <th key={c.country_code} title={c.country || c.country_code}>
-                      <span style={{ fontSize: 15 }}>{c.flag_emoji || ''}</span> {c.country_code}
+                      <span className="flag-sm">{c.flag_emoji || ''}</span> {c.country_code}
                     </th>
                   ))}
                 </tr>
@@ -96,7 +76,7 @@ export default async function RegionsPage({ searchParams }) {
                 {top.map((row) => (
                   <tr key={row.country_code}>
                     <td className="l corner">
-                      <span style={{ fontSize: 15 }}>{row.flag_emoji || ''}</span> {row.country_code}
+                      <span className="flag-sm">{row.flag_emoji || ''}</span> {row.country_code}
                     </td>
                     {top.map((col) => {
                       if (row.country_code === col.country_code) return <td key={col.country_code} className="diag">—</td>;

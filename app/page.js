@@ -1,10 +1,22 @@
-import Link from 'next/link';
 import { api } from '../lib/api';
 import { intlQuery } from '../lib/filters';
-import { int, dec, pct, wrClass } from '../lib/format';
 import ErrorBox from '../components/ErrorBox';
+import StatTable from '../components/StatTable';
 
 export const metadata = { title: 'Players' };
+
+const COLUMNS = [
+  { key: '__rank', type: 'rank', label: '#' },
+  { key: 'player', type: 'player', label: 'Player', nameKey: 'player', fallbackKey: 'player_key', subKey: 'latest_team', subFallbackKey: 'latest_team_code', hrefBase: '/players/', hrefKey: 'player_key' },
+  { key: 'editions', label: 'Editions', format: 'int', title: 'International editions played' },
+  { key: 'games', label: 'Games', format: 'int' },
+  { key: 'win_rate', label: 'Win%', format: 'pct', wr: true, title: 'Win rate' },
+  { key: 'kda', label: 'KDA', format: 'dec', cls: 'accent', title: '(Kills + Assists) / Deaths' },
+  { key: 'kp', label: 'KP%', format: 'pct', nullDash: true, title: 'Kill participation' },
+  { key: 'gpm', label: 'GPM', format: 'int', title: 'Gold per minute' },
+  { key: 'dpm', label: 'DPM', format: 'int', title: 'Damage per minute' },
+  { key: 'mvps', label: 'MVPs', format: 'int', title: 'Most Valuable Player awards' },
+];
 
 export default async function PlayersPage({ searchParams }) {
   const sp = await searchParams;
@@ -30,47 +42,12 @@ export default async function PlayersPage({ searchParams }) {
       ) : !rows || rows.length === 0 ? (
         <div className="empty">No players for this selection.</div>
       ) : (
-        <div className="table-wrap">
-          <table>
-            <thead>
-              <tr>
-                <th className="l">#</th>
-                <th className="l">Player</th>
-                <th>Editions</th>
-                <th>Games</th>
-                <th>Win%</th>
-                <th>KDA</th>
-                <th>KP%</th>
-                <th>GPM</th>
-                <th>DPM</th>
-                <th>MVPs</th>
-              </tr>
-            </thead>
-            <tbody>
-              {rows.map((r, i) => (
-                <tr key={r.player_key} className="clickable">
-                  <td className="l rank">{i + 1}</td>
-                  <td className="l">
-                    <Link href={`/players/${encodeURIComponent(r.player_key)}`}>
-                      <span className="idcell">
-                        <span className="name">{r.player || r.player_key}</span>
-                      </span>
-                      <span className="sub">{r.latest_team || r.latest_team_code || ''}</span>
-                    </Link>
-                  </td>
-                  <td>{int(r.editions)}</td>
-                  <td>{int(r.games)}</td>
-                  <td className={wrClass(r.win_rate)}>{pct(r.win_rate)}</td>
-                  <td className="accent">{dec(r.kda)}</td>
-                  <td>{r.kp == null ? '—' : pct(r.kp)}</td>
-                  <td>{int(Math.round(r.gpm))}</td>
-                  <td>{int(Math.round(r.dpm))}</td>
-                  <td>{int(r.mvps)}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+        <StatTable
+          columns={COLUMNS}
+          rows={rows}
+          rowKey="player_key"
+          rowHref={{ base: '/players/', key: 'player_key' }}
+        />
       )}
     </div>
   );

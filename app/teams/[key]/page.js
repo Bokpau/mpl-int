@@ -4,6 +4,15 @@ import { intlQuery } from '../../../lib/filters';
 import { img } from '../../../lib/images';
 import { int, dec, pct, wrClass } from '../../../lib/format';
 import ErrorBox from '../../../components/ErrorBox';
+import StatTable from '../../../components/StatTable';
+
+const ROSTER_COLUMNS = [
+  { key: 'player', type: 'player', label: 'Player', nameKey: 'player', fallbackKey: 'player_key', hrefBase: '/players/', hrefKey: 'player_key' },
+  { key: 'nationality', type: 'text', label: 'Nat.' },
+  { key: 'games', label: 'Games', format: 'int' },
+  { key: 'wins', label: 'Wins', format: 'int' },
+  { key: 'kda', label: 'KDA', format: 'dec', cls: 'accent', title: '(Kills + Assists) / Deaths' },
+];
 
 export async function generateMetadata({ params }) {
   const { key } = await params;
@@ -107,34 +116,12 @@ export default async function TeamDetail({ params, searchParams }) {
       </div>
 
       <div className="section-title">Roster</div>
-      <div className="table-wrap">
-        <table>
-          <thead>
-            <tr>
-              <th className="l">Player</th>
-              <th className="l">Nat.</th>
-              <th>Games</th>
-              <th>Wins</th>
-              <th>KDA</th>
-            </tr>
-          </thead>
-          <tbody>
-            {data.roster.map((p) => (
-              <tr key={p.player_key} className="clickable">
-                <td className="l">
-                  <Link href={`/players/${encodeURIComponent(p.player_key)}`}>
-                    <span className="name">{p.player || p.player_key}</span>
-                  </Link>
-                </td>
-                <td className="l sub">{p.nationality || '—'}</td>
-                <td>{int(p.games)}</td>
-                <td>{int(p.wins)}</td>
-                <td className="accent">{dec(p.kda)}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+      <StatTable
+        columns={ROSTER_COLUMNS}
+        rows={data.roster}
+        rowKey="player_key"
+        rowHref={{ base: '/players/', key: 'player_key' }}
+      />
 
       <div className="section-title">Most Picked Heroes</div>
       <div className="table-wrap">
