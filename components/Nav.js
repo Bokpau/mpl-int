@@ -10,6 +10,7 @@ const LINKS = [
   { href: '/teams', label: 'Teams' },
   { href: '/heroes', label: 'Heroes' },
   { href: '/nations', label: 'Nations' },
+  { href: '/regions', label: 'Regions' },
   { href: '/results', label: 'Results' },
 ];
 

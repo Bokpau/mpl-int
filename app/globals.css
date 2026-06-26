@@ -188,6 +188,16 @@ tbody tr.clickable { cursor: pointer; }
 .match-card .side-name a:hover { color: var(--accent); }
 .match-card .side-score { font-family: var(--font-mono); font-size: 15px; }
 
+/* ─── Head-to-head matrix ───────────────────────────────────────── */
+table.h2h thead th { text-align: center; }
+table.h2h tbody td { text-align: center; font-family: var(--font-mono); }
+table.h2h th.corner, table.h2h td.corner {
+  text-align: left; font-family: var(--font-body); font-weight: 600;
+  background: var(--surface2); position: sticky; left: 0; z-index: 1; white-space: nowrap;
+}
+table.h2h td.diag { color: var(--border-strong); }
+table.h2h td .sub { font-size: 11px; }
+
 .empty { padding: 60px 20px; text-align: center; color: var(--muted2); }
 .error-box {
   margin: 30px 0; padding: 18px 20px; border: 1px solid var(--loss); border-radius: 12px;
