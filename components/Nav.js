@@ -9,6 +9,8 @@ const LINKS = [
   { href: '/', label: 'Players' },
   { href: '/teams', label: 'Teams' },
   { href: '/heroes', label: 'Heroes' },
+  { href: '/nations', label: 'Nations' },
+  { href: '/results', label: 'Results' },
 ];
 
 export default function Nav({ siteName, editions }) {

@@ -167,6 +167,27 @@ tbody tr.clickable { cursor: pointer; }
 .crumb { color: var(--muted2); font-size: 13px; padding-top: 22px; }
 .crumb a:hover { color: var(--accent); }
 
+/* ─── Results / bracket ─────────────────────────────────────────── */
+.stage-block { margin: 8px 0 22px; }
+.stage-head { display: flex; align-items: center; gap: 10px; margin: 12px 0 10px; }
+.stage-head .stage-name { font-weight: 600; color: var(--muted); }
+.match-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 12px; }
+.match-card {
+  background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
+  padding: 10px 14px; transition: border-color 0.15s;
+}
+.match-card:hover { border-color: var(--border-strong); }
+.match-card .side {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 5px 0; color: var(--muted);
+}
+.match-card .side + .side { border-top: 1px solid var(--border); }
+.match-card .side.won { color: var(--text); }
+.match-card .side.won .side-name { font-weight: 600; }
+.match-card .side.won .side-score { color: var(--accent); }
+.match-card .side-name a:hover { color: var(--accent); }
+.match-card .side-score { font-family: var(--font-mono); font-size: 15px; }
+
 .empty { padding: 60px 20px; text-align: center; color: var(--muted2); }
 .error-box {
   margin: 30px 0; padding: 18px 20px; border: 1px solid var(--loss); border-radius: 12px;
