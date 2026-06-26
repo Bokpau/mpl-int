@@ -4,7 +4,18 @@
 stats sites do right (Basketball-Reference, FBref, Dotabuff/STRATZ, OP.GG/U.GG/Mobalytics,
 VLR.gg/HLTV, SoFIFA/FUTBIN). Based on the in-session design audit (score 68/100).
 
-**Status:** No code written yet. This is a design/spec document. Each phase is self-contained
+**Status (updated 2026-06-26):**
+- ✅ **Phase 1 — DONE** (foundations & legibility): `StatTable`, tokens, tabular numerals,
+  focus-visible, colorblind win/loss, clickable-row fix. Plus a follow-up fix to the sticky
+  table-header (`.table-wrap` overflow made the header anchor to the box with a 64px phantom band —
+  switched to capped-height inner scroll with `top: 0`).
+- ✅ **Phase 2 — DONE** (search & filters): global nav search, Games-played filter (removed the
+  forced `min_games=5`), Top-20 + "View full list", active-filter chips + Clear all, `useTransition`
+  loading + `loading.js` skeleton, stats legend. Role filter intentionally deferred.
+- ⏸️ **Phase 3 — HALTED / saved** (percentiles, normalization, radar, compare). Unblocked; resume when ready.
+- ⏸️ **Phase 4 — HALTED / saved** (match pages, results feed, splits, CSV export, hero depth). Unblocked; resume when ready.
+
+The Phase 3 & 4 specs below are kept intact for a future session. Each phase is self-contained
 and can be executed in a fresh chat context.
 
 **Hard constraints (from repo rules):**

@@ -63,7 +63,7 @@ function Cell({ col, row, rankIndex }) {
     }
 
     case 'team': {
-      const logo = img.team(row[col.codeKey]);
+      const logo = (col.logoKey && row[col.logoKey]) || img.team(row[col.codeKey]);
       const name = row[col.nameKey] || row[col.codeKey] || row[col.fallbackKey];
       const href = `${col.hrefBase}${encodeURIComponent(row[col.hrefKey])}`;
       return (

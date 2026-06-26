@@ -8,7 +8,7 @@ export const metadata = { title: 'Teams' };
 
 const COLUMNS = [
   { key: '__rank', type: 'rank', label: '#' },
-  { key: 'team', type: 'team', label: 'Team', nameKey: 'team_name', codeKey: 'team_code', fallbackKey: 'team_key', hrefBase: '/teams/', hrefKey: 'team_key' },
+  { key: 'team', type: 'team', label: 'Team', nameKey: 'team_name', codeKey: 'team_code', fallbackKey: 'team_key', logoKey: 'team_logo_dark', hrefBase: '/teams/', hrefKey: 'team_key' },
   { key: 'editions', label: 'Editions', format: 'int', title: 'International editions played' },
   { key: 'matches', label: 'Matches', format: 'int' },
   { key: 'games', label: 'Games', format: 'int' },

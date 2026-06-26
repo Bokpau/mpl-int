@@ -62,7 +62,7 @@ export default async function TeamDetail({ params, searchParams }) {
   }
 
   const t = data.totals;
-  const logo = img.team(t.team_code);
+  const logo = t.team_logo_dark || img.team(t.team_code);
 
   return (
     <div className="container">
@@ -102,15 +102,23 @@ export default async function TeamDetail({ params, searchParams }) {
             </tr>
           </thead>
           <tbody>
-            {data.by_edition.map((e, i) => (
-              <tr key={i}>
-                <td className="l">{e.tournament_code}</td>
-                <td className="l">{e.season}</td>
-                <td>{int(e.matches)}</td>
-                <td>{int(e.games)}</td>
-                <td>{int(e.wins)}</td>
-              </tr>
-            ))}
+            {data.by_edition.map((e, i) => {
+              const elogo = e.team_logo_dark || img.team(e.team_code_era);
+              return (
+                <tr key={i}>
+                  <td className="l">{e.tournament_code}</td>
+                  <td className="l">
+                    <span className="idcell">
+                      {elogo ? <img className="avatar sq" src={elogo} alt="" /> : null}
+                      <span className="name">{e.season}{e.team_name_era ? ` · ${e.team_name_era}` : ''}</span>
+                    </span>
+                  </td>
+                  <td>{int(e.matches)}</td>
+                  <td>{int(e.games)}</td>
+                  <td>{int(e.wins)}</td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       </div>
