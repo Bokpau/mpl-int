@@ -1,0 +1,172 @@
+import Link from 'next/link';
+import { api } from '../../../lib/api';
+import { intlQuery } from '../../../lib/filters';
+import { img } from '../../../lib/images';
+import { int, dec, pct, wrClass } from '../../../lib/format';
+import ErrorBox from '../../../components/ErrorBox';
+
+export async function generateMetadata({ params }) {
+  const { key } = await params;
+  return { title: decodeURIComponent(key) };
+}
+
+function Stat({ k, v, cls }) {
+  return (
+    <div className="card">
+      <div className="k">{k}</div>
+      <div className={`v ${cls || ''}`}>{v}</div>
+    </div>
+  );
+}
+
+export default async function TeamDetail({ params, searchParams }) {
+  const { key } = await params;
+  const sp = await searchParams;
+  const q = intlQuery(sp);
+
+  let data = null;
+  let error = null;
+  let notFound = false;
+  try {
+    data = await api.team(key, q);
+  } catch (e) {
+    if (String(e.message).includes('404')) notFound = true;
+    else error = e.message;
+  }
+
+  if (error) {
+    return (
+      <div className="container">
+        <div className="crumb"><Link href="/teams">← Teams</Link></div>
+        <ErrorBox error={error} />
+      </div>
+    );
+  }
+
+  if (notFound || !data) {
+    return (
+      <div className="container">
+        <div className="crumb"><Link href="/teams">← Teams</Link></div>
+        <div className="empty">No international record for this team under the current filters.</div>
+      </div>
+    );
+  }
+
+  const t = data.totals;
+  const logo = img.team(t.team_code);
+
+  return (
+    <div className="container">
+      <div className="crumb"><Link href="/teams">← Teams</Link></div>
+
+      <div className="detail-head">
+        {logo ? <img className="big-avatar sq" src={logo} alt="" /> : null}
+        <div>
+          <h1>{t.team_name || t.team_code || data.team_key}</h1>
+          <div className="meta">
+            {int(t.event_families)} event{int(t.event_families) === 1 ? '' : 's'} · {int(t.editions)} editions · {int(t.matches)} matches
+          </div>
+        </div>
+      </div>
+
+      <div className="cards">
+        <Stat k="Games" v={int(t.games)} />
+        <Stat k="Wins" v={int(t.wins)} />
+        <Stat k="Win%" v={pct(t.win_rate)} cls={wrClass(t.win_rate)} />
+        <Stat k="KDA" v={dec(t.kda)} cls="accent" />
+        <Stat k="GPM" v={int(Math.round(t.gpm))} />
+        <Stat k="DPM" v={int(Math.round(t.dpm))} />
+        <Stat k="Lords" v={int(t.lords)} />
+        <Stat k="Turtles" v={int(t.turtles)} />
+      </div>
+
+      <div className="section-title">By Edition</div>
+      <div className="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th className="l">Event</th>
+              <th className="l">Edition</th>
+              <th>Matches</th>
+              <th>Games</th>
+              <th>Wins</th>
+            </tr>
+          </thead>
+          <tbody>
+            {data.by_edition.map((e, i) => (
+              <tr key={i}>
+                <td className="l">{e.tournament_code}</td>
+                <td className="l">{e.season}</td>
+                <td>{int(e.matches)}</td>
+                <td>{int(e.games)}</td>
+                <td>{int(e.wins)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      <div className="section-title">Roster</div>
+      <div className="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th className="l">Player</th>
+              <th className="l">Nat.</th>
+              <th>Games</th>
+              <th>Wins</th>
+              <th>KDA</th>
+            </tr>
+          </thead>
+          <tbody>
+            {data.roster.map((p) => (
+              <tr key={p.player_key} className="clickable">
+                <td className="l">
+                  <Link href={`/players/${encodeURIComponent(p.player_key)}`}>
+                    <span className="name">{p.player || p.player_key}</span>
+                  </Link>
+                </td>
+                <td className="l sub">{p.nationality || '—'}</td>
+                <td>{int(p.games)}</td>
+                <td>{int(p.wins)}</td>
+                <td className="accent">{dec(p.kda)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      <div className="section-title">Most Picked Heroes</div>
+      <div className="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th className="l">Hero</th>
+              <th>Picks</th>
+              <th>Wins</th>
+              <th>Win%</th>
+            </tr>
+          </thead>
+          <tbody>
+            {data.by_hero.map((h, i) => {
+              const portrait = img.hero(h.hero_id);
+              return (
+                <tr key={i}>
+                  <td className="l">
+                    <span className="idcell">
+                      {portrait ? <img className="avatar" src={portrait} alt="" /> : null}
+                      <span className="name">{h.hero_name || '—'}</span>
+                    </span>
+                  </td>
+                  <td>{int(h.picks)}</td>
+                  <td>{int(h.wins)}</td>
+                  <td className={wrClass(h.win_rate)}>{pct(h.win_rate)}</td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
