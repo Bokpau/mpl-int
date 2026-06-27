@@ -1,8 +1,8 @@
 import Link from 'next/link';
 import { api } from '../../lib/api';
-import { intlQuery } from '../../lib/filters';
-import { getFeatured } from '../../lib/featured';
+import { resolveSelection } from '../../lib/featured';
 import ErrorBox from '../../components/ErrorBox';
+import PageHead from '../../components/PageHead';
 
 export const metadata = { title: 'Results' };
 
@@ -73,8 +73,7 @@ function TeamSide({ era, teamKey, score, won }) {
 
 export default async function ResultsPage({ searchParams }) {
   const sp = await searchParams;
-  const featured = await getFeatured();
-  const q = intlQuery(sp, featured);
+  const { q, label } = await resolveSelection(sp);
   const sep = q ? '&' : '?';
 
   let games = null;
@@ -89,10 +88,9 @@ export default async function ResultsPage({ searchParams }) {
 
   return (
     <div className="container">
-      <div className="page-head">
-        <h1>Results</h1>
-        <p>Match results by edition and stage. Use the Stage filter for Wildcard-only or Main-only games.</p>
-      </div>
+      <PageHead eyebrow={label} title="Results">
+        Match results by stage. Use the Stage filter for Wildcard-only or Main-only games.
+      </PageHead>
 
       {error ? (
         <ErrorBox error={error} />

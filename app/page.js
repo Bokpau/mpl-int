@@ -1,7 +1,7 @@
 import { api } from '../lib/api';
-import { intlQuery } from '../lib/filters';
-import { getFeatured } from '../lib/featured';
+import { resolveSelection } from '../lib/featured';
 import ErrorBox from '../components/ErrorBox';
+import PageHead from '../components/PageHead';
 import StatTable from '../components/StatTable';
 import StatLegend from '../components/StatLegend';
 
@@ -22,8 +22,7 @@ const COLUMNS = [
 
 export default async function PlayersPage({ searchParams }) {
   const sp = await searchParams;
-  const featured = await getFeatured();
-  const q = intlQuery(sp, featured);
+  const { q, label } = await resolveSelection(sp);
 
   let rows = null;
   let error = null;
@@ -35,10 +34,9 @@ export default async function PlayersPage({ searchParams }) {
 
   return (
     <div className="container">
-      <div className="page-head">
-        <h1>Player Leaderboard</h1>
-        <p>International careers grouped by stable player — rename- and account-proof. Use the Games filter to set a minimum.</p>
-      </div>
+      <PageHead eyebrow={label} title="Players">
+        Player leaderboard grouped by stable identity — rename- and account-proof. Use the Games filter to set a minimum.
+      </PageHead>
 
       {error ? (
         <ErrorBox error={error} />

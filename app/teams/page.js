@@ -1,7 +1,7 @@
 import { api } from '../../lib/api';
-import { intlQuery } from '../../lib/filters';
-import { getFeatured } from '../../lib/featured';
+import { resolveSelection } from '../../lib/featured';
 import ErrorBox from '../../components/ErrorBox';
+import PageHead from '../../components/PageHead';
 import StatTable from '../../components/StatTable';
 import StatLegend from '../../components/StatLegend';
 
@@ -22,8 +22,7 @@ const COLUMNS = [
 
 export default async function TeamsPage({ searchParams }) {
   const sp = await searchParams;
-  const featured = await getFeatured();
-  const q = intlQuery(sp, featured);
+  const { q, label } = await resolveSelection(sp);
 
   let rows = null;
   let error = null;
@@ -35,10 +34,9 @@ export default async function TeamsPage({ searchParams }) {
 
   return (
     <div className="container">
-      <div className="page-head">
-        <h1>Teams</h1>
-        <p>International records grouped by stable franchise — one row spans every edition a team played.</p>
-      </div>
+      <PageHead eyebrow={label} title="Teams">
+        Team records grouped by stable franchise — rename- and rebrand-proof.
+      </PageHead>
 
       {error ? (
         <ErrorBox error={error} />

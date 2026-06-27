@@ -2,7 +2,7 @@
 
 import { useTransition } from 'react';
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
-import { effectiveFilters } from '../lib/filters';
+import { effectiveFilters, familyLabel, editionTitle } from '../lib/filters';
 
 // Global scope / edition / stage / games selector. Writes the whitelisted filters
 // into the URL searchParams; every list page reads them server-side and forwards them
@@ -23,9 +23,7 @@ const GAMES = [
 
 const ALL = 'all'; // explicit cross-edition aggregate sentinel
 
-const familyLabel = (code) => (code === 'MWC' ? 'M-Series' : code);
-const editionOptionLabel = (e) =>
-  e.tournament_code === 'MWC' ? `M-Series ${e.season}` : `MSC ${e.season}`;
+const editionOptionLabel = (e) => editionTitle(e);
 
 export default function FilterBar({ editions = [], featured = null }) {
   const router = useRouter();

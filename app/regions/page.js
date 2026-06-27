@@ -1,8 +1,8 @@
 import { api } from '../../lib/api';
-import { intlQuery } from '../../lib/filters';
-import { getFeatured } from '../../lib/featured';
+import { resolveSelection } from '../../lib/featured';
 import { num } from '../../lib/format';
 import ErrorBox from '../../components/ErrorBox';
+import PageHead from '../../components/PageHead';
 import StatTable from '../../components/StatTable';
 
 export const metadata = { title: 'Regions' };
@@ -21,8 +21,7 @@ const COLUMNS = [
 
 export default async function RegionsPage({ searchParams }) {
   const sp = await searchParams;
-  const featured = await getFeatured();
-  const q = intlQuery(sp, featured);
+  const { q, label } = await resolveSelection(sp);
 
   let data = null;
   let error = null;
@@ -44,10 +43,9 @@ export default async function RegionsPage({ searchParams }) {
 
   return (
     <div className="container">
-      <div className="page-head">
-        <h1>Regions</h1>
-        <p>By the country a team&apos;s <em>slot</em> represents (e.g. ONIC PH = PH) — not player nationality.</p>
-      </div>
+      <PageHead eyebrow={label} title="Regions">
+        By the country a team&apos;s <em>slot</em> represents (e.g. ONIC PH = PH) — not player nationality.
+      </PageHead>
 
       {error ? (
         <ErrorBox error={error} />

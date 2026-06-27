@@ -1,9 +1,9 @@
 import Link from 'next/link';
 import { api } from '../../lib/api';
-import { intlQuery } from '../../lib/filters';
-import { getFeatured } from '../../lib/featured';
+import { resolveSelection } from '../../lib/featured';
 import { num, int, pct } from '../../lib/format';
 import ErrorBox from '../../components/ErrorBox';
+import PageHead from '../../components/PageHead';
 import StatTable from '../../components/StatTable';
 
 export const metadata = { title: 'Nations' };
@@ -38,8 +38,7 @@ function regionCards(standings) {
 
 export default async function NationsPage({ searchParams }) {
   const sp = await searchParams;
-  const featured = await getFeatured();
-  const q = intlQuery(sp, featured);
+  const { q, label } = await resolveSelection(sp);
 
   // Country table is primary (player nationality); region cards are the team-slot
   // rollup. Fetch both; only a failed nations call blocks the page.
@@ -50,10 +49,9 @@ export default async function NationsPage({ searchParams }) {
 
   return (
     <div className="container">
-      <div className="page-head">
-        <h1>Nations</h1>
-        <p>Players by nationality. The region cards use team representation — see <Link href="/regions" className="accent">Regions</Link> for head-to-head.</p>
-      </div>
+      <PageHead eyebrow={label} title="Nations">
+        Players by nationality. The region cards use team representation — see <Link href="/regions" className="accent">Regions</Link> for head-to-head.
+      </PageHead>
 
       {error ? (
         <ErrorBox error={error} />

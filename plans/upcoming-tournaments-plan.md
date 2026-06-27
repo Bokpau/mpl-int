@@ -69,7 +69,7 @@ This gives PH-style "the now is the whole site" plus the manual control the
 | Phase | Work | Backend? |
 |---|---|---|
 | **1 — Featured concept** ✅ DONE | `lib/featured.js` (env pin `FEATURED_EDITION` + auto-pick: `live` edition, else latest by `season_id`). `effectiveFilters` in `lib/filters.js` resolves the featured default + `season=all` aggregate sentinel. The 6 list pages default to the featured edition; the filter bar leads with it and exposes "All editions". Detail pages keep their full-career default. | No |
-| **2 — Reorient main pages** | Make `/`, `/teams`, `/heroes`, `/nations`, `/regions`, `/results` scope to the featured edition by default. Update mastheads/copy to name the event (e.g. "MSC 2025"). | No |
+| **2 — Reorient main pages** ✅ DONE | All 6 list pages use `resolveSelection(sp)` (one call → `{ q, label, eff, editions, featured }`) and a shared `PageHead` with an eyebrow naming the current selection ("MSC 2025" / "All Editions"). `selectionLabel`/`editionTitle`/`familyLabel` centralized in `lib/filters.js`. Copy softened to read correctly under a single edition. | No |
 | **3 — History tab** | Add `/history` layout + sub-nav. Relocate the current all-time aggregate pages under it (all-time Players / Teams / Heroes / Nations + a History Home with an editions/champions timeline). Add "History" to `components/Nav.js`. Build from `/api/intl/*` with `season` unset. | No |
 | **4 — Upcoming / empty states** | Empty-state components for a featured edition with `status = upcoming` / no games ("Bracket and rosters announced — stats appear once games are played"). Optional schedule/groups/rosters view to show first. | No |
 | **5 — Per-cycle playbook** | Document the one-value flip + a checklist for "new tournament announced." | No |

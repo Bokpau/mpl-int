@@ -1,7 +1,7 @@
 import { api } from '../../lib/api';
-import { intlQuery } from '../../lib/filters';
-import { getFeatured } from '../../lib/featured';
+import { resolveSelection } from '../../lib/featured';
 import ErrorBox from '../../components/ErrorBox';
+import PageHead from '../../components/PageHead';
 import StatTable from '../../components/StatTable';
 import StatLegend from '../../components/StatLegend';
 
@@ -19,8 +19,7 @@ const COLUMNS = [
 
 export default async function HeroesPage({ searchParams }) {
   const sp = await searchParams;
-  const featured = await getFeatured();
-  const q = intlQuery(sp, featured);
+  const { q, label } = await resolveSelection(sp);
 
   let rows = null;
   let error = null;
@@ -32,10 +31,9 @@ export default async function HeroesPage({ searchParams }) {
 
   return (
     <div className="container">
-      <div className="page-head">
-        <h1>Heroes</h1>
-        <p>Pick counts, win rate and KDA across international play for the current selection.</p>
-      </div>
+      <PageHead eyebrow={label} title="Heroes">
+        Pick counts, win rate and KDA for the current selection.
+      </PageHead>
 
       {error ? (
         <ErrorBox error={error} />
