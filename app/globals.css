@@ -270,6 +270,28 @@ tbody tr.clickable { cursor: pointer; }
 .edition-card:hover { border-color: var(--accent); }
 .edition-card-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
 .edition-name { font-family: var(--font-display); font-size: 17px; letter-spacing: 0.4px; color: var(--text); }
+.edition-card-detail {
+  font-size: 12px;
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 2px;
+}
+.edition-card-detail .label {
+  color: var(--muted2);
+}
+.edition-card-detail .value {
+  color: var(--text);
+  font-weight: 600;
+}
+.edition-card-bottom-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: auto;
+  border-top: 1px solid var(--border);
+  padding-top: 8px;
+}
 
 .badge {
   font-family: var(--font-mono); font-size: 10px; font-weight: 600;

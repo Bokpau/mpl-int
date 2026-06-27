@@ -27,9 +27,13 @@ function groupByFamily(editions) {
 
 export default async function HistoryOverview() {
   let editions = [];
+  let accolades = [];
   let error = null;
   try {
-    editions = await api.editions();
+    [editions, accolades] = await Promise.all([
+      api.editions(),
+      api.accolades()
+    ]);
   } catch (e) {
     error = e.message;
   }
@@ -37,6 +41,14 @@ export default async function HistoryOverview() {
   if (error) return <ErrorBox error={error} />;
   if (!editions || editions.length === 0) {
     return <div className="empty">No editions available yet.</div>;
+  }
+
+  const accoladesBySeason = {};
+  if (accolades && Array.isArray(accolades)) {
+    for (const a of accolades) {
+      if (!accoladesBySeason[a.season]) accoladesBySeason[a.season] = {};
+      accoladesBySeason[a.season][a.award_type] = a;
+    }
   }
 
   const featured = pickFeatured(editions, featuredPin());
@@ -58,15 +70,32 @@ export default async function HistoryOverview() {
             {list.map((e) => {
               const live = String(e.status).toLowerCase() === 'live';
               const href = `/?scope=${encodeURIComponent(e.tournament_code)}&season=${encodeURIComponent(e.season)}`;
+              const acc = accoladesBySeason[e.season] || {};
+              const champion = acc.champion?.recipient;
+              const mvp = acc.finals_mvp?.recipient;
               return (
                 <Link key={`${e.tournament_code}-${e.season}`} href={href} className="edition-card">
                   <div className="edition-card-top">
                     <span className="edition-name">{editionTitle(e)}</span>
                     {isFeatured(e) ? <span className="badge badge-featured">Featured</span> : null}
                   </div>
-                  <span className={`badge ${live ? 'badge-live' : 'badge-done'}`}>
-                    {live ? 'Live' : 'Completed'}
-                  </span>
+                  {champion && (
+                    <div className="edition-card-detail">
+                      <span className="label">Champion</span>
+                      <span className="value">{champion}</span>
+                    </div>
+                  )}
+                  {mvp && (
+                    <div className="edition-card-detail">
+                      <span className="label">Finals MVP</span>
+                      <span className="value">{mvp}</span>
+                    </div>
+                  )}
+                  <div className="edition-card-bottom-row">
+                    <span className={`badge ${live ? 'badge-live' : 'badge-done'}`}>
+                      {live ? 'Live' : 'Completed'}
+                    </span>
+                  </div>
                 </Link>
               );
             })}
