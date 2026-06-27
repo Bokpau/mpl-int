@@ -1,7 +1,5 @@
 import './globals.css';
 import Nav from '../components/Nav';
-import { api } from '../lib/api';
-import { pickFeatured, featuredPin } from '../lib/featured';
 
 const SITE = 'MLBB International'; // placeholder branding — rename later (D6)
 
@@ -15,23 +13,15 @@ export const metadata = {
   robots: { index: false, follow: false }, // keep noindex until branding/domain is decided
 };
 
-export default async function RootLayout({ children }) {
-  // Fetch the edition list once for the filter bar. Stay resilient: if the backend
-  // isn't reachable yet (intl routes not deployed), render with no editions rather
-  // than crashing the whole app.
-  let editions = [];
-  try {
-    editions = await api.editions();
-  } catch {
-    editions = [];
-  }
-  const featured = pickFeatured(editions, featuredPin());
-
+export default function RootLayout({ children }) {
+  // The global edition/stage filter lives only in the History section now (it's a
+  // history-browsing tool); the main pages show the featured/current edition. So the
+  // shell no longer fetches editions here.
   return (
     <html lang="en">
       <body>
         <a href="#main" className="skip-link">Skip to main content</a>
-        <Nav siteName={SITE} editions={editions} featured={featured} />
+        <Nav siteName={SITE} />
         <main id="main">{children}</main>
       </body>
     </html>

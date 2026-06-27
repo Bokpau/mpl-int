@@ -1,9 +1,8 @@
 'use client';
 
 import Link from 'next/link';
-import { Suspense, useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { usePathname } from 'next/navigation';
-import FilterBar from './FilterBar';
 import Search from './Search';
 
 /* ── Grouped navigation, mirroring the PH site's shell. Only pages backed by
@@ -70,7 +69,7 @@ const ChevronIcon = () => (
 );
 const ICONS = { Dashboard: HomeIcon, Standings: TrophyIcon, Matches: SwordsIcon, Stats: StatsIcon, History: HistoryIcon };
 
-export default function Nav({ siteName, editions, featured }) {
+export default function Nav({ siteName }) {
   const pathname = usePathname();
   const [openMenu, setOpenMenu] = useState(null); // label of the open dropdown
   const navRef = useRef(null);
@@ -90,11 +89,8 @@ export default function Nav({ siteName, editions, featured }) {
   const groupActive = (item) =>
     item.href ? isActive(item.href) : item.children.some((c) => isActive(c.href));
 
-  const showFilterBar = !pathname.startsWith('/history');
-
   return (
-    <>
-      <nav className="nav" ref={navRef}>
+    <nav className="nav" ref={navRef}>
         <Link href="/" className="brand">
           {siteName}<span className="dot">.</span>
         </Link>
@@ -137,15 +133,6 @@ export default function Nav({ siteName, editions, featured }) {
         </div>
 
         <Search />
-      </nav>
-
-      {showFilterBar ? (
-        <div className="container">
-          <Suspense fallback={<div className="filterbar" />}>
-            <FilterBar editions={editions} featured={featured} />
-          </Suspense>
-        </div>
-      ) : null}
-    </>
+    </nav>
   );
 }

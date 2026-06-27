@@ -31,6 +31,10 @@ export default function FilterBar({ editions = [], featured = null }) {
   const sp = useSearchParams();
   const [isPending, startTransition] = useTransition();
 
+  // The History Overview is a pure edition index (click a card to explore) — no
+  // filter there. The bar appears on the History leaderboard tabs only.
+  if (pathname === '/history') return null;
+
   // Resolve the URL into the filters actually in effect, applying the featured default.
   const spObj = Object.fromEntries(sp.entries());
   const eff = effectiveFilters(spObj, featured);

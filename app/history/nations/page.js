@@ -1,16 +1,19 @@
 import { api } from '../../../lib/api';
+import { intlQuery } from '../../../lib/filters';
 import { NATION_COLUMNS } from '../../../lib/columns';
 import ErrorBox from '../../../components/ErrorBox';
 import StatTable from '../../../components/StatTable';
 
 export const metadata = { title: 'All-Time Nations' };
 
-// All-time player nationality leaderboard across every edition (no season filter).
-export default async function HistoryNations() {
+// Player nationality leaderboard — all editions by default; History filter narrows it.
+export default async function HistoryNations({ searchParams }) {
+  const sp = await searchParams;
+  const q = intlQuery(sp, null);
   let rows = null;
   let error = null;
   try {
-    rows = await api.nations('');
+    rows = await api.nations(q);
   } catch (e) {
     error = e.message;
   }

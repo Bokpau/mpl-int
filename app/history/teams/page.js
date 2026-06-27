@@ -1,4 +1,5 @@
 import { api } from '../../../lib/api';
+import { intlQuery } from '../../../lib/filters';
 import { TEAM_COLUMNS } from '../../../lib/columns';
 import ErrorBox from '../../../components/ErrorBox';
 import StatTable from '../../../components/StatTable';
@@ -6,12 +7,14 @@ import StatLegend from '../../../components/StatLegend';
 
 export const metadata = { title: 'All-Time Teams' };
 
-// All-time team records across every edition (no season filter).
-export default async function HistoryTeams() {
+// Team records — all editions by default; the History filter bar narrows them.
+export default async function HistoryTeams({ searchParams }) {
+  const sp = await searchParams;
+  const q = intlQuery(sp, null);
   let rows = null;
   let error = null;
   try {
-    rows = await api.teams('');
+    rows = await api.teams(q);
   } catch (e) {
     error = e.message;
   }
