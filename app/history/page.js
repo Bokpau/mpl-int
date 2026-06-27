@@ -40,7 +40,6 @@ function groupByFamily(editions) {
 // th and td styles matching the design
 const th = { 
   padding: '12px 14px', 
-  textAlign: 'left', 
   fontSize: '11px', 
   fontWeight: 600, 
   fontFamily: 'var(--font-mono)', 
@@ -97,6 +96,9 @@ export default async function HistoryOverview() {
     .filter(e => e.tournament_code === 'MWC')
     .sort((a, b) => (Number(a.season_id) || 0) - (Number(b.season_id) || 0));
 
+  const mscCount = mscSeasons.length;
+  const mwcCount = mwcSeasons.length;
+
   const featured = pickFeatured(editions, featuredPin());
   const isFeatured = (e) =>
     featured && e.tournament_code === featured.tournament_code && String(e.season) === String(featured.season);
@@ -146,8 +148,10 @@ export default async function HistoryOverview() {
                   <div style={{
                     fontSize: '10px', color: 'var(--text)', fontWeight: 600,
                     overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
-                    textTransform: 'uppercase', fontFamily: 'var(--font-mono)', letterSpacing: '0.5px'
+                    textTransform: 'uppercase', fontFamily: 'var(--font-mono)', letterSpacing: '0.5px',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px'
                   }}>
+                    {ch?.flag_emoji && <span className="flag-sm">{ch.flag_emoji}</span>}
                     {teamCode}
                   </div>
                 </Link>
@@ -193,8 +197,10 @@ export default async function HistoryOverview() {
                   <div style={{
                     fontSize: '10px', color: 'var(--text)', fontWeight: 600,
                     overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
-                    textTransform: 'uppercase', fontFamily: 'var(--font-mono)', letterSpacing: '0.5px'
+                    textTransform: 'uppercase', fontFamily: 'var(--font-mono)', letterSpacing: '0.5px',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px'
                   }}>
+                    {ch?.flag_emoji && <span className="flag-sm">{ch.flag_emoji}</span>}
                     {teamCode}
                   </div>
                 </Link>
@@ -211,9 +217,9 @@ export default async function HistoryOverview() {
           <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px' }}>
             <thead>
               <tr style={{ background: 'var(--surface)', color: 'var(--muted2)' }}>
-                <th style={th}>Tournament</th>
-                <th style={th}>Champion</th>
-                <th style={th}>Finals MVP</th>
+                <th className="l" style={th}>Tournament</th>
+                <th className="l" style={th}>Champion</th>
+                <th className="l" style={th}>Finals MVP</th>
               </tr>
             </thead>
             <tbody>
@@ -230,30 +236,32 @@ export default async function HistoryOverview() {
                   <tr key={`${e.tournament_code}-${e.season}`}
                     style={{ borderBottom: '1px solid var(--border)', transition: 'background-color 0.15s' }}
                     className="clickable">
-                    <td style={tdWithLink}>
+                    <td className="l" style={tdWithLink}>
                       <Link href={href} style={{ display: 'block', padding: '12px 14px', width: '100%', height: '100%', fontWeight: 700, color: 'var(--accent)' }}>
                         {editionTitle(e)}
                       </Link>
                     </td>
-                    <td style={tdWithLink}>
+                    <td className="l" style={tdWithLink}>
                       <Link href={href} style={{ display: 'block', padding: '12px 14px', width: '100%', height: '100%' }}>
                         {live ? (
                           <span className="badge badge-live">Live Now</span>
                         ) : ch ? (
                           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                             {champLogo && <img src={champLogo} alt="" style={{ width: '22px', height: '22px', objectFit: 'contain' }} />}
+                            {ch.flag_emoji && <span className="flag-sm">{ch.flag_emoji}</span>}
                             <span style={{ fontWeight: 700, color: 'var(--text)' }}>{ch.recipient}</span>
                           </div>
                         ) : <span style={{ color: 'var(--muted2)' }}>—</span>}
                       </Link>
                     </td>
-                    <td style={tdWithLink}>
+                    <td className="l" style={tdWithLink}>
                       <Link href={href} style={{ display: 'block', padding: '12px 14px', width: '100%', height: '100%' }}>
                         {live ? (
                           <span style={{ color: 'var(--muted2)' }}>—</span>
                         ) : mvp ? (
                           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                             {mvpLogo && <img src={mvpLogo} alt="" style={{ width: '22px', height: '22px', objectFit: 'contain' }} />}
+                            {mvp.flag_emoji && <span className="flag-sm">{mvp.flag_emoji}</span>}
                             <span style={{ color: 'var(--text)', fontWeight: 600 }}>{mvp.recipient}</span>
                             <span className="sub" style={{ fontSize: '11px', color: 'var(--muted2)', fontFamily: 'var(--font-mono)' }}>
                               ({mvp.team_code})
@@ -283,14 +291,15 @@ export default async function HistoryOverview() {
         const shTime = (key) => {
           const h = H?.[key];
           if (!h || !h.season) return null;
-          return `${h.season} — ${fmtDuration(h.value)}`;
+          return `${h.season} — ${int(Math.round(Number(h.value) / 60))} mins`;
         };
 
         const STATS = [
-          { label: 'Seasons', val: int(T.seasons), avg: null, high: null },
+          { label: 'MSC Seasons', val: int(mscCount), avg: null, high: null },
+          { label: 'M-Series Seasons', val: int(mwcCount), avg: null, high: null },
           { label: 'Matches', val: int(T.matches), avg: null, high: sh('matches') },
           { label: 'Games', val: int(T.games), avg: null, high: sh('games') },
-          { label: 'Game Time', val: fmtDuration(T.game_time_s), avg: fmtDuration(P.game_time_s), high: shTime('game_time_s') },
+          { label: 'Game Time', val: `${int(Math.round(Number(T.game_time_s) / 60))} mins`, avg: fmtDuration(P.game_time_s), high: shTime('game_time_s') },
           { label: 'Kills', val: int(T.kills), avg: dec(P.kills, 1), high: sh('kills') },
           { label: 'Deaths', val: int(T.deaths), avg: dec(P.deaths, 1), high: sh('deaths') },
           { label: 'Assists', val: int(T.assists), avg: dec(P.assists, 1), high: sh('assists') },
