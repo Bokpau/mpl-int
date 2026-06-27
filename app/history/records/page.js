@@ -241,13 +241,13 @@ export default async function HistoryRecordsPage({ searchParams }) {
                           {/* Matchup */}
                           <td style={td}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                              {img.team(r.team_a_era || r.team_a) && (
-                                <img src={img.team(r.team_a_era || r.team_a)} alt="" style={{ width: '20px', height: '20px', objectFit: 'contain' }} />
+                              {(r.team_a_logo_dark || r.team_a_logo_light || img.team(r.team_a_era || r.team_a)) && (
+                                <img src={r.team_a_logo_dark || r.team_a_logo_light || img.team(r.team_a_era || r.team_a)} alt="" style={{ width: '20px', height: '20px', objectFit: 'contain' }} />
                               )}
                               <span style={{ fontWeight: r.winner === r.team_a ? 600 : 400 }}>{r.team_a_era || r.team_a}</span>
                               <span style={{ color: 'var(--muted2)', fontSize: '12px' }}>vs</span>
-                              {img.team(r.team_b_era || r.team_b) && (
-                                <img src={img.team(r.team_b_era || r.team_b)} alt="" style={{ width: '20px', height: '20px', objectFit: 'contain' }} />
+                              {(r.team_b_logo_dark || r.team_b_logo_light || img.team(r.team_b_era || r.team_b)) && (
+                                <img src={r.team_b_logo_dark || r.team_b_logo_light || img.team(r.team_b_era || r.team_b)} alt="" style={{ width: '20px', height: '20px', objectFit: 'contain' }} />
                               )}
                               <span style={{ fontWeight: r.winner === r.team_b ? 600 : 400 }}>{r.team_b_era || r.team_b}</span>
                             </div>
@@ -256,8 +256,8 @@ export default async function HistoryRecordsPage({ searchParams }) {
                           <td style={td}>
                             {r.winner ? (
                               <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                                {img.team(r.winner_era || r.winner) && (
-                                  <img src={img.team(r.winner_era || r.winner)} alt="" style={{ width: '16px', height: '16px', objectFit: 'contain' }} />
+                                {(r.winner_logo_dark || r.winner_logo_light || img.team(r.winner_era || r.winner)) && (
+                                  <img src={r.winner_logo_dark || r.winner_logo_light || img.team(r.winner_era || r.winner)} alt="" style={{ width: '16px', height: '16px', objectFit: 'contain' }} />
                                 )}
                                 <span style={{ color: 'var(--win)', fontWeight: 600 }}>{r.winner_era || r.winner}</span>
                               </div>
@@ -282,8 +282,8 @@ export default async function HistoryRecordsPage({ searchParams }) {
                           {/* Team */}
                           <td style={td}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                              {img.team(r.team_code_era || r.team_code) && (
-                                <img src={img.team(r.team_code_era || r.team_code)} alt="" style={{ width: '18px', height: '18px', objectFit: 'contain' }} />
+                              {(r.team_logo_dark || r.team_logo_light || img.team(r.team_code_era || r.team_code)) && (
+                                <img src={r.team_logo_dark || r.team_logo_light || img.team(r.team_code_era || r.team_code)} alt="" style={{ width: '18px', height: '18px', objectFit: 'contain' }} />
                               )}
                               <span>{r.team_code_era || r.team_code}</span>
                             </div>
@@ -292,8 +292,8 @@ export default async function HistoryRecordsPage({ searchParams }) {
                           <td style={td}>
                             {r.opponent ? (
                               <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                                {img.team(r.opponent_era || r.opponent) && (
-                                  <img src={img.team(r.opponent_era || r.opponent)} alt="" style={{ width: '18px', height: '18px', objectFit: 'contain' }} />
+                                {(r.opponent_logo_dark || r.opponent_logo_light || img.team(r.opponent_era || r.opponent)) && (
+                                  <img src={r.opponent_logo_dark || r.opponent_logo_light || img.team(r.opponent_era || r.opponent)} alt="" style={{ width: '18px', height: '18px', objectFit: 'contain' }} />
                                 )}
                                 <span style={{ color: 'var(--muted)' }}>{r.opponent_era || r.opponent}</span>
                               </div>
@@ -496,8 +496,8 @@ export default async function HistoryRecordsPage({ searchParams }) {
                           <span style={{ fontWeight: 600, fontSize: '14px', color: 'var(--text)' }}>{r.player}</span>
                         </div>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '11.5px', color: 'var(--muted2)' }}>
-                          {img.team(r.team_code_era || r.team_code) && (
-                            <img src={img.team(r.team_code_era || r.team_code)} alt="" style={{ width: '14px', height: '14px', objectFit: 'contain' }} />
+                          {(r.team_logo_dark || r.team_logo_light || img.team(r.team_code_era || r.team_code)) && (
+                            <img src={r.team_logo_dark || r.team_logo_light || img.team(r.team_code_era || r.team_code)} alt="" style={{ width: '14px', height: '14px', objectFit: 'contain' }} />
                           )}
                           <span style={{ color: win ? 'var(--win)' : 'var(--text)', fontWeight: 600 }}>
                             {r.team_code_era || r.team_code}
