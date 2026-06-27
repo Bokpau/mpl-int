@@ -151,10 +151,10 @@ export default async function HistoryRecordsPage({ searchParams }) {
     const cat = ALL_CATS.find(c => c.key === activeCatKey) || ALL_CATS[0];
     const catData = data[cat.key];
 
-    // Standard list items for category dropdown
+    // Standard list items for category dropdown (serialized to remove functions)
     const dropdownGroups = [
-      { title: 'Player Records', cats: PLAYER_GROUPS.flatMap(g => g.cats) },
-      { title: 'Team / Match Records', cats: TEAM_GROUPS.flatMap(g => g.cats) }
+      { title: 'Player Records', cats: PLAYER_GROUPS.flatMap(g => g.cats).map(c => ({ key: c.key, label: c.label })) },
+      { title: 'Team / Match Records', cats: TEAM_GROUPS.flatMap(g => g.cats).map(c => ({ key: c.key, label: c.label })) }
     ];
 
     return (
