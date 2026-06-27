@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { api } from '../../lib/api';
 import { intlQuery } from '../../lib/filters';
+import { getFeatured } from '../../lib/featured';
 import { num, int, pct } from '../../lib/format';
 import ErrorBox from '../../components/ErrorBox';
 import StatTable from '../../components/StatTable';
@@ -37,7 +38,8 @@ function regionCards(standings) {
 
 export default async function NationsPage({ searchParams }) {
   const sp = await searchParams;
-  const q = intlQuery(sp);
+  const featured = await getFeatured();
+  const q = intlQuery(sp, featured);
 
   // Country table is primary (player nationality); region cards are the team-slot
   // rollup. Fetch both; only a failed nations call blocks the page.

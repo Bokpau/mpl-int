@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { api } from '../../lib/api';
 import { intlQuery } from '../../lib/filters';
+import { getFeatured } from '../../lib/featured';
 import ErrorBox from '../../components/ErrorBox';
 
 export const metadata = { title: 'Results' };
@@ -72,7 +73,8 @@ function TeamSide({ era, teamKey, score, won }) {
 
 export default async function ResultsPage({ searchParams }) {
   const sp = await searchParams;
-  const q = intlQuery(sp);
+  const featured = await getFeatured();
+  const q = intlQuery(sp, featured);
   const sep = q ? '&' : '?';
 
   let games = null;

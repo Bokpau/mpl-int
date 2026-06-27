@@ -15,7 +15,7 @@ const LINKS = [
   { href: '/results', label: 'Results' },
 ];
 
-export default function Nav({ siteName, editions }) {
+export default function Nav({ siteName, editions, featured }) {
   const pathname = usePathname();
 
   const isActive = (href) =>
@@ -39,7 +39,7 @@ export default function Nav({ siteName, editions }) {
       </nav>
       <div className="container">
         <Suspense fallback={<div className="filterbar" />}>
-          <FilterBar editions={editions} />
+          <FilterBar editions={editions} featured={featured} />
         </Suspense>
       </div>
     </>

@@ -1,5 +1,6 @@
 import { api } from '../../lib/api';
 import { intlQuery } from '../../lib/filters';
+import { getFeatured } from '../../lib/featured';
 import { num } from '../../lib/format';
 import ErrorBox from '../../components/ErrorBox';
 import StatTable from '../../components/StatTable';
@@ -20,7 +21,8 @@ const COLUMNS = [
 
 export default async function RegionsPage({ searchParams }) {
   const sp = await searchParams;
-  const q = intlQuery(sp);
+  const featured = await getFeatured();
+  const q = intlQuery(sp, featured);
 
   let data = null;
   let error = null;

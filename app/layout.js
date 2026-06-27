@@ -1,6 +1,7 @@
 import './globals.css';
 import Nav from '../components/Nav';
 import { api } from '../lib/api';
+import { pickFeatured, featuredPin } from '../lib/featured';
 
 const SITE = 'MLBB International'; // placeholder branding — rename later (D6)
 
@@ -24,12 +25,13 @@ export default async function RootLayout({ children }) {
   } catch {
     editions = [];
   }
+  const featured = pickFeatured(editions, featuredPin());
 
   return (
     <html lang="en">
       <body>
         <a href="#main" className="skip-link">Skip to main content</a>
-        <Nav siteName={SITE} editions={editions} />
+        <Nav siteName={SITE} editions={editions} featured={featured} />
         <main id="main">{children}</main>
       </body>
     </html>

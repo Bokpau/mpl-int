@@ -1,5 +1,6 @@
 import { api } from '../../lib/api';
 import { intlQuery } from '../../lib/filters';
+import { getFeatured } from '../../lib/featured';
 import ErrorBox from '../../components/ErrorBox';
 import StatTable from '../../components/StatTable';
 import StatLegend from '../../components/StatLegend';
@@ -21,7 +22,8 @@ const COLUMNS = [
 
 export default async function TeamsPage({ searchParams }) {
   const sp = await searchParams;
-  const q = intlQuery(sp);
+  const featured = await getFeatured();
+  const q = intlQuery(sp, featured);
 
   let rows = null;
   let error = null;
