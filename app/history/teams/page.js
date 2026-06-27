@@ -1,6 +1,6 @@
 import { api } from '../../../lib/api';
 import { intlQuery } from '../../../lib/filters';
-import { TEAM_COLUMNS } from '../../../lib/columns';
+import { TEAM_COLUMNS, STAT_GROUPS } from '../../../lib/columns';
 import ErrorBox from '../../../components/ErrorBox';
 import StatTable from '../../../components/StatTable';
 import StatLegend from '../../../components/StatLegend';
@@ -29,6 +29,7 @@ export default async function HistoryTeams({ searchParams }) {
         <>
           <StatTable
             columns={TEAM_COLUMNS}
+            groups={STAT_GROUPS}
             rows={rows}
             rowKey="team_key"
             rowHref={{ base: '/teams/', key: 'team_key' }}

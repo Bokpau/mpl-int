@@ -1,6 +1,6 @@
 import { api } from '../../../lib/api';
 import { intlQuery } from '../../../lib/filters';
-import { HERO_COLUMNS } from '../../../lib/columns';
+import { HERO_COLUMNS, STAT_GROUPS } from '../../../lib/columns';
 import ErrorBox from '../../../components/ErrorBox';
 import StatTable from '../../../components/StatTable';
 import StatLegend from '../../../components/StatLegend';
@@ -27,7 +27,7 @@ export default async function HistoryHeroes({ searchParams }) {
         <div className="empty">No hero data yet.</div>
       ) : (
         <>
-          <StatTable columns={HERO_COLUMNS} rows={rows} rowKey="hero_id" defaultLimit={20} />
+          <StatTable columns={HERO_COLUMNS} groups={STAT_GROUPS} rows={rows} rowKey="hero_id" defaultLimit={20} />
           <StatLegend keys={['Win%', 'KDA', 'Picks']} />
         </>
       )}

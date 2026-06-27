@@ -4,7 +4,7 @@ import ErrorBox from '../../components/ErrorBox';
 import PageHead from '../../components/PageHead';
 import StatTable from '../../components/StatTable';
 import StatLegend from '../../components/StatLegend';
-import { PLAYER_COLUMNS as COLUMNS } from '../../lib/columns';
+import { PLAYER_COLUMNS as COLUMNS, STAT_GROUPS } from '../../lib/columns';
 
 export const metadata = { title: 'Player Stats' };
 
@@ -33,6 +33,7 @@ export default async function PlayersPage({ searchParams }) {
       ) : (
         <StatTable
           columns={COLUMNS}
+          groups={STAT_GROUPS}
           rows={rows}
           rowKey="player_key"
           rowHref={{ base: '/players/', key: 'player_key' }}

@@ -5,7 +5,7 @@ import { num, int, pct } from '../../lib/format';
 import ErrorBox from '../../components/ErrorBox';
 import PageHead from '../../components/PageHead';
 import StatTable from '../../components/StatTable';
-import { NATION_COLUMNS as COLUMNS } from '../../lib/columns';
+import { NATION_COLUMNS as COLUMNS, STAT_GROUPS } from '../../lib/columns';
 
 export const metadata = { title: 'Nations' };
 
@@ -65,7 +65,7 @@ export default async function NationsPage({ searchParams }) {
           )}
 
           <div className="section-title">By Country <span className="sub">(player nationality)</span></div>
-          <StatTable columns={COLUMNS} rows={rows} rowKey="country_code" defaultLimit={20} />
+          <StatTable columns={COLUMNS} groups={STAT_GROUPS} rows={rows} rowKey="country_code" defaultLimit={20} />
         </>
       )}
     </div>

@@ -118,10 +118,34 @@ function Cell({ col, row, rankIndex }) {
   }
 }
 
-export default function StatTable({ columns, rows, rowHref, rowKey, initialSort, defaultLimit }) {
+export default function StatTable({ columns, rows, rowHref, rowKey, initialSort, defaultLimit, groups }) {
   const router = useRouter();
   const [sort, setSort] = useState(initialSort || null);
   const [expanded, setExpanded] = useState(false);
+
+  // Column-group toggles. Groups present on this table = those referenced by a
+  // column AND declared in `groups`. Identity/core columns carry no group and are
+  // always shown. State seeds from each group's `default` flag.
+  const activeGroupList = useMemo(
+    () => (groups || []).filter((g) => columns.some((c) => c.group === g.key)),
+    [groups, columns]
+  );
+  const [shown, setShown] = useState(
+    () => new Set(activeGroupList.filter((g) => g.default).map((g) => g.key))
+  );
+
+  const visibleColumns = useMemo(
+    () => columns.filter((c) => !c.group || shown.has(c.group)),
+    [columns, shown]
+  );
+
+  function toggleGroup(key) {
+    setShown((prev) => {
+      const next = new Set(prev);
+      next.has(key) ? next.delete(key) : next.add(key);
+      return next;
+    });
+  }
 
   const sorted = useMemo(() => {
     if (!sort) return rows;
@@ -152,11 +176,29 @@ export default function StatTable({ columns, rows, rowHref, rowKey, initialSort,
 
   return (
     <>
+    {activeGroupList.length > 0 ? (
+      <div className="col-toggles" role="group" aria-label="Show stat groups">
+        {activeGroupList.map((g) => {
+          const on = shown.has(g.key);
+          return (
+            <button
+              key={g.key}
+              type="button"
+              className={`col-toggle${on ? ' on' : ''}`}
+              aria-pressed={on}
+              onClick={() => toggleGroup(g.key)}
+            >
+              {g.label}
+            </button>
+          );
+        })}
+      </div>
+    ) : null}
     <div className="table-wrap">
       <table>
         <thead>
           <tr>
-            {columns.map((col) => {
+            {visibleColumns.map((col) => {
               const left = !isNumeric(col);
               const sortable = col.type !== 'rank' && col.sortable !== false;
               const active = sort && sort.key === col.key;
@@ -188,7 +230,7 @@ export default function StatTable({ columns, rows, rowHref, rowKey, initialSort,
                 className={href ? 'clickable' : ''}
                 onClick={href ? () => router.push(href) : undefined}
               >
-                {columns.map((col) => (
+                {visibleColumns.map((col) => (
                   <Cell key={col.key} col={col} row={row} rankIndex={i + 1} />
                 ))}
               </tr>

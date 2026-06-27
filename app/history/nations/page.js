@@ -1,6 +1,6 @@
 import { api } from '../../../lib/api';
 import { intlQuery } from '../../../lib/filters';
-import { NATION_COLUMNS } from '../../../lib/columns';
+import { NATION_COLUMNS, STAT_GROUPS } from '../../../lib/columns';
 import ErrorBox from '../../../components/ErrorBox';
 import StatTable from '../../../components/StatTable';
 
@@ -25,7 +25,7 @@ export default async function HistoryNations({ searchParams }) {
       ) : !rows || rows.length === 0 ? (
         <div className="empty">No nationality data yet.</div>
       ) : (
-        <StatTable columns={NATION_COLUMNS} rows={rows} rowKey="country_code" defaultLimit={20} />
+        <StatTable columns={NATION_COLUMNS} groups={STAT_GROUPS} rows={rows} rowKey="country_code" defaultLimit={20} />
       )}
     </div>
   );

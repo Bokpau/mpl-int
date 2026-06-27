@@ -171,6 +171,17 @@ main { padding-bottom: 80px; }
   overflow: auto; border: 1px solid var(--border); border-radius: var(--radius-lg);
   margin: 22px 0; max-height: calc(100vh - var(--nav-h) - var(--space-8));
 }
+/* Stat-group column toggles above the table. */
+.col-toggles { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: 8px 0 0; }
+.col-toggle {
+  padding: 5px 12px; border-radius: var(--radius-pill); font-size: 12px; font-weight: 600;
+  background: var(--surface2); color: var(--muted); border: 1px solid var(--border);
+  transition: color var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease);
+}
+.col-toggle:hover { color: var(--text); border-color: var(--border-strong); }
+.col-toggle.on { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+/* When toggles sit directly above the table, tighten the table's top margin. */
+.col-toggles + .table-wrap { margin-top: 12px; }
 table { width: 100%; border-collapse: collapse; font-size: 14px; }
 thead th {
   text-align: right; padding: 12px 14px; font-size: 11px; text-transform: uppercase;

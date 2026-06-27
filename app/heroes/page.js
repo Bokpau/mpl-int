@@ -4,7 +4,7 @@ import ErrorBox from '../../components/ErrorBox';
 import PageHead from '../../components/PageHead';
 import StatTable from '../../components/StatTable';
 import StatLegend from '../../components/StatLegend';
-import { HERO_COLUMNS as COLUMNS } from '../../lib/columns';
+import { HERO_COLUMNS as COLUMNS, STAT_GROUPS } from '../../lib/columns';
 
 export const metadata = { title: 'Heroes' };
 
@@ -31,7 +31,7 @@ export default async function HeroesPage({ searchParams }) {
       ) : !rows || rows.length === 0 ? (
         <div className="empty">No hero data for this selection.</div>
       ) : (
-        <StatTable columns={COLUMNS} rows={rows} rowKey="hero_id" defaultLimit={20} />
+        <StatTable columns={COLUMNS} groups={STAT_GROUPS} rows={rows} rowKey="hero_id" defaultLimit={20} />
       )}
 
       {rows && rows.length > 0 ? <StatLegend keys={['Win%', 'KDA', 'Picks']} /> : null}
