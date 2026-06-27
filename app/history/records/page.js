@@ -4,6 +4,7 @@ import { intlQuery } from '../../../lib/filters';
 import { int, dec, pct } from '../../../lib/format';
 import { img } from '../../../lib/images';
 import ErrorBox from '../../../components/ErrorBox';
+import CategorySelect from './CategorySelect';
 
 export const metadata = { title: 'All-Time Records' };
 
@@ -191,43 +192,7 @@ export default async function HistoryRecordsPage({ searchParams }) {
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <span style={{ fontSize: '13px', color: 'var(--muted2)', fontFamily: 'var(--font-mono)' }}>SWITCH CATEGORY:</span>
-            <select
-              value={cat.key}
-              onChange={(e) => {
-                // Navigate via simple URL change to switch category
-                window.location.href = getUrlWithParams('/history/records', sp, { cat: e.target.value });
-              }}
-              style={{
-                background: 'var(--surface2)',
-                border: '1px solid var(--border-strong)',
-                color: 'var(--text)',
-                padding: '8px 12px',
-                fontSize: '13px',
-                borderRadius: 'var(--radius-sm)',
-                outline: 'none',
-                cursor: 'pointer'
-              }}
-              // Next.js client-side script wrapper to handle navigation on select without full page reload:
-              // Using a simple HTML select that triggers normal navigation as a fallback but integrates nicely
-            >
-              {dropdownGroups.map(g => (
-                <optgroup key={g.title} label={g.title}>
-                  {g.cats.map(c => (
-                    <option key={c.key} value={c.key}>{c.label}</option>
-                  ))}
-                </optgroup>
-              ))}
-            </select>
-            {/* Direct selector navigation handler script */}
-            <script dangerouslySetInnerHTML={{
-              __html: `
-                document.currentScript.previousElementSibling.addEventListener('change', function(e) {
-                  const url = new URL(window.location.href);
-                  url.searchParams.set('cat', e.target.value);
-                  window.location.href = url.pathname + url.search;
-                });
-              `
-            }} />
+            <CategorySelect activeKey={cat.key} dropdownGroups={dropdownGroups} />
           </div>
         </div>
 
