@@ -391,9 +391,43 @@ table.h2h td .sub { font-size: 11px; }
 @keyframes sk { 0% { background-position: 100% 50%; } 100% { background-position: 0 50%; } }
 @media (prefers-reduced-motion: reduce) { .skeleton { animation: none; } }
 
-@media (max-width: 760px) {
-  .nav { gap: 14px; overflow-x: auto; }
-  .nav .links { gap: 14px; }
+/* ─── Grouped nav (icons + dropdowns, mirrors the PH shell) ─────── */
+.navgroups { display: flex; align-items: center; gap: 6px; margin-left: 8px; }
+.navgroup { position: relative; }
+.navgroup-link, .navgroup-btn {
+  display: inline-flex; align-items: center; gap: 7px;
+  padding: 8px 12px; border-radius: var(--radius-sm);
+  color: var(--muted); font-weight: 500; font-size: 14px; white-space: nowrap;
+  transition: color var(--dur-fast) var(--ease), background var(--dur-fast) var(--ease);
+}
+.navgroup-link:hover, .navgroup-btn:hover { color: var(--text); background: var(--surface); }
+.navgroup-link.active, .navgroup-btn.active { color: var(--accent); }
+.navgroup-btn svg:last-child { opacity: 0.7; transition: transform var(--dur-fast) var(--ease); }
+.navgroup-btn.open svg:last-child { transform: rotate(180deg); }
+.dropdown {
+  position: absolute; top: calc(100% + 8px); left: 0; min-width: 184px;
+  background: var(--surface); border: 1px solid var(--border-strong);
+  border-radius: var(--radius-md); box-shadow: var(--shadow-2);
+  padding: 6px; z-index: 60; display: flex; flex-direction: column; gap: 2px;
+}
+.dropdown a {
+  padding: 9px 12px; border-radius: var(--radius-sm); font-size: 13px; font-weight: 500;
+  color: var(--muted); white-space: nowrap;
+}
+.dropdown a:hover { background: var(--surface2); color: var(--text); }
+.dropdown a.active { color: var(--accent); }
+
+/* ─── Dashboard ─────────────────────────────────────────────────── */
+.dash-section { margin: 26px 0 8px; }
+.dash-section-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+.dash-section-head .section-title { margin: 8px 0 0; }
+.dash-more { font-size: 13px; font-weight: 600; color: var(--muted2); white-space: nowrap; }
+.dash-more:hover { color: var(--accent); }
+
+@media (max-width: 860px) {
+  .nav { gap: 12px; overflow-x: auto; }
+  .navgroups { gap: 2px; }
+  .navgroup-link, .navgroup-btn { padding: 8px 9px; font-size: 13px; }
   .search { margin-left: 8px; }
-  .search-input { width: 160px; }
+  .search-input { width: 150px; }
 }
