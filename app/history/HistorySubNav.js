@@ -9,6 +9,7 @@ const TABS = [
   { href: '/history/teams', label: 'Teams' },
   { href: '/history/heroes', label: 'Heroes' },
   { href: '/history/nations', label: 'Nations' },
+  { href: '/history/records', label: 'Records' },
 ];
 
 export default function HistorySubNav() {
