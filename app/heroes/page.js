@@ -4,18 +4,9 @@ import ErrorBox from '../../components/ErrorBox';
 import PageHead from '../../components/PageHead';
 import StatTable from '../../components/StatTable';
 import StatLegend from '../../components/StatLegend';
+import { HERO_COLUMNS as COLUMNS } from '../../lib/columns';
 
 export const metadata = { title: 'Heroes' };
-
-const COLUMNS = [
-  { key: '__rank', type: 'rank', label: '#' },
-  { key: 'hero', type: 'hero', label: 'Hero', nameKey: 'hero_name', idKey: 'hero_id' },
-  { key: 'picks', label: 'Picks', format: 'int' },
-  { key: 'wins', label: 'Wins', format: 'int' },
-  { key: 'win_rate', label: 'Win%', format: 'pct', wr: true, title: 'Win rate' },
-  { key: 'kda', label: 'KDA', format: 'dec', cls: 'accent', title: '(Kills + Assists) / Deaths' },
-  { key: 'players', label: 'Players', format: 'int', title: 'Distinct players who picked this hero' },
-];
 
 export default async function HeroesPage({ searchParams }) {
   const sp = await searchParams;

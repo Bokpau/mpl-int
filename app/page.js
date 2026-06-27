@@ -4,21 +4,9 @@ import ErrorBox from '../components/ErrorBox';
 import PageHead from '../components/PageHead';
 import StatTable from '../components/StatTable';
 import StatLegend from '../components/StatLegend';
+import { PLAYER_COLUMNS as COLUMNS } from '../lib/columns';
 
 export const metadata = { title: 'Players' };
-
-const COLUMNS = [
-  { key: '__rank', type: 'rank', label: '#' },
-  { key: 'player', type: 'player', label: 'Player', nameKey: 'player', fallbackKey: 'player_key', subKey: 'latest_team', subFallbackKey: 'latest_team_code', hrefBase: '/players/', hrefKey: 'player_key' },
-  { key: 'editions', label: 'Editions', format: 'int', title: 'International editions played' },
-  { key: 'games', label: 'Games', format: 'int' },
-  { key: 'win_rate', label: 'Win%', format: 'pct', wr: true, title: 'Win rate' },
-  { key: 'kda', label: 'KDA', format: 'dec', cls: 'accent', title: '(Kills + Assists) / Deaths' },
-  { key: 'kp', label: 'KP%', format: 'pct', nullDash: true, title: 'Kill participation' },
-  { key: 'gpm', label: 'GPM', format: 'int', title: 'Gold per minute' },
-  { key: 'dpm', label: 'DPM', format: 'int', title: 'Damage per minute' },
-  { key: 'mvps', label: 'MVPs', format: 'int', title: 'Most Valuable Player awards' },
-];
 
 export default async function PlayersPage({ searchParams }) {
   const sp = await searchParams;

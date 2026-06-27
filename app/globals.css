@@ -240,6 +240,47 @@ tbody tr.clickable { cursor: pointer; }
 .crumb { color: var(--muted2); font-size: 13px; padding-top: 22px; }
 .crumb a:hover { color: var(--accent); }
 
+/* ─── History section ───────────────────────────────────────────── */
+.subnav {
+  display: flex; gap: 4px; flex-wrap: wrap;
+  border-bottom: 1px solid var(--border);
+  margin: 8px 0 24px;
+}
+.subnav a {
+  padding: 10px 16px; font-size: 13px; font-weight: 500;
+  color: var(--muted2); white-space: nowrap;
+  border-bottom: 2px solid transparent; margin-bottom: -1px;
+}
+.subnav a:hover { color: var(--text); }
+.subnav a.active { color: var(--accent); font-weight: 700; border-bottom-color: var(--accent); }
+
+.hist-intro { color: var(--muted2); font-size: 14px; max-width: 720px; margin: 0 0 8px; }
+
+.edition-section { margin: 8px 0 8px; }
+.edition-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+  gap: 12px; padding: 12px 0 8px;
+}
+.edition-card {
+  display: flex; flex-direction: column; gap: 10px;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); padding: 14px 16px;
+  transition: border-color 0.15s;
+}
+.edition-card:hover { border-color: var(--accent); }
+.edition-card-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.edition-name { font-family: var(--font-display); font-size: 17px; letter-spacing: 0.4px; color: var(--text); }
+
+.badge {
+  font-family: var(--font-mono); font-size: 10px; font-weight: 600;
+  text-transform: uppercase; letter-spacing: 0.08em;
+  padding: 2px 8px; border-radius: 999px; align-self: flex-start;
+  border: 1px solid var(--border-strong);
+}
+.badge-live { color: var(--accent-ink); background: var(--accent); border-color: var(--accent); }
+.badge-done { color: var(--muted2); }
+.badge-featured { color: var(--accent); border-color: var(--accent-dim); }
+
 /* ─── Results / bracket ─────────────────────────────────────────── */
 .stage-block { margin: 8px 0 22px; }
 .stage-head { display: flex; align-items: center; gap: 10px; margin: 12px 0 10px; }

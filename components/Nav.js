@@ -13,6 +13,7 @@ const LINKS = [
   { href: '/nations', label: 'Nations' },
   { href: '/regions', label: 'Regions' },
   { href: '/results', label: 'Results' },
+  { href: '/history', label: 'History' },
 ];
 
 export default function Nav({ siteName, editions, featured }) {
@@ -21,6 +22,10 @@ export default function Nav({ siteName, editions, featured }) {
   const isActive = (href) =>
     href === '/' ? pathname === '/' || pathname.startsWith('/players')
                  : pathname.startsWith(href);
+
+  // The History section is always all-editions, so the per-edition filter bar
+  // doesn't apply there — hide it.
+  const showFilterBar = !pathname.startsWith('/history');
 
   return (
     <>
@@ -37,11 +42,13 @@ export default function Nav({ siteName, editions, featured }) {
         </div>
         <Search />
       </nav>
-      <div className="container">
-        <Suspense fallback={<div className="filterbar" />}>
-          <FilterBar editions={editions} featured={featured} />
-        </Suspense>
-      </div>
+      {showFilterBar ? (
+        <div className="container">
+          <Suspense fallback={<div className="filterbar" />}>
+            <FilterBar editions={editions} featured={featured} />
+          </Suspense>
+        </div>
+      ) : null}
     </>
   );
 }

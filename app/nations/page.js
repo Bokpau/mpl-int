@@ -5,19 +5,9 @@ import { num, int, pct } from '../../lib/format';
 import ErrorBox from '../../components/ErrorBox';
 import PageHead from '../../components/PageHead';
 import StatTable from '../../components/StatTable';
+import { NATION_COLUMNS as COLUMNS } from '../../lib/columns';
 
 export const metadata = { title: 'Nations' };
-
-const COLUMNS = [
-  { key: '__rank', type: 'rank', label: '#' },
-  { key: 'country', type: 'country', label: 'Country', nameKey: 'country', codeKey: 'country_code', flagKey: 'flag_emoji' },
-  { key: 'region_group', type: 'text', label: 'Region' },
-  { key: 'players', label: 'Players', format: 'int' },
-  { key: 'games', label: 'Games', format: 'int' },
-  { key: 'wins', label: 'Wins', format: 'int' },
-  { key: 'win_rate', label: 'Win%', format: 'pct', wr: true, title: 'Win rate' },
-  { key: 'kda', label: 'KDA', format: 'dec', cls: 'accent', title: '(Kills + Assists) / Deaths' },
-];
 
 // "By Region" now uses the TEAM-SLOT basis (represented country -> region_group),
 // from /api/intl/regions, so these cards match the Regions page exactly. The
