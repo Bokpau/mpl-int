@@ -268,7 +268,10 @@ export default async function HistoryRecordsPage({ searchParams }) {
                         <>
                           {/* Player */}
                           <td style={td}>
-                            <span style={{ fontWeight: 600, color: 'var(--text)' }}>{r.player}</span>
+                            <span style={{ fontWeight: 600, color: 'var(--text)' }}>
+                              {r.nationality_flag ? <span style={{ marginRight: 6 }}>{r.nationality_flag}</span> : null}
+                              {r.player}
+                            </span>
                           </td>
                           {/* Hero */}
                           <td style={td}>
@@ -493,7 +496,10 @@ export default async function HistoryRecordsPage({ searchParams }) {
                           {r.hero_id && (
                             <img src={img.hero(r.hero_id)} alt="" style={{ width: '18px', height: '18px', borderRadius: '50%' }} />
                           )}
-                          <span style={{ fontWeight: 600, fontSize: '14px', color: 'var(--text)' }}>{r.player}</span>
+                          <span style={{ fontWeight: 600, fontSize: '14px', color: 'var(--text)' }}>
+                            {r.nationality_flag ? <span style={{ marginRight: 5 }}>{r.nationality_flag}</span> : null}
+                            {r.player}
+                          </span>
                         </div>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '11.5px', color: 'var(--muted2)' }}>
                           {(r.team_logo_dark || r.team_logo_light || img.team(r.team_code_era || r.team_code)) && (
