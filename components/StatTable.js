@@ -6,6 +6,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { intlQuery } from '../lib/filters';
 import { num, int, dec, pct } from '../lib/format';
 import { img } from '../lib/images';
+import TeamLogo from './TeamLogo';
 
 // Reusable, sortable stats table.
 //
@@ -266,14 +267,15 @@ function Cell({ col, row, rankIndex }) {
     }
 
     case 'team': {
-      const logo = (col.logoKey && row[col.logoKey]) || img.team(row[col.codeKey]);
+      const logo = col.logoKey ? row[col.logoKey] : null;
+      const fallbackLogo = img.team(row[col.codeKey]);
       const name = row[col.nameKey] || row[col.codeKey] || row[col.fallbackKey];
       const href = `${col.hrefBase}${encodeURIComponent(row[col.hrefKey])}`;
       return (
         <td className="l">
           <Link href={href} onClick={(e) => e.stopPropagation()}>
             <span className="idcell">
-              {logo ? <img className="avatar sq" src={logo} alt="" /> : null}
+              <TeamLogo src={logo} fallbackSrc={fallbackLogo} alt="" className="avatar sq" />
               <span className="name">{name}</span>
             </span>
           </Link>

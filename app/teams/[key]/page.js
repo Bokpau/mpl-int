@@ -5,6 +5,7 @@ import { img } from '../../../lib/images';
 import { int, dec, pct, wrClass } from '../../../lib/format';
 import ErrorBox from '../../../components/ErrorBox';
 import StatTable from '../../../components/StatTable';
+import TeamLogo from '../../../components/TeamLogo';
 
 const ROSTER_COLUMNS = [
   { key: 'player', type: 'player', label: 'Player', nameKey: 'player', fallbackKey: 'player_key', hrefBase: '/players/', hrefKey: 'player_key' },
@@ -62,14 +63,13 @@ export default async function TeamDetail({ params, searchParams }) {
   }
 
   const t = data.totals;
-  const logo = t.team_logo_dark || img.team(t.team_code);
 
   return (
     <div className="container">
       <div className="crumb"><Link href="/teams">← Teams</Link></div>
 
       <div className="detail-head">
-        {logo ? <img className="big-avatar sq" src={logo} alt="" /> : null}
+        <TeamLogo src={t.team_logo_dark} fallbackSrc={img.team(t.team_code)} alt="" className="big-avatar sq" />
         <div>
           <h1>{t.team_name || t.team_code || data.team_key}</h1>
           <div className="meta">
@@ -103,13 +103,12 @@ export default async function TeamDetail({ params, searchParams }) {
           </thead>
           <tbody>
             {data.by_edition.map((e, i) => {
-              const elogo = e.team_logo_dark || img.team(e.team_code_era);
               return (
                 <tr key={i}>
                   <td className="l">{e.tournament_code}</td>
                   <td className="l">
                     <span className="idcell">
-                      {elogo ? <img className="avatar sq" src={elogo} alt="" /> : null}
+                      <TeamLogo src={e.team_logo_dark} fallbackSrc={img.team(e.team_code_era)} alt="" className="avatar sq" />
                       <span className="name">{e.season}{e.team_name_era ? ` · ${e.team_name_era}` : ''}</span>
                     </span>
                   </td>

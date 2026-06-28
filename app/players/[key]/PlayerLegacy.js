@@ -3,6 +3,7 @@
 import { useState, useMemo, useEffect } from 'react';
 import { img } from '../../../lib/images';
 import { num, int, dec } from '../../../lib/format';
+import TeamLogo from '../../../components/TeamLogo';
 
 // ── Small display helpers (intl season labels are already short, e.g. "M3", "MSC 2025") ──
 const big = (v) => int(v);
@@ -180,12 +181,11 @@ function TeamSection({ rows }) {
           </thead>
           <tbody>
             {rows.map((r, i) => {
-              const logo = r.team_logo_dark || img.team(r.team_code);
               return (
                 <tr key={i}>
                   <td style={tdL}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                      {logo ? <img src={logo} alt="" style={{ width: 20, height: 20, objectFit: 'contain' }} /> : null}
+                      <TeamLogo src={r.team_logo_dark} fallbackSrc={img.team(r.team_code)} alt="" style={{ width: 20, height: 20, objectFit: 'contain' }} />
                       <span>{r.current_team || r.team_code}</span>
                     </div>
                   </td>
@@ -245,13 +245,12 @@ function SeasonsSection({ data }) {
           </thead>
           <tbody>
             {rows.map((r, i) => {
-              const logo = r.team_logo_dark || img.team(r.team_code_era || r.team_code);
               return (
                 <tr key={i}>
                   <td style={{ ...tdL, color: 'var(--muted)' }}>{shortSeason(r.season)}</td>
                   <td style={tdL}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-                      {logo ? <img src={logo} alt="" style={{ width: 16, height: 16, objectFit: 'contain' }} /> : null}
+                      <TeamLogo src={r.team_logo_dark} fallbackSrc={img.team(r.team_code_era || r.team_code)} alt="" style={{ width: 16, height: 16, objectFit: 'contain' }} />
                       <span style={{ fontSize: 11 }}>{r.team_code_era || r.team_code}</span>
                     </div>
                   </td>
@@ -378,14 +377,13 @@ function VsTeamsSection({ rows }) {
           </thead>
           <tbody>
             {sorted.map((r, i) => {
-              const logo = r.opponent_logo_dark || img.team(r.opponent);
               const mL = num(r.matches) - num(r.match_wins);
               const gL = num(r.games) - num(r.game_wins);
               return (
                 <tr key={i}>
                   <td style={tdL}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                      {logo ? <img src={logo} alt="" style={{ width: 20, height: 20, objectFit: 'contain' }} /> : null}
+                      <TeamLogo src={r.opponent_logo_dark} fallbackSrc={img.team(r.opponent)} alt="" style={{ width: 20, height: 20, objectFit: 'contain' }} />
                       <span>{r.opponent_name || r.opponent || '--'}</span>
                     </div>
                   </td>

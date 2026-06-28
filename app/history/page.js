@@ -4,6 +4,8 @@ import { pickFeatured, featuredPin } from '../../lib/featured';
 import { familyLabel, editionTitle } from '../../lib/filters';
 import { int, dec } from '../../lib/format';
 import ErrorBox from '../../components/ErrorBox';
+import { img } from '../../lib/images';
+import TeamLogo from '../../components/TeamLogo';
 
 export const metadata = { title: 'Overview' };
 
@@ -141,8 +143,8 @@ export default async function HistoryOverview() {
                     {e.season.replace('MSC ', '')}
                   </div>
                   <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', margin: '6px 0', height: '36px' }}>
-                    {logo
-                      ? <img src={logo} alt={teamCode} style={{ maxHeight: '32px', maxWidth: '32px', objectFit: 'contain' }} />
+                    {(logo || img.team(teamCode))
+                      ? <TeamLogo src={logo} fallbackSrc={img.team(teamCode)} alt={teamCode} style={{ maxHeight: '32px', maxWidth: '32px', objectFit: 'contain' }} />
                       : <span style={{ fontSize: '18px', color: 'var(--muted2)' }}>—</span>}
                   </div>
                   <div style={{
@@ -190,8 +192,8 @@ export default async function HistoryOverview() {
                     {e.season}
                   </div>
                   <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', margin: '6px 0', height: '36px' }}>
-                    {logo
-                      ? <img src={logo} alt={teamCode} style={{ maxHeight: '32px', maxWidth: '32px', objectFit: 'contain' }} />
+                    {(logo || img.team(teamCode))
+                      ? <TeamLogo src={logo} fallbackSrc={img.team(teamCode)} alt={teamCode} style={{ maxHeight: '32px', maxWidth: '32px', objectFit: 'contain' }} />
                       : <span style={{ fontSize: '18px', color: 'var(--muted2)' }}>—</span>}
                   </div>
                   <div style={{
@@ -247,7 +249,9 @@ export default async function HistoryOverview() {
                           <span className="badge badge-live">Live Now</span>
                         ) : ch ? (
                           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                            {champLogo && <img src={champLogo} alt="" style={{ width: '22px', height: '22px', objectFit: 'contain' }} />}
+                            {(champLogo || img.team(ch.team_code || ch.recipient)) && (
+                              <TeamLogo src={champLogo} fallbackSrc={img.team(ch.team_code || ch.recipient)} alt="" style={{ width: '22px', height: '22px', objectFit: 'contain' }} />
+                            )}
                             {ch.flag_emoji && <span className="flag-sm">{ch.flag_emoji}</span>}
                             <span style={{ fontWeight: 700, color: 'var(--text)' }}>{ch.recipient}</span>
                           </div>
@@ -260,7 +264,9 @@ export default async function HistoryOverview() {
                           <span style={{ color: 'var(--muted2)' }}>—</span>
                         ) : mvp ? (
                           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                            {mvpLogo && <img src={mvpLogo} alt="" style={{ width: '22px', height: '22px', objectFit: 'contain' }} />}
+                            {(mvpLogo || img.team(mvp.team_code || mvp.recipient)) && (
+                              <TeamLogo src={mvpLogo} fallbackSrc={img.team(mvp.team_code || mvp.recipient)} alt="" style={{ width: '22px', height: '22px', objectFit: 'contain' }} />
+                            )}
                             {mvp.flag_emoji && <span className="flag-sm">{mvp.flag_emoji}</span>}
                             <span style={{ color: 'var(--text)', fontWeight: 600 }}>{mvp.recipient}</span>
                             <span className="sub" style={{ fontSize: '11px', color: 'var(--muted2)', fontFamily: 'var(--font-mono)' }}>
