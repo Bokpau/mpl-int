@@ -268,10 +268,15 @@ function Cell({ col, row, rankIndex }) {
       let cls = col.cls || '';
       let glyph = null;
       if (col.wr) {
-        const good = num(raw) >= 50;
-        cls = good ? 'pos' : 'neg';
-        // Non-color signal so win/loss is legible without color (WCAG 1.4.1).
-        glyph = <span className="wr-glyph" aria-hidden="true">{good ? '▲' : '▼'}</span>;
+        if (raw == null) {
+          cls = col.cls || '';
+          glyph = null;
+        } else {
+          const good = num(raw) >= 50;
+          cls = good ? 'pos' : 'neg';
+          // Non-color signal so win/loss is legible without color (WCAG 1.4.1).
+          glyph = <span className="wr-glyph" aria-hidden="true">{good ? '▲' : '▼'}</span>;
+        }
       }
       return <td className={cls}>{glyph}{fmtNum(col, raw)}</td>;
     }
