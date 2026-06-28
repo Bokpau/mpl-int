@@ -464,3 +464,107 @@ table.h2h td .sub { font-size: 11px; }
   .search { margin-left: 8px; }
   .search-input { width: 150px; }
 }
+
+/* --- Last Used Info Button & Popover (mirrored from PH site) --- */
+.match-info-btn {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 700;
+  color: var(--muted);
+  text-decoration: none;
+  background: var(--surface2);
+  transition: all 0.15s ease;
+  user-select: none;
+  cursor: pointer;
+  padding: 0;
+}
+
+.match-info-btn:hover,
+.match-info-btn:focus,
+.match-info-btn.active {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: rgba(255, 215, 0, 0.08);
+  outline: none;
+}
+
+.match-popover {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%);
+  width: 320px;
+  background: #0b0b14 !important; /* Solid, completely opaque dark background */
+  border: 1px solid var(--accent); /* Premium gold border */
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.85), 0 0 0 1px rgba(255, 215, 0, 0.2);
+  z-index: 100;
+  border-radius: 4px;
+  display: flex;
+  flex-direction: column;
+  pointer-events: auto;
+}
+
+.match-popover-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  background: #141424;
+  border-bottom: 1px solid var(--border);
+  border-top-left-radius: 3px;
+  border-top-right-radius: 3px;
+}
+
+.match-popover-title {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.08em;
+  color: var(--accent);
+  font-weight: 700;
+}
+
+.match-popover-close {
+  background: none;
+  border: none;
+  color: var(--muted2);
+  font-size: 20px;
+  cursor: pointer;
+  line-height: 1;
+  padding: 0 4px;
+  transition: color 0.15s;
+}
+
+.match-popover-close:hover {
+  color: var(--text);
+}
+
+.match-popover-body {
+  padding: 12px;
+  overflow: visible;
+}
+
+/* Responsive adjustment for Mobile */
+@media (max-width: 680px) {
+  .match-info-btn {
+    width: 24px;
+    height: 24px;
+    font-size: 10px;
+  }
+  
+  .match-popover {
+    width: calc(100vw - 24px);
+    left: 50%;
+    transform: translateX(-50%);
+  }
+  
+  .match-popover-body {
+    padding: 8px;
+  }
+}

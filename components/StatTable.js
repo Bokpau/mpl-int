@@ -2,7 +2,8 @@
 
 import { useMemo, useState } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { intlQuery } from '../lib/filters';
 import { num, int, dec, pct } from '../lib/format';
 import { img } from '../lib/images';
 
@@ -29,6 +30,10 @@ function sortValue(col, row) {
     case 'hero':    return String(row[col.nameKey] ?? '').toLowerCase();
     case 'country': return String(row[col.nameKey] ?? row[col.codeKey] ?? '').toLowerCase();
     case 'text':    return String(row[col.key] ?? '').toLowerCase();
+    case 'last_used': {
+      const v = row[col.key];
+      return v ? new Date(v).getTime() : -Infinity;
+    }
     default: {
       const v = row[col.key];
       return v == null ? -Infinity : num(v);
@@ -43,10 +48,165 @@ function fmtNum(col, v) {
   return int(Math.round(num(v))); // 'int' (rounded)
 }
 
+function LastUsedCell({ col, row }) {
+  const [open, setOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [details, setDetails] = useState(null);
+  const searchParams = useSearchParams();
+
+  const dateStr = row.last_used
+    ? (typeof row.last_used === 'string'
+        ? row.last_used.slice(0, 10)
+        : String(row.last_used).slice(0, 10))
+    : '—';
+
+  async function handleToggle(e) {
+    e.stopPropagation();
+    if (open) {
+      setOpen(false);
+      return;
+    }
+
+    setOpen(true);
+    if (details) return; // already loaded
+
+    setLoading(true);
+    try {
+      const qs = intlQuery(Object.fromEntries(searchParams.entries()));
+      const url = `/api/intl/heroes/${encodeURIComponent(row.hero_name)}/last-used${qs}`;
+      const res = await fetch(url);
+      if (!res.ok) throw new Error();
+      const data = await res.json();
+      setDetails(data);
+    } catch (err) {
+      setDetails({ error: 'Could not load details' });
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return (
+    <td className="l" style={{ position: 'relative', overflow: 'visible' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+        <span style={{ color: 'var(--muted)' }}>{dateStr}</span>
+        {row.last_used && (
+          <button
+            type="button"
+            className={`match-info-btn${open ? ' active' : ''}`}
+            onClick={handleToggle}
+          >
+            i
+          </button>
+        )}
+        {open && (
+          <div
+            className="match-popover"
+            style={{
+              width: '320px',
+              textAlign: 'left',
+              zIndex: 100,
+              top: '100%',
+              left: '50%',
+              transform: 'translateX(-50%)',
+              marginTop: '8px',
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div
+              className="match-popover-header"
+              style={{
+                padding: '8px 12px',
+                background: '#141424',
+                borderBottom: '1px solid var(--border)',
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+              }}
+            >
+              <span
+                className="match-popover-title"
+                style={{
+                  color: 'var(--accent)',
+                  fontFamily: 'var(--font-mono)',
+                  fontSize: 10,
+                  fontWeight: 700,
+                }}
+              >
+                {(row.hero_name || '').toUpperCase()} LAST USED
+              </span>
+              <button
+                type="button"
+                onClick={() => setOpen(false)}
+                className="match-popover-close"
+              >
+                &times;
+              </button>
+            </div>
+            <div className="match-popover-body" style={{ padding: '12px' }}>
+              {loading && <p style={{ color: 'var(--muted2)', margin: 0 }}>Loading details…</p>}
+              {!loading && details && details.error && (
+                <p style={{ color: 'var(--loss)', margin: 0 }}>{details.error}</p>
+              )}
+              {!loading && details && !details.error && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  {[
+                    { label: 'Date', value: details.date || '—' },
+                    { label: 'Season', value: details.season || '—' },
+                    { label: 'Phase', value: details.phase || '—' },
+                    { label: 'Phase Name', value: details.phase_name || '—' },
+                    { label: 'Match', value: details.match || '—', color: details.win ? 'var(--win)' : 'var(--loss)' },
+                    { label: 'Player', value: details.player || '—', color: 'var(--accent)' },
+                    { label: 'Team', value: details.team || '—' },
+                  ].map((item, idx) => (
+                    <div
+                      key={idx}
+                      style={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        padding: '4px 0',
+                        borderBottom: idx === 6 ? 'none' : '1px solid var(--border)',
+                      }}
+                    >
+                      <span
+                        style={{
+                          color: 'var(--muted2)',
+                          fontSize: 10,
+                          fontFamily: 'var(--font-mono)',
+                          textTransform: 'uppercase',
+                        }}
+                      >
+                        {item.label}
+                      </span>
+                      <span
+                        style={{
+                          fontWeight: 700,
+                          fontSize: 11,
+                          color:
+                            item.color || 'var(--text)',
+                        }}
+                      >
+                        {item.value}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+      </div>
+    </td>
+  );
+}
+
 function Cell({ col, row, rankIndex }) {
   switch (col.type) {
     case 'rank':
       return <td className="l rank">{rankIndex}</td>;
+
+    case 'last_used':
+      return <LastUsedCell col={col} row={row} />;
 
     case 'player': {
       const name = row[col.nameKey] || row[col.fallbackKey];
