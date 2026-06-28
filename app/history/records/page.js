@@ -85,6 +85,7 @@ const TEAM_GROUPS = [
     title: 'Offense',
     cats: [
       { key: 'team_kills', label: 'Most Team Kills', fmt: r => int(r.value), color: 'var(--loss)' },
+      { key: 'team_kills_no_deaths', label: 'Most Kills (0 Deaths)', fmt: r => int(r.value), color: 'var(--loss)' },
       { key: 'team_damage', label: 'Most Team Damage', fmt: r => int(r.value), color: '#ff7f50' },
       { key: 'team_gold', label: 'Most Team Gold', fmt: r => int(r.value), color: '#e8b800' },
       { key: 'team_building_damage', label: 'Most Team Building Dmg', fmt: r => int(r.value), color: '#42a5f5' },
