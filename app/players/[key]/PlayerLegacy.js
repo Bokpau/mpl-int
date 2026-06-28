@@ -31,8 +31,13 @@ const SECTIONS = [
 ];
 
 const card = { background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 'var(--radius-md, 8px)', padding: 16, marginBottom: 16 };
-const th = { padding: '8px 10px', textAlign: 'left', fontSize: 10, fontWeight: 600, fontFamily: 'var(--font-mono)', color: 'var(--muted2)', textTransform: 'uppercase', letterSpacing: '.06em', borderBottom: '1px solid var(--border)', whiteSpace: 'nowrap' };
-const td = { padding: '8px 10px', borderBottom: '1px solid var(--border)', whiteSpace: 'nowrap' };
+// Numbers are right-aligned; identity/text columns left-aligned. Header and cell of
+// each column share the SAME alignment so they line up (matching globals.css's
+// default `text-align: right` for th/td, with `.l` flipping to left).
+const th = { padding: '8px 10px', textAlign: 'right', fontSize: 10, fontWeight: 600, fontFamily: 'var(--font-mono)', color: 'var(--muted2)', textTransform: 'uppercase', letterSpacing: '.06em', borderBottom: '1px solid var(--border)', whiteSpace: 'nowrap' };
+const thL = { ...th, textAlign: 'left' };
+const td = { padding: '8px 10px', borderBottom: '1px solid var(--border)', whiteSpace: 'nowrap', textAlign: 'right' };
+const tdL = { ...td, textAlign: 'left' };
 const tabBtn = (active) => ({ padding: '7px 16px', border: `1px solid ${active ? 'var(--accent)' : 'var(--border)'}`, borderRadius: 6, cursor: 'pointer', fontSize: 13, fontWeight: active ? 700 : 500, background: active ? 'rgba(255,215,0,0.07)' : 'transparent', color: active ? 'var(--accent)' : 'var(--muted2)' });
 
 function SectionTitle({ children }) {
@@ -159,8 +164,8 @@ function TeamSection({ rows }) {
         <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
           <thead>
             <tr>
-              <th style={th}>Team</th>
-              <th style={th}>Seasons</th>
+              <th style={thL}>Team</th>
+              <th style={thL}>Seasons</th>
               <th style={th}>Games</th>
               <th style={th}>Wins</th>
               <th style={th}>Win%</th>
@@ -178,13 +183,13 @@ function TeamSection({ rows }) {
               const logo = r.team_logo_dark || img.team(r.team_code);
               return (
                 <tr key={i}>
-                  <td style={td}>
+                  <td style={tdL}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                       {logo ? <img src={logo} alt="" style={{ width: 20, height: 20, objectFit: 'contain' }} /> : null}
                       <span>{r.current_team || r.team_code}</span>
                     </div>
                   </td>
-                  <td style={td}>{r.first_season === r.last_season ? shortSeason(r.first_season) : `${shortSeason(r.first_season)}–${shortSeason(r.last_season)}`}</td>
+                  <td style={tdL}>{r.first_season === r.last_season ? shortSeason(r.first_season) : `${shortSeason(r.first_season)}–${shortSeason(r.last_season)}`}</td>
                   <td style={td}>{big(r.games)}</td>
                   <td style={{ ...td, color: 'var(--win)' }}>{big(r.wins)}</td>
                   <td style={{ ...td, color: 'var(--win)', fontWeight: 600 }}>{winPct(r.wins, r.games)}</td>
@@ -231,11 +236,11 @@ function SeasonsSection({ data }) {
         <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
           <thead>
             <tr>
-              <th style={th}>Season</th>
-              <th style={th}>Team</th>
+              <th style={thL}>Season</th>
+              <th style={thL}>Team</th>
               {SEASON_COLS.map((c) => <th key={c.key} style={th}>{c.label}</th>)}
               <th style={th}>Win%</th>
-              <th style={th}>Top Heroes</th>
+              <th style={thL}>Top Heroes</th>
             </tr>
           </thead>
           <tbody>
@@ -243,8 +248,8 @@ function SeasonsSection({ data }) {
               const logo = r.team_logo_dark || img.team(r.team_code_era || r.team_code);
               return (
                 <tr key={i}>
-                  <td style={{ ...td, color: 'var(--muted)' }}>{shortSeason(r.season)}</td>
-                  <td style={td}>
+                  <td style={{ ...tdL, color: 'var(--muted)' }}>{shortSeason(r.season)}</td>
+                  <td style={tdL}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
                       {logo ? <img src={logo} alt="" style={{ width: 16, height: 16, objectFit: 'contain' }} /> : null}
                       <span style={{ fontSize: 11 }}>{r.team_code_era || r.team_code}</span>
@@ -254,7 +259,7 @@ function SeasonsSection({ data }) {
                     <td key={c.key} style={td}>{c.dec ? d2(r[c.key]) : big(r[c.key])}</td>
                   ))}
                   <td style={{ ...td, color: 'var(--win)', fontWeight: 600 }}>{winPct(r.wins, r.games)}</td>
-                  <td style={{ ...td, maxWidth: 160 }}>
+                  <td style={{ ...tdL, maxWidth: 160 }}>
                     <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
                       {(sh[r.season] || []).slice(0, 3).map((h, hi) => (
                         <span key={hi} style={{ fontSize: 10, color: 'var(--muted2)' }}>{h.hero_name} ×{h.games}</span>
@@ -303,7 +308,7 @@ function HeroesSection({ rows }) {
         <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
           <thead>
             <tr>
-              <th style={th}>Hero</th>
+              <th style={thL}>Hero</th>
               <SortTh col="games" label="Games" />
               <SortTh col="wins" label="W" />
               <th style={th}>Win%</th>
@@ -322,7 +327,7 @@ function HeroesSection({ rows }) {
               const portrait = img.hero(r.hero_id);
               return (
                 <tr key={i}>
-                  <td style={td}>
+                  <td style={tdL}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                       {portrait ? <img src={portrait} alt="" style={{ width: 24, height: 24, borderRadius: '50%' }} /> : null}
                       <span>{r.hero_name}</span>
@@ -360,7 +365,7 @@ function VsTeamsSection({ rows }) {
         <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
           <thead>
             <tr>
-              <th style={th}>Opponent</th>
+              <th style={thL}>Opponent</th>
               <SortTh col="matches" label="Matches" />
               <th style={th}>M W</th>
               <th style={th}>M L</th>
@@ -378,7 +383,7 @@ function VsTeamsSection({ rows }) {
               const gL = num(r.games) - num(r.game_wins);
               return (
                 <tr key={i}>
-                  <td style={td}>
+                  <td style={tdL}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                       {logo ? <img src={logo} alt="" style={{ width: 20, height: 20, objectFit: 'contain' }} /> : null}
                       <span>{r.opponent_name || r.opponent || '--'}</span>
@@ -416,7 +421,7 @@ function VsNationsSection({ rows }) {
         <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
           <thead>
             <tr>
-              <th style={th}>Nation</th>
+              <th style={thL}>Nation</th>
               <SortTh col="matches" label="Matches" />
               <th style={th}>M W</th>
               <th style={th}>Match WR%</th>
@@ -428,7 +433,7 @@ function VsNationsSection({ rows }) {
           <tbody>
             {sorted.map((r, i) => (
               <tr key={i}>
-                <td style={td}>
+                <td style={tdL}>
                   <span className="idcell">
                     <span className="flag">{r.country_flag || '🏳️'}</span>
                     <span>{r.country || r.country_code}</span>
@@ -542,7 +547,7 @@ function CompareSection({ playerKey, query, players }) {
                 <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
                   <thead>
                     <tr>
-                      <th style={{ ...th, color: 'var(--win)' }}>{p1.player}</th>
+                      <th style={{ ...thL, color: 'var(--win)' }}>{p1.player}</th>
                       <th style={{ ...th, textAlign: 'center' }}>Stat</th>
                       <th style={{ ...th, textAlign: 'right', color: 'var(--accent)' }}>{p2.player}</th>
                     </tr>
@@ -556,7 +561,7 @@ function CompareSection({ playerKey, query, players }) {
                       const isInt = Number.isInteger(v1) && Number.isInteger(v2);
                       return (
                         <tr key={key}>
-                          <td style={{ ...td, fontWeight: p1Better ? 700 : 400, color: p1Better ? 'var(--win)' : 'var(--text)' }}>
+                          <td style={{ ...tdL, fontWeight: p1Better ? 700 : 400, color: p1Better ? 'var(--win)' : 'var(--text)' }}>
                             {isInt ? big(v1) : d2(v1)}
                           </td>
                           <td style={{ ...td, textAlign: 'center', color: 'var(--muted2)' }}>{label}</td>
@@ -627,21 +632,21 @@ function CompareSection({ playerKey, query, players }) {
                   <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12 }}>
                     <thead>
                       <tr>
-                        <th style={th}>Date</th>
-                        <th style={th}>Season</th>
-                        <th style={th}>{p1.player} Hero</th>
-                        <th style={th}>{p2.player} Hero</th>
-                        <th style={th}>Result</th>
+                        <th style={thL}>Date</th>
+                        <th style={thL}>Season</th>
+                        <th style={thL}>{p1.player} Hero</th>
+                        <th style={thL}>{p2.player} Hero</th>
+                        <th style={thL}>Result</th>
                       </tr>
                     </thead>
                     <tbody>
                       {h2h.games.slice(0, 30).map((g, i) => (
                         <tr key={i}>
-                          <td style={{ ...td, color: 'var(--muted2)' }}>{g.played_at ? String(g.played_at).slice(0, 10) : '--'}</td>
-                          <td style={{ ...td, color: 'var(--muted)' }}>{shortSeason(g.season)}</td>
-                          <td style={td}>{g.p1_hero}</td>
-                          <td style={td}>{g.p2_hero}</td>
-                          <td style={{ ...td, fontWeight: 700, color: g.p1_win ? 'var(--win)' : '#ff4757' }}>{g.p1_win ? 'W' : 'L'}</td>
+                          <td style={{ ...tdL, color: 'var(--muted2)' }}>{g.played_at ? String(g.played_at).slice(0, 10) : '--'}</td>
+                          <td style={{ ...tdL, color: 'var(--muted)' }}>{shortSeason(g.season)}</td>
+                          <td style={tdL}>{g.p1_hero}</td>
+                          <td style={tdL}>{g.p2_hero}</td>
+                          <td style={{ ...tdL, fontWeight: 700, color: g.p1_win ? 'var(--win)' : '#ff4757' }}>{g.p1_win ? 'W' : 'L'}</td>
                         </tr>
                       ))}
                     </tbody>

@@ -125,7 +125,10 @@ const th = {
 const td = {
   padding: '12px 14px',
   borderBottom: '1px solid var(--border)',
-  whiteSpace: 'nowrap'
+  whiteSpace: 'nowrap',
+  // Match the left-aligned headers above. Without this, cells fall through to the
+  // global `tbody td { text-align: right }` in globals.css and drift out of line.
+  textAlign: 'left'
 };
 
 export default async function HistoryRecordsPage({ searchParams }) {
