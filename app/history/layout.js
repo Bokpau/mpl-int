@@ -1,5 +1,4 @@
 import { Suspense } from 'react';
-import HistorySubNav from './HistorySubNav';
 import FilterBar from '../../components/FilterBar';
 import { api } from '../../lib/api';
 
@@ -29,7 +28,6 @@ export default async function HistoryLayout({ children }) {
       <Suspense fallback={<div className="filterbar" />}>
         <FilterBar editions={editions} featured={null} />
       </Suspense>
-      <HistorySubNav />
       {children}
     </div>
   );
