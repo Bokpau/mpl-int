@@ -43,9 +43,52 @@ function sortValue(col, row) {
 
 function fmtNum(col, v) {
   if (v == null && col.nullDash) return '—';
-  if (col.format === 'pct') return pct(v);
-  if (col.format === 'dec') return dec(v, col.decimals ?? 2);
-  return int(Math.round(num(v))); // 'int' (rounded)
+
+  let val = num(v);
+
+  // 1. CC Time rule: CC time in the API is in milliseconds, always convert to seconds
+  const isCCTime = col.key === 'cc_time' || col.key === 'avg_cc_time' || col.type === 'cc' || col.format === 'cc';
+  if (isCCTime) {
+    val = val / 1000;
+  }
+
+  // 2. Game Time rule: convert seconds to mm:ss format
+  if (col.format === 'time' || col.type === 'time') {
+    const s = Math.round(val);
+    const m = Math.floor(s / 60);
+    const sec = s % 60;
+    return `${String(m).padStart(2, '0')}:${String(sec).padStart(2, '0')}`;
+  }
+
+  // Helper to format with decimals rule:
+  // - If >999, no decimal on it.
+  // - If 2 decimal place rule is a whole number, 1 decimal place.
+  // - Otherwise, 2 decimal places (or col.decimals).
+  function formatValueWithDecimals(numberVal, decimals = 2) {
+    if (Math.abs(numberVal) > 999) {
+      return int(Math.round(numberVal));
+    }
+    const f = numberVal.toFixed(decimals);
+    if (decimals === 2) {
+      return f.endsWith('.00') ? numberVal.toFixed(1) : f;
+    }
+    return f;
+  }
+
+  if (isCCTime) {
+    return `${formatValueWithDecimals(val, 2)}s`;
+  }
+
+  if (col.format === 'pct') {
+    return `${formatValueWithDecimals(val, 2)}%`;
+  }
+
+  if (col.format === 'dec') {
+    return formatValueWithDecimals(val, col.decimals ?? 2);
+  }
+
+  // Default: format as integer
+  return int(Math.round(val));
 }
 
 function LastUsedCell({ col, row }) {
