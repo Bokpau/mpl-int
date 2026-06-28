@@ -87,47 +87,47 @@ function CareerSection({ career }) {
         <Row label="Game Win Rate" value={winPct(t.game_wins, t.games_played)} color="var(--win)" />
         <Row label="Matches Played" value={big(t.matches_played)} />
         <Row label="Match Win Rate" value={winPct(t.match_wins, t.matches_played)} color="var(--win)" />
-        <Row label="Kills" value={big(t.total_kills)} color="#ff4757" />
+        <Row label="Kills" value={big(t.total_kills)} />
         <Row label="Deaths" value={big(t.total_deaths)} />
-        <Row label="Assists" value={big(t.total_assists)} color="#4da6ff" />
-        <Row label="Gold" value={big(t.total_gold)} color="#e8b800" />
-        <Row label="Damage Dealt" value={big(t.total_damage)} color="#ff7f50" />
+        <Row label="Assists" value={big(t.total_assists)} />
+        <Row label="Gold" value={big(t.total_gold)} />
+        <Row label="Damage Dealt" value={big(t.total_damage)} />
         <Row label="Damage Taken" value={big(t.total_damage_taken)} />
-        <Row label="MVPs" value={big(t.total_mvps)} color="var(--accent)" />
-        <Row label="Savages" value={big(t.total_savages)} color="#9b59b6" />
-        <Row label="Legendaries" value={big(t.total_legendaries)} color="#e67e22" />
+        <Row label="MVPs" value={big(t.total_mvps)} />
+        <Row label="Savages" value={big(t.total_savages)} />
+        <Row label="Legendaries" value={big(t.total_legendaries)} />
         <Row label="First Bloods" value={big(t.total_first_bloods)} />
-        <Row label="Lords" value={big(t.total_lords)} color="#9b59b6" />
-        <Row label="Turtles" value={big(t.total_turtles)} color="#26c281" />
-        <Row label="Turrets" value={big(t.total_turrets)} color="#42a5f5" />
-        <Row label="Unique Heroes" value={big(t.unique_heroes)} color="#a29bfe" />
+        <Row label="Lords" value={big(t.total_lords)} />
+        <Row label="Turtles" value={big(t.total_turtles)} />
+        <Row label="Turrets" value={big(t.total_turrets)} />
+        <Row label="Unique Heroes" value={big(t.unique_heroes)} />
         <Row label="Total Game Time" value={duration(t.total_game_time_s)} />
       </div>
 
       <div style={card}>
         <SectionTitle>Per-Game Averages</SectionTitle>
-        <Row label="Kills" value={d2(t.avg_kills)} color="#ff4757" />
+        <Row label="Kills" value={d2(t.avg_kills)} />
         <Row label="Deaths" value={d2(t.avg_deaths)} />
-        <Row label="Assists" value={d2(t.avg_assists)} color="#4da6ff" />
-        <Row label="KDA" value={d2(t.avg_kda)} color="var(--accent)" />
-        <Row label="KP%" value={t.avg_kp != null ? `${t.avg_kp}%` : '--'} color="var(--accent)" />
-        <Row label="Gold" value={big(t.avg_gold)} color="#e8b800" />
-        <Row label="GPM" value={d2(t.gpm, 1)} color="#e8b800" />
-        <Row label="Damage" value={big(t.avg_damage)} color="#ff7f50" />
-        <Row label="DPM" value={d2(t.dpm, 1)} color="#ff7f50" />
+        <Row label="Assists" value={d2(t.avg_assists)} />
+        <Row label="KDA" value={d2(t.avg_kda)} />
+        <Row label="KP%" value={t.avg_kp != null ? `${t.avg_kp}%` : '--'} />
+        <Row label="Gold" value={big(t.avg_gold)} />
+        <Row label="GPM" value={d2(t.gpm, 1)} />
+        <Row label="Damage" value={big(t.avg_damage)} />
+        <Row label="DPM" value={d2(t.dpm, 1)} />
         <Row label="Dmg Taken" value={big(t.avg_damage_taken)} />
         <Row label="DTPM" value={d2(t.dtpm, 1)} />
-        <Row label="Turret Dmg" value={big(t.avg_building_damage)} color="#42a5f5" />
+        <Row label="Turret Dmg" value={big(t.avg_building_damage)} />
       </div>
 
       <div style={card}>
         <SectionTitle>Best Single Game</SectionTitle>
         {[
-          { key: 'kills', label: 'Most Kills', fmt: (r) => r.kills, color: '#ff4757' },
-          { key: 'gold', label: 'Most Gold', fmt: (r) => big(r.gold), color: '#e8b800' },
-          { key: 'total_damage', label: 'Most Damage', fmt: (r) => big(r.total_damage), color: '#ff7f50' },
-          { key: 'kda', label: 'Highest KDA', fmt: (r) => d2(r.kda), color: 'var(--accent)' },
-        ].map(({ key, label, fmt, color }) => {
+          { key: 'kills', label: 'Most Kills', fmt: (r) => r.kills },
+          { key: 'gold', label: 'Most Gold', fmt: (r) => big(r.gold) },
+          { key: 'total_damage', label: 'Most Damage', fmt: (r) => big(r.total_damage) },
+          { key: 'kda', label: 'Highest KDA', fmt: (r) => d2(r.kda) },
+        ].map(({ key, label, fmt }) => {
           const r = bg[key];
           if (!r) return null;
           const portrait = img.hero(r.hero_id);
@@ -137,7 +137,7 @@ function CareerSection({ career }) {
               <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                 {portrait ? <img src={portrait} alt="" style={{ width: 28, height: 28, borderRadius: '50%' }} /> : null}
                 <div>
-                  <div style={{ fontWeight: 700, color, fontSize: 16 }}>{fmt(r)}</div>
+                  <div style={{ fontWeight: 700, color: 'var(--text)', fontSize: 16 }}>{fmt(r)}</div>
                   <div style={{ fontSize: 11, color: 'var(--muted2)' }}>
                     {r.hero_name} · {r.opponent ? `vs ${r.opponent}` : ''} · {shortSeason(r.season)}
                   </div>
@@ -191,15 +191,15 @@ function TeamSection({ rows }) {
                   </td>
                   <td style={tdL}>{r.first_season === r.last_season ? shortSeason(r.first_season) : `${shortSeason(r.first_season)}–${shortSeason(r.last_season)}`}</td>
                   <td style={td}>{big(r.games)}</td>
-                  <td style={{ ...td, color: 'var(--win)' }}>{big(r.wins)}</td>
+                  <td style={td}>{big(r.wins)}</td>
                   <td style={{ ...td, color: 'var(--win)', fontWeight: 600 }}>{winPct(r.wins, r.games)}</td>
                   <td style={td}>{big(r.matches)}</td>
-                  <td style={{ ...td, color: '#ff4757' }}>{d2(r.avg_kills)}</td>
+                  <td style={td}>{d2(r.avg_kills)}</td>
                   <td style={td}>{d2(r.avg_deaths)}</td>
-                  <td style={{ ...td, color: '#4da6ff' }}>{d2(r.avg_assists)}</td>
-                  <td style={{ ...td, color: 'var(--accent)' }}>{d2(r.avg_kda)}</td>
-                  <td style={{ ...td, color: '#e8b800' }}>{big(r.avg_gold)}</td>
-                  <td style={{ ...td, color: '#ff7f50' }}>{big(r.avg_damage)}</td>
+                  <td style={td}>{d2(r.avg_assists)}</td>
+                  <td style={td}>{d2(r.avg_kda)}</td>
+                  <td style={td}>{big(r.avg_gold)}</td>
+                  <td style={td}>{big(r.avg_damage)}</td>
                 </tr>
               );
             })}
@@ -334,16 +334,16 @@ function HeroesSection({ rows }) {
                     </div>
                   </td>
                   <td style={td}>{big(r.games)}</td>
-                  <td style={{ ...td, color: 'var(--win)' }}>{big(r.wins)}</td>
+                  <td style={td}>{big(r.wins)}</td>
                   <td style={{ ...td, color: 'var(--win)', fontWeight: 600 }}>{winPct(r.wins, r.games)}</td>
-                  <td style={{ ...td, color: '#ff4757' }}>{d2(r.avg_kills)}</td>
+                  <td style={td}>{d2(r.avg_kills)}</td>
                   <td style={td}>{d2(r.avg_deaths)}</td>
-                  <td style={{ ...td, color: '#4da6ff' }}>{d2(r.avg_assists)}</td>
-                  <td style={{ ...td, color: 'var(--accent)' }}>{d2(r.avg_kda)}</td>
-                  <td style={{ ...td, color: '#e8b800' }}>{big(r.avg_gold)}</td>
-                  <td style={{ ...td, color: '#ff7f50' }}>{big(r.avg_damage)}</td>
-                  <td style={{ ...td, color: 'var(--accent)' }}>{big(r.total_mvps)}</td>
-                  <td style={{ ...td, color: '#9b59b6' }}>{big(r.total_savages)}</td>
+                  <td style={td}>{d2(r.avg_assists)}</td>
+                  <td style={td}>{d2(r.avg_kda)}</td>
+                  <td style={td}>{big(r.avg_gold)}</td>
+                  <td style={td}>{big(r.avg_damage)}</td>
+                  <td style={td}>{big(r.total_mvps)}</td>
+                  <td style={td}>{big(r.total_savages)}</td>
                 </tr>
               );
             })}
@@ -390,12 +390,12 @@ function VsTeamsSection({ rows }) {
                     </div>
                   </td>
                   <td style={td}>{big(r.matches)}</td>
-                  <td style={{ ...td, color: 'var(--win)' }}>{big(r.match_wins)}</td>
-                  <td style={{ ...td, color: '#ff4757' }}>{big(mL)}</td>
+                  <td style={td}>{big(r.match_wins)}</td>
+                  <td style={td}>{big(mL)}</td>
                   <td style={{ ...td, color: 'var(--win)', fontWeight: 600 }}>{winPct(r.match_wins, r.matches)}</td>
                   <td style={td}>{big(r.games)}</td>
-                  <td style={{ ...td, color: 'var(--win)' }}>{big(r.game_wins)}</td>
-                  <td style={{ ...td, color: '#ff4757' }}>{big(gL)}</td>
+                  <td style={td}>{big(r.game_wins)}</td>
+                  <td style={td}>{big(gL)}</td>
                   <td style={{ ...td, color: 'var(--win)', fontWeight: 600 }}>{winPct(r.game_wins, r.games)}</td>
                 </tr>
               );
@@ -440,10 +440,10 @@ function VsNationsSection({ rows }) {
                   </span>
                 </td>
                 <td style={td}>{big(r.matches)}</td>
-                <td style={{ ...td, color: 'var(--win)' }}>{big(r.match_wins)}</td>
+                <td style={td}>{big(r.match_wins)}</td>
                 <td style={{ ...td, color: 'var(--win)', fontWeight: 600 }}>{winPct(r.match_wins, r.matches)}</td>
                 <td style={td}>{big(r.games)}</td>
-                <td style={{ ...td, color: 'var(--win)' }}>{big(r.wins)}</td>
+                <td style={td}>{big(r.wins)}</td>
                 <td style={{ ...td, color: 'var(--win)', fontWeight: 600 }}>{winPct(r.wins, r.games)}</td>
               </tr>
             ))}
@@ -525,7 +525,7 @@ function CompareSection({ playerKey, query, players }) {
                 <div style={{ fontSize: 20, fontWeight: 700 }}>
                   <span style={{ color: 'var(--win)' }}>{h2h.p1_wins}</span>
                   <span style={{ color: 'var(--muted2)', margin: '0 8px' }}>–</span>
-                  <span style={{ color: '#ff4757' }}>{h2h.p2_wins}</span>
+                  <span style={{ color: 'var(--loss)' }}>{h2h.p2_wins}</span>
                 </div>
                 <div style={{ color: 'var(--muted2)', fontSize: 11, marginTop: 2 }}>{h2h.games.length} games</div>
                 <div style={{ color: 'var(--muted)', fontSize: 11 }}>{p1.player} vs {p2.player}</div>
@@ -535,7 +535,7 @@ function CompareSection({ playerKey, query, players }) {
                 <div style={{ fontSize: 20, fontWeight: 700 }}>
                   <span style={{ color: 'var(--win)' }}>{as_teammates.wins}</span>
                   <span style={{ color: 'var(--muted2)', margin: '0 8px' }}>–</span>
-                  <span style={{ color: '#ff4757' }}>{as_teammates.total - as_teammates.wins}</span>
+                  <span style={{ color: 'var(--loss)' }}>{as_teammates.total - as_teammates.wins}</span>
                 </div>
                 <div style={{ color: 'var(--muted2)', fontSize: 11, marginTop: 2 }}>{as_teammates.total} games together</div>
               </div>
@@ -646,7 +646,7 @@ function CompareSection({ playerKey, query, players }) {
                           <td style={{ ...tdL, color: 'var(--muted)' }}>{shortSeason(g.season)}</td>
                           <td style={tdL}>{g.p1_hero}</td>
                           <td style={tdL}>{g.p2_hero}</td>
-                          <td style={{ ...tdL, fontWeight: 700, color: g.p1_win ? 'var(--win)' : '#ff4757' }}>{g.p1_win ? 'W' : 'L'}</td>
+                          <td style={{ ...tdL, fontWeight: 700, color: g.p1_win ? 'var(--win)' : 'var(--loss)' }}>{g.p1_win ? 'W' : 'L'}</td>
                         </tr>
                       ))}
                     </tbody>
