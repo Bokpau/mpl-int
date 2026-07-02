@@ -31,7 +31,14 @@ export default async function HeroesPage({ searchParams }) {
       ) : !rows || rows.length === 0 ? (
         <div className="empty">No hero data for this selection.</div>
       ) : (
-        <StatTable columns={COLUMNS} groups={STAT_GROUPS} rows={rows} rowKey="hero_id" defaultLimit={20} />
+        <StatTable
+          columns={COLUMNS}
+          groups={STAT_GROUPS}
+          rows={rows}
+          rowKey="hero_id"
+          defaultLimit={20}
+          rowHref={{ base: '/heroes/', key: 'hero_id' }}
+        />
       )}
 
       {rows && rows.length > 0 ? <StatLegend keys={['Win%', 'KDA', 'Picks']} /> : null}
