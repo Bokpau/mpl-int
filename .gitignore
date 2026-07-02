@@ -22,3 +22,8 @@ out/
 # Logs
 *.log
 npm-debug.log*
+
+# Local scrape/ETL working data (seeds mpl-ph-s17-backend, not read by this app)
+aerena_mlbb.leagues.csv
+international_standings.json
+lib/data/
