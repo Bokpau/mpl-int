@@ -785,3 +785,177 @@ table.h2h td .sub { font-size: 11px; }
     display: none;
   }
 }
+
+/* ───────────────────────────────────────────────────────────────────
+   Matches page — Grid view. Ported from the PH site's globals.css
+   (regular-season results grid). match-info-btn / match-popover already
+   existed in this file, so only the grid/week/day/row classes are added.
+   ─────────────────────────────────────────────────────────────────── */
+.section-header {
+  font-family: var(--font-display);
+  font-size: 20px;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.section-header::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+
+.collapsible { margin-bottom: 32px; }
+.collapsible > summary { list-style: none; cursor: pointer; }
+.collapsible > summary::-webkit-details-marker { display: none; }
+.collapsible-body { margin-top: 16px; }
+
+.results-grid-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+  align-items: start;
+  width: 100%;
+}
+
+.results-week.collapsible {
+  border: 1px solid var(--border);
+  background: var(--surface);
+  margin-bottom: 0;
+  border-radius: 4px;
+}
+.results-week.full-width { grid-column: 1 / -1; }
+.results-week-summary { list-style: none; cursor: pointer; outline: none; }
+.results-week-summary::-webkit-details-marker { display: none; }
+.results-week-head {
+  display: flex;
+  align-items: center;
+  padding: 10px 14px;
+  background: var(--surface2);
+  border-top: 2px solid var(--accent);
+  user-select: none;
+  border-top-left-radius: 3px;
+  border-top-right-radius: 3px;
+}
+.results-week-head .disclosure {
+  font-size: 9px;
+  color: var(--muted2);
+  margin-right: 8px;
+  transition: transform 0.2s ease;
+  display: inline-block;
+}
+.results-week[open] .results-week-head .disclosure { transform: rotate(90deg); }
+.results-week-title {
+  font-family: var(--font-display);
+  font-size: 14px;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: var(--text);
+}
+.results-week-toggle-label {
+  margin-left: auto;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  color: var(--muted2);
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  opacity: 0.7;
+}
+.results-week-body {
+  border-top: 1px solid var(--border);
+  padding: 0;
+  margin-top: 0;
+}
+
+.results-day-block { display: flex; flex-direction: column; }
+.results-day-header {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  color: var(--muted);
+  background: rgba(255, 255, 255, 0.02);
+  padding: 5px 12px;
+  letter-spacing: 0.06em;
+  border-bottom: 1px solid var(--border);
+  text-align: center;
+}
+.results-day-matches { display: flex; flex-direction: column; }
+
+.match-row {
+  display: flex;
+  align-items: center;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--border);
+  transition: background-color 0.15s ease;
+  position: relative;
+  min-height: 44px;
+}
+.match-row:last-child { border-bottom: none; }
+.match-row:hover { background-color: var(--surface2); }
+
+.match-row-team {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px;
+  border-radius: 2px;
+  transition: background-color 0.15s;
+}
+.match-row-team.team-home { justify-content: flex-end; }
+.match-row-team.team-away { justify-content: flex-start; }
+.match-row-team.winner { background: rgba(43, 212, 155, 0.15) !important; }
+.match-row-team .team-code {
+  font-family: var(--font-display);
+  font-size: 12px;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+.match-row-team.winner .team-code { color: var(--win); font-weight: 700; }
+.match-row-team.loser .team-code { color: var(--muted2); }
+.match-row-team.hover-highlight {
+  box-shadow: 0 0 0 1.5px var(--accent), 0 0 8px rgba(255, 215, 0, 0.5);
+  border-color: var(--accent) !important;
+  background: rgba(255, 215, 0, 0.12) !important;
+  transition: all 0.15s ease;
+}
+
+.match-row-center {
+  flex-shrink: 0;
+  width: 100px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+}
+.match-row-score-box {
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid var(--border);
+  background: var(--surface2);
+  border-radius: 3px;
+  padding: 2px 6px;
+  gap: 8px;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+.match-row-score-box .score-num {
+  font-family: var(--font-display);
+  font-size: 20px;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+.match-row-score-box .score-num.winner { color: var(--accent); font-weight: 800; }
+.match-row-score-box .score-num.loser { color: var(--muted2); }
+
+.match-bo {
+  font-family: var(--font-mono);
+  font-size: 8px;
+  color: var(--muted2);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  opacity: 0.8;
+}

@@ -3,23 +3,14 @@ import Link from 'next/link';
 import { api } from '../../lib/api';
 import { img } from '../../lib/images';
 import { num, int, dec } from '../../lib/format';
+import { WILD_CARD_GROUPS, DECIDER, GAUNTLET_SERIES, buildSeries } from '../../lib/msc2026Bracket';
 import ErrorBox from '../ErrorBox';
 import PageHead from '../PageHead';
 import TeamLogo from '../TeamLogo';
 import FilterBar from '../FilterBar';
 
-// MSC 2026 Wild Card's two round-robin groups (confirmed on Liquipedia,
-// liquipedia.net/mobilelegends/MSC/2026/Wildcard) -- there's no `group` column
-// anywhere in the schema for this, so it's hardcoded here rather than invented
-// as a new data pipeline for a one-off grouping. A 10th team, "Verso Time"
-// (Group B, DQ'd 0-4), isn't in BOK's roster data yet so it's omitted below.
-// NOTE: matched against the team's MSC 2026 ERA code (team_era_name.era_code) --
-// what each team was called AT this edition, not its persistent franchise
-// display_code. Only Team Falcons differs: era "FLCM" (shown), franchise "FLCN".
-const WILD_CARD_GROUPS = {
-  A: ['FUT', 'A7', 'MGLZ', 'KOG', 'VSG'],
-  B: ['HUNS', 'FLCM', 'SNR', 'NM'],
-};
+// WILD_CARD_GROUPS, DECIDER, GAUNTLET_SERIES and buildSeries now live in
+// lib/msc2026Bracket.js (shared with the Matches page Grid view) — imported above.
 
 // Stopgap for 2 MSC 2026 players whose player_era_photo row hasn't been seeded
 // yet (KEI, MUIMINET). Their photo files DO exist on the CDN, so fall back to
@@ -31,21 +22,6 @@ const PHOTO_FALLBACK = {
   MUIMINET: 'https://raw.githubusercontent.com/Bokpau/mlbb-tool/main/int_player/mlbb_sun_muiminet_cut_f.png',
 };
 
-// Decider bracket SEEDING (Liquipedia MSC 2026 Wild Card): Semifinal Match 1 on
-// top, Match 2 below, Match 3 is the Grand Final. Real scores are overlaid from
-// the DB when those series exist (they're qualifier-stage Bo3s played after the
-// Gauntlet); until a series is played it shows as a placeholder. The pairings
-// are the two group winners vs the two Gauntlet qualifiers.
-const DECIDER = {
-  semifinals: [
-    { label: 'Match 1', a: 'HUNS', b: 'A7' },
-    { label: 'Match 2', a: 'FUT', b: 'FLCM' },
-  ],
-  final: { label: 'Match 3 · Grand Final' },
-};
-// How many Bo3 series make up the Cross-Group Gauntlet (2 rounds × 2). Bo3 series
-// beyond this many are the Decider (semifinals + grand final).
-const GAUNTLET_SERIES = 4;
 
 const ROLE_ORDER = ['EXP LANE', 'JUNGLE', 'MID LANE', 'ROAM', 'GOLD LANE'];
 
@@ -72,35 +48,6 @@ function ratePct(count, total, d = 1) {
 
 // Collapse per-game `matches` rows into one series per match_code, tallying game
 // wins per side (winner_key vs the fixed team keys) so we get the Bo-N score.
-function buildSeries(matches) {
-  const byMatch = new Map();
-  for (const m of matches) {
-    if (!m.match_code) continue;
-    let s = byMatch.get(m.match_code);
-    if (!s) {
-      s = {
-        match_code: m.match_code, stage: m.stage, match_name: m.match_name,
-        // era code (what the team was called at this edition), not franchise code
-        team_a: m.team_a_era || m.team_a, team_b: m.team_b_era || m.team_b,
-        team_a_key: m.team_a_key, team_b_key: m.team_b_key,
-        team_a_flag: m.team_a_flag, team_b_flag: m.team_b_flag,
-        a_wins: 0, b_wins: 0, games: 0, played_at: m.played_at,
-      };
-      byMatch.set(m.match_code, s);
-    }
-    s.games++;
-    if (m.winner_key && m.winner_key === s.team_a_key) s.a_wins++;
-    else if (m.winner_key && m.winner_key === s.team_b_key) s.b_wins++;
-    if (String(m.played_at || '') > String(s.played_at || '')) s.played_at = m.played_at;
-  }
-  const out = [...byMatch.values()];
-  for (const s of out) {
-    s.winner_key = s.a_wins > s.b_wins ? s.team_a_key : s.b_wins > s.a_wins ? s.team_b_key : null;
-    s.winner_code = s.winner_key === s.team_a_key ? s.team_a : s.winner_key === s.team_b_key ? s.team_b : null;
-  }
-  return out;
-}
-
 function SectionHeader({ children }) {
   return <div className="section-title">{children}</div>;
 }

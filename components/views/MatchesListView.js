@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import MatchCard from '../MatchCard';
+import MatchResultsGrid from '../MatchResultsGrid';
 import PageHead from '../PageHead';
 
 // Client Matches view — the intl port of the PH /matches list. Fetches the current
@@ -54,6 +55,13 @@ export default function MatchesListView({ q = '', label = '' }) {
   const [loading, setLoading] = useState(true);
   const [stage, setStage] = useState('all');
   const [week, setWeek] = useState(null);
+  const [view, setView] = useState('list');
+
+  useEffect(() => {
+    const saved = localStorage.getItem('intl-matches-view');
+    if (saved === 'grid' || saved === 'list') setView(saved);
+  }, []);
+  const handleSetView = (v) => { setView(v); localStorage.setItem('intl-matches-view', v); };
 
   useEffect(() => {
     let alive = true;
@@ -78,6 +86,23 @@ export default function MatchesListView({ q = '', label = '' }) {
     for (const t of teams) if (t.team_key) m[t.team_key] = t;
     return m;
   }, [teams]);
+
+  // Era-code -> { logo, flag } lookup for the Decider bracket (keyed by era code).
+  const metaByEra = useMemo(() => {
+    const m = {};
+    for (const g of games) {
+      for (const [era, key, flag] of [
+        [g.team_a_era, g.team_a_key, g.team_a_flag],
+        [g.team_b_era, g.team_b_key, g.team_b_flag],
+      ]) {
+        if (era && !m[era]) m[era] = { team_logo_dark: teamByKey[key]?.team_logo_dark, country_flag: flag };
+      }
+    }
+    return m;
+  }, [games, teamByKey]);
+
+  // All Wild Card games (unfiltered by week) — the Decider spans the whole stage.
+  const wildCardGames = useMemo(() => games.filter(g => g.stage_type === 'qualifier'), [games]);
 
   // Weeks present in the (stage-filtered) data, for the week chips.
   const weeks = useMemo(() => {
@@ -174,10 +199,25 @@ export default function MatchesListView({ q = '', label = '' }) {
             </div>
           </>
         )}
+
+        <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center' }}>
+          <div className="view-toggle">
+            <button className={`view-toggle-btn ${view === 'grid' ? 'active' : ''}`} onClick={() => handleSetView('grid')}>Grid</button>
+            <button className={`view-toggle-btn ${view === 'list' ? 'active' : ''}`} onClick={() => handleSetView('list')}>List</button>
+          </div>
+        </div>
       </div>
 
-      {/* ── Series list ───────────────────────────────────────────── */}
-      {loading ? <MatchSkeleton /> : (
+      {/* ── Series list / grid ────────────────────────────────────── */}
+      {loading ? <MatchSkeleton /> : view === 'grid' ? (
+        <MatchResultsGrid
+          series={series}
+          teamByKey={teamByKey}
+          metaByEra={metaByEra}
+          wildCardGames={wildCardGames}
+          showDecider={(stage === 'all' || stage === 'qualifier') && wildCardGames.length > 0}
+        />
+      ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
           {series.map(({ info, games: gs, match_mvp }) => (
             <MatchCard
