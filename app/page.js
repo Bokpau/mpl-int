@@ -233,13 +233,13 @@ export default async function DashboardPage({ searchParams }) {
         <SectionHeader>Schedule</SectionHeader>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: 16 }}>
           {recentSeries.map((s) => (
-            <ScheduleCard key={s.match_code} status="FINAL" accent
+            <ScheduleCard key={s.match_code} status="FINAL" accent teamMeta={teamMeta}
               phase={s.stage} detail={s.match_name}
               a={s.team_a} b={s.team_b} aFlag={s.team_a_flag} bFlag={s.team_b_flag}
               aScore={s.a_wins} bScore={s.b_wins} winner={s.winner_code} />
           ))}
           {upcoming.map((s, i) => (
-            <ScheduleCard key={s.match_code || i} status="UPCOMING"
+            <ScheduleCard key={s.match_code || i} status="UPCOMING" teamMeta={teamMeta}
               phase={s.phase} detail={s.phase_match_name || `D${s.day}M${s.match}`}
               a={s.home_team} b={s.away_team} aFlag={s.home_flag} bFlag={s.away_flag} />
           ))}
@@ -426,11 +426,11 @@ function Flag({ emoji }) {
   return emoji ? <span style={{ fontSize: 13 }} aria-hidden="true">{emoji}</span> : null;
 }
 
-function ScheduleCard({ status, accent, phase, detail, a, b, aFlag, bFlag, aScore, bScore, winner }) {
+function ScheduleCard({ status, accent, phase, detail, a, b, aFlag, bFlag, aScore, bScore, winner, teamMeta = {} }) {
   const hasScore = aScore != null && bScore != null;
   const side = (code, flag, score, alignRight) => (
     <div style={{ display: 'flex', alignItems: 'center', gap: 7, flexDirection: alignRight ? 'row-reverse' : 'row', minWidth: 0 }}>
-      <TeamLogo fallbackSrc={img.team(code)} alt="" style={{ width: 20, height: 20, objectFit: 'contain' }} />
+      <TeamLogo src={teamMeta[code]?.team_logo_dark} fallbackSrc={img.team(code)} alt="" style={{ width: 20, height: 20, objectFit: 'contain' }} />
       <Flag emoji={flag} />
       <span style={{ color: winner && winner === code ? 'var(--win)' : 'var(--text)', fontWeight: winner && winner === code ? 700 : 400, fontSize: 13 }}>{code}</span>
     </div>
