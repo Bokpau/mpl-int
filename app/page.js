@@ -16,12 +16,13 @@ export const metadata = { title: 'Dashboard' };
 // anywhere in the schema for this, so it's hardcoded here rather than invented
 // as a new data pipeline for a one-off grouping. A 10th team, "Verso Time"
 // (Group B, DQ'd 0-4), isn't in BOK's roster data yet so it's omitted below.
-// NOTE: matched against the team's CURRENT identity code (intl_player_stats'
-// team_code, via team_identity.display_code), not the MSC 2026 era code --
-// Team Falcons' era code was "FLCM" but its persistent identity code is "FLCN".
+// NOTE: matched against the team's MSC 2026 ERA code (team_era_name.era_code) --
+// i.e. what each team was called AT this edition, not its persistent franchise
+// display_code. The only one that differs here is Team Falcons: era code "FLCM"
+// (shown), franchise/display code "FLCN".
 const WILD_CARD_GROUPS = {
   A: ['FUT', 'A7', 'MGLZ', 'KOG', 'VSG'],
-  B: ['HUNS', 'FLCN', 'SNR', 'NM'],
+  B: ['HUNS', 'FLCM', 'SNR', 'NM'],
 };
 
 // Decider bracket SEEDING (Liquipedia MSC 2026 Wild Card): Semifinal Match 1 on
@@ -32,7 +33,7 @@ const WILD_CARD_GROUPS = {
 const DECIDER = {
   semifinals: [
     { label: 'Match 1', a: 'HUNS', b: 'A7' },
-    { label: 'Match 2', a: 'FUT', b: 'FLCN' },
+    { label: 'Match 2', a: 'FUT', b: 'FLCM' },
   ],
   final: { label: 'Match 3 · Grand Final' },
 };
@@ -73,7 +74,9 @@ function buildSeries(matches) {
     if (!s) {
       s = {
         match_code: m.match_code, stage: m.stage, match_name: m.match_name,
-        team_a: m.team_a, team_b: m.team_b, team_a_key: m.team_a_key, team_b_key: m.team_b_key,
+        // era code (what the team was called at this edition), not franchise code
+        team_a: m.team_a_era || m.team_a, team_b: m.team_b_era || m.team_b,
+        team_a_key: m.team_a_key, team_b_key: m.team_b_key,
         team_a_flag: m.team_a_flag, team_b_flag: m.team_b_flag,
         a_wins: 0, b_wins: 0, games: 0, played_at: m.played_at,
       };
@@ -144,8 +147,27 @@ export default async function DashboardPage({ searchParams }) {
     );
   }
 
-  // ── Team lookup (logo + represented-country flag) keyed by display code ──────
-  const teamMeta = Object.fromEntries(teams.map((t) => [t.team_code, t]));
+  // ── Team lookup (logo + represented-country flag) ───────────────────────────
+  // Keyed by BOTH the franchise display code AND this edition's era code, so a
+  // lookup works whether the caller has "FLCN" (display) or "FLCM" (era). The
+  // era codes + display→era map come from the matches rows (which carry both).
+  const teamByKey = Object.fromEntries(teams.map((t) => [t.team_key, t]));
+  const teamMeta = {};
+  for (const t of teams) teamMeta[t.team_code] = t;
+  const displayToEra = {};
+  for (const m of matches) {
+    for (const [disp, era, key] of [[m.team_a, m.team_a_era, m.team_a_key], [m.team_b, m.team_b_era, m.team_b_key]]) {
+      if (disp && era) displayToEra[disp] = era;
+      const meta = teamByKey[key] || teamMeta[disp];
+      if (era && meta && !teamMeta[era]) teamMeta[era] = meta;
+    }
+  }
+  // Franchise display code -> this edition's era code (for teams/leaderboard rows,
+  // which only carry the display code). Identity: show the era name per edition.
+  const eCode = (c) => displayToEra[c] || c;
+  // Team/player rows relabelled with the edition's era code for display.
+  const teamsEra = teams.map((t) => ({ ...t, team_code: eCode(t.team_code) }));
+  const playersEra = players.map((p) => ({ ...p, latest_team_code: eCode(p.latest_team_code) }));
 
   // ── Tournament Summary ──────────────────────────────────────────────────
   const gamesPlayed = matches.length;
@@ -214,21 +236,21 @@ export default async function DashboardPage({ searchParams }) {
   const gauntletR2 = gauntletSeries.slice(2, 4);
   const qualified = gauntletR2.map((s) => s.winner_code).filter(Boolean);
 
-  const standingsTeams = [...teams].sort((a, b) => (num(b.win_rate) - num(a.win_rate)) || (num(b.wins) - num(a.wins)));
+  const standingsTeams = [...teamsEra].sort((a, b) => (num(b.win_rate) - num(a.win_rate)) || (num(b.wins) - num(a.wins)));
 
   // ── Player rankings ────────────────────────────────────────────────────
-  const pKda = [...players].sort((a, b) => num(b.kda) - num(a.kda)).slice(0, 5);
-  const pKills = [...players].sort((a, b) => num(b.avg_kills) - num(a.avg_kills)).slice(0, 5);
-  const pAssists = [...players].sort((a, b) => num(b.avg_assists) - num(a.avg_assists)).slice(0, 5);
-  const pGpm = [...players].sort((a, b) => num(b.gpm) - num(a.gpm)).slice(0, 5);
-  const pMvps = [...players].sort((a, b) => num(b.mvps) - num(a.mvps)).slice(0, 5);
+  const pKda = [...playersEra].sort((a, b) => num(b.kda) - num(a.kda)).slice(0, 5);
+  const pKills = [...playersEra].sort((a, b) => num(b.avg_kills) - num(a.avg_kills)).slice(0, 5);
+  const pAssists = [...playersEra].sort((a, b) => num(b.avg_assists) - num(a.avg_assists)).slice(0, 5);
+  const pGpm = [...playersEra].sort((a, b) => num(b.gpm) - num(a.gpm)).slice(0, 5);
+  const pMvps = [...playersEra].sort((a, b) => num(b.mvps) - num(a.mvps)).slice(0, 5);
 
   // ── Team rankings ──────────────────────────────────────────────────────
-  const tKills = [...teams].sort((a, b) => num(b.avg_kills) - num(a.avg_kills)).slice(0, 3);
-  const tAssists = [...teams].sort((a, b) => num(b.avg_assists) - num(a.avg_assists)).slice(0, 3);
-  const tGpm = [...teams].sort((a, b) => num(b.gpm) - num(a.gpm)).slice(0, 3);
-  const tDpm = [...teams].sort((a, b) => num(b.dpm) - num(a.dpm)).slice(0, 3);
-  const tWinTime = [...teams].filter((t) => t.avg_win_time_s != null).sort((a, b) => num(a.avg_win_time_s) - num(b.avg_win_time_s)).slice(0, 3);
+  const tKills = [...teamsEra].sort((a, b) => num(b.avg_kills) - num(a.avg_kills)).slice(0, 3);
+  const tAssists = [...teamsEra].sort((a, b) => num(b.avg_assists) - num(a.avg_assists)).slice(0, 3);
+  const tGpm = [...teamsEra].sort((a, b) => num(b.gpm) - num(a.gpm)).slice(0, 3);
+  const tDpm = [...teamsEra].sort((a, b) => num(b.dpm) - num(a.dpm)).slice(0, 3);
+  const tWinTime = [...teamsEra].filter((t) => t.avg_win_time_s != null).sort((a, b) => num(a.avg_win_time_s) - num(b.avg_win_time_s)).slice(0, 3);
 
   // ── Hero rankings ──────────────────────────────────────────────────────
   const banMap = Object.fromEntries(bans.map((b) => [b.heroid, num(b.bans)]));
