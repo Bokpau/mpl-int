@@ -13,12 +13,22 @@ import FilterBar from '../FilterBar';
 // anywhere in the schema for this, so it's hardcoded here rather than invented
 // as a new data pipeline for a one-off grouping. A 10th team, "Verso Time"
 // (Group B, DQ'd 0-4), isn't in BOK's roster data yet so it's omitted below.
-// NOTE: matched against the team's CURRENT identity code (intl_player_stats'
-// team_code, via team_identity.display_code), not the MSC 2026 era code --
-// Team Falcons' era code was "FLCM" but its persistent identity code is "FLCN".
+// NOTE: matched against the team's MSC 2026 ERA code (team_era_name.era_code) --
+// what each team was called AT this edition, not its persistent franchise
+// display_code. Only Team Falcons differs: era "FLCM" (shown), franchise "FLCN".
 const WILD_CARD_GROUPS = {
   A: ['FUT', 'A7', 'MGLZ', 'KOG', 'VSG'],
-  B: ['HUNS', 'FLCN', 'SNR', 'NM'],
+  B: ['HUNS', 'FLCM', 'SNR', 'NM'],
+};
+
+// Stopgap for 2 MSC 2026 players whose player_era_photo row hasn't been seeded
+// yet (KEI, MUIMINET). Their photo files DO exist on the CDN, so fall back to
+// them by IGN until the DB seed lands — then this map can be deleted. See
+// database/seed_player_photos_msc2026.sql (their player_name_alias rows are the
+// real gap).
+const PHOTO_FALLBACK = {
+  KEI: 'https://raw.githubusercontent.com/Bokpau/mlbb-tool/main/int_player/mlbb_mgz_cut_kei_f.png',
+  MUIMINET: 'https://raw.githubusercontent.com/Bokpau/mlbb-tool/main/int_player/mlbb_sun_muiminet_cut_f.png',
 };
 
 // Decider bracket SEEDING (Liquipedia MSC 2026 Wild Card): Semifinal Match 1 on
@@ -29,7 +39,7 @@ const WILD_CARD_GROUPS = {
 const DECIDER = {
   semifinals: [
     { label: 'Match 1', a: 'HUNS', b: 'A7' },
-    { label: 'Match 2', a: 'FUT', b: 'FLCN' },
+    { label: 'Match 2', a: 'FUT', b: 'FLCM' },
   ],
   final: { label: 'Match 3 · Grand Final' },
 };
@@ -70,7 +80,9 @@ function buildSeries(matches) {
     if (!s) {
       s = {
         match_code: m.match_code, stage: m.stage, match_name: m.match_name,
-        team_a: m.team_a, team_b: m.team_b, team_a_key: m.team_a_key, team_b_key: m.team_b_key,
+        // era code (what the team was called at this edition), not franchise code
+        team_a: m.team_a_era || m.team_a, team_b: m.team_b_era || m.team_b,
+        team_a_key: m.team_a_key, team_b_key: m.team_b_key,
         team_a_flag: m.team_a_flag, team_b_flag: m.team_b_flag,
         a_wins: 0, b_wins: 0, games: 0, played_at: m.played_at,
       };
@@ -121,11 +133,11 @@ export default async function DashboardView({ q, label, eff, editions = [], feat
   const head = (
     <>
       <PageHead eyebrow={label} title="Dashboard">
-        The international stats hub — leading with the featured edition. Use the filter to switch
-        event, edition, and stage (Overall / Wild Card / Main).
+        The international stats hub — leading with the featured edition. Filter by
+        stage (Overall / Wild Card / Main) and minimum games.
       </PageHead>
       <Suspense fallback={<div className="filterbar" />}>
-        <FilterBar editions={editions} featured={featured} />
+        <FilterBar editions={editions} featured={featured} showEvent={false} showEdition={false} />
       </Suspense>
     </>
   );
@@ -141,8 +153,26 @@ export default async function DashboardView({ q, label, eff, editions = [], feat
     );
   }
 
-  // ── Team lookup (logo + represented-country flag) keyed by display code ──────
-  const teamMeta = Object.fromEntries(teams.map((t) => [t.team_code, t]));
+  // ── Team lookup (logo + represented-country flag) ───────────────────────────
+  // Keyed by BOTH franchise display code AND this edition's era code, so a lookup
+  // works with "FLCN" (display) or "FLCM" (era). Era codes + the display→era map
+  // come from the matches rows (which carry both).
+  const teamByKey = Object.fromEntries(teams.map((t) => [t.team_key, t]));
+  const teamMeta = {};
+  for (const t of teams) teamMeta[t.team_code] = t;
+  const displayToEra = {};
+  for (const m of matches) {
+    for (const [disp, era, key] of [[m.team_a, m.team_a_era, m.team_a_key], [m.team_b, m.team_b_era, m.team_b_key]]) {
+      if (disp && era) displayToEra[disp] = era;
+      const meta = teamByKey[key] || teamMeta[disp];
+      if (era && meta && !teamMeta[era]) teamMeta[era] = meta;
+    }
+  }
+  // Franchise display code -> this edition's era code (teams/leaderboard rows only
+  // carry the display code). Identity: show the era name per edition.
+  const eCode = (c) => displayToEra[c] || c;
+  const teamsEra = teams.map((t) => ({ ...t, team_code: eCode(t.team_code) }));
+  const playersEra = players.map((p) => ({ ...p, latest_team_code: eCode(p.latest_team_code) }));
 
   // ── Tournament Summary ──────────────────────────────────────────────────
   const gamesPlayed = matches.length;
@@ -162,10 +192,23 @@ export default async function DashboardView({ q, label, eff, editions = [], feat
   const heroesBannedCount = bans.length;
 
   // ── Schedule: recent SERIES (with Bo-N score) + upcoming fixtures ───────────
+  // Schedule row per match_code, for the phase / day / match / detail labels.
+  const schedByCode = Object.fromEntries(schedule.map((s) => [s.match_code, s]));
+  const scheduleLabel = (matchCode, fallbackPhase) => {
+    const sc = schedByCode[matchCode] || {};
+    const phase = sc.phase || fallbackPhase || '';
+    const mNum = sc.match ?? ((String(matchCode).match(/M(\d+)$/) || [])[1]);
+    const bits = [phase];
+    if (sc.day != null) bits.push(`Day ${sc.day}`);
+    if (mNum != null) bits.push(`Match ${mNum}`);
+    return bits.filter(Boolean).join(' · ');
+  };
   const allSeries = buildSeries(matches);
+  // Newest 3 series, but displayed oldest→newest so the LATEST game is rightmost.
   const recentSeries = [...allSeries]
     .sort((a, b) => String(b.played_at || '').localeCompare(String(a.played_at || '')))
-    .slice(0, 3);
+    .slice(0, 3)
+    .reverse();
   const playedMatchCodes = new Set(matches.map((m) => m.match_code));
   const upcoming = schedule
     .filter((s) => s.home_team && s.away_team && !playedMatchCodes.has(s.match_code))
@@ -195,6 +238,8 @@ export default async function DashboardView({ q, label, eff, editions = [], feat
   ) || null;
   const finalA = finalSeries?.team_a || (semiWinners.length === 2 ? semiWinners[0] : null);
   const finalB = finalSeries?.team_b || (semiWinners.length === 2 ? semiWinners[1] : null);
+  // The Grand Final winner is the last team to qualify for the Main Stage.
+  const mainStageQualifier = finalSeries?.winner_code || null;
 
   function groupStandings(codes) {
     const rec = Object.fromEntries(codes.map((c) => [c, { code: c, w: 0, l: 0 }]));
@@ -211,21 +256,21 @@ export default async function DashboardView({ q, label, eff, editions = [], feat
   const gauntletR2 = gauntletSeries.slice(2, 4);
   const qualified = gauntletR2.map((s) => s.winner_code).filter(Boolean);
 
-  const standingsTeams = [...teams].sort((a, b) => (num(b.win_rate) - num(a.win_rate)) || (num(b.wins) - num(a.wins)));
+  const standingsTeams = [...teamsEra].sort((a, b) => (num(b.win_rate) - num(a.win_rate)) || (num(b.wins) - num(a.wins)));
 
   // ── Player rankings ────────────────────────────────────────────────────
-  const pKda = [...players].sort((a, b) => num(b.kda) - num(a.kda)).slice(0, 5);
-  const pKills = [...players].sort((a, b) => num(b.avg_kills) - num(a.avg_kills)).slice(0, 5);
-  const pAssists = [...players].sort((a, b) => num(b.avg_assists) - num(a.avg_assists)).slice(0, 5);
-  const pGpm = [...players].sort((a, b) => num(b.gpm) - num(a.gpm)).slice(0, 5);
-  const pMvps = [...players].sort((a, b) => num(b.mvps) - num(a.mvps)).slice(0, 5);
+  const pKda = [...playersEra].sort((a, b) => num(b.kda) - num(a.kda)).slice(0, 5);
+  const pKills = [...playersEra].sort((a, b) => num(b.avg_kills) - num(a.avg_kills)).slice(0, 5);
+  const pAssists = [...playersEra].sort((a, b) => num(b.avg_assists) - num(a.avg_assists)).slice(0, 5);
+  const pGpm = [...playersEra].sort((a, b) => num(b.gpm) - num(a.gpm)).slice(0, 5);
+  const pMvps = [...playersEra].sort((a, b) => num(b.mvps) - num(a.mvps)).slice(0, 5);
 
   // ── Team rankings ──────────────────────────────────────────────────────
-  const tKills = [...teams].sort((a, b) => num(b.avg_kills) - num(a.avg_kills)).slice(0, 3);
-  const tAssists = [...teams].sort((a, b) => num(b.avg_assists) - num(a.avg_assists)).slice(0, 3);
-  const tGpm = [...teams].sort((a, b) => num(b.gpm) - num(a.gpm)).slice(0, 3);
-  const tDpm = [...teams].sort((a, b) => num(b.dpm) - num(a.dpm)).slice(0, 3);
-  const tWinTime = [...teams].filter((t) => t.avg_win_time_s != null).sort((a, b) => num(a.avg_win_time_s) - num(b.avg_win_time_s)).slice(0, 3);
+  const tKills = [...teamsEra].sort((a, b) => num(b.avg_kills) - num(a.avg_kills)).slice(0, 3);
+  const tAssists = [...teamsEra].sort((a, b) => num(b.avg_assists) - num(a.avg_assists)).slice(0, 3);
+  const tGpm = [...teamsEra].sort((a, b) => num(b.gpm) - num(a.gpm)).slice(0, 3);
+  const tDpm = [...teamsEra].sort((a, b) => num(b.dpm) - num(a.dpm)).slice(0, 3);
+  const tWinTime = [...teamsEra].filter((t) => t.avg_win_time_s != null).sort((a, b) => num(a.avg_win_time_s) - num(b.avg_win_time_s)).slice(0, 3);
 
   // ── Hero rankings ──────────────────────────────────────────────────────
   const banMap = Object.fromEntries(bans.map((b) => [b.heroid, num(b.bans)]));
@@ -250,13 +295,13 @@ export default async function DashboardView({ q, label, eff, editions = [], feat
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: 16 }}>
           {recentSeries.map((s) => (
             <ScheduleCard key={s.match_code} status="FINAL" accent teamMeta={teamMeta}
-              phase={s.stage} detail={s.match_name}
+              detail={scheduleLabel(s.match_code, s.stage)}
               a={s.team_a} b={s.team_b} aFlag={s.team_a_flag} bFlag={s.team_b_flag}
               aScore={s.a_wins} bScore={s.b_wins} winner={s.winner_code} />
           ))}
           {upcoming.map((s, i) => (
             <ScheduleCard key={s.match_code || i} status="UPCOMING" teamMeta={teamMeta}
-              phase={s.phase} detail={s.phase_match_name || `D${s.day}M${s.match}`}
+              detail={scheduleLabel(s.match_code, s.phase)}
               a={s.home_team} b={s.away_team} aFlag={s.home_flag} bFlag={s.away_flag} />
           ))}
           {!recentSeries.length && !upcoming.length ? <div className="empty">No schedule data for this selection.</div> : null}
@@ -322,30 +367,29 @@ export default async function DashboardView({ q, label, eff, editions = [], feat
               )}
             </div>
 
-            {/* Decider (scaffold) */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            {/* Decider — semifinals → grand final → Main Stage qualifier */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
               <SubHead>Decider</SubHead>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 16, alignItems: 'start' }}>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 12, alignItems: 'center' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                   {deciderSemis.map((m) => (
                     m.series
-                      ? <SeriesBox key={m.label} title={m.label} teamMeta={teamMeta}
+                      ? <SeriesBox key={m.label} title={m.label} teamMeta={teamMeta} compact
                           aCode={m.series.team_a} bCode={m.series.team_b}
                           aScore={m.series.a_wins} bScore={m.series.b_wins} winner={m.series.winner_code} />
-                      : <SeriesBox key={m.label} title={m.label} teamMeta={teamMeta} aCode={m.a} bCode={m.b} scaffold />
+                      : <SeriesBox key={m.label} title={m.label} teamMeta={teamMeta} compact aCode={m.a} bCode={m.b} scaffold />
                   ))}
                 </div>
-                <div style={{ display: 'flex', alignItems: 'center', minHeight: '100%' }}>
-                  {finalSeries
-                    ? <SeriesBox title={DECIDER.final.label} teamMeta={teamMeta}
-                        aCode={finalSeries.team_a} bCode={finalSeries.team_b}
-                        aScore={finalSeries.a_wins} bScore={finalSeries.b_wins} winner={finalSeries.winner_code} />
-                    : <SeriesBox title={DECIDER.final.label} teamMeta={teamMeta} aCode={finalA} bCode={finalB} scaffold />}
-                </div>
+                {finalSeries
+                  ? <SeriesBox title={DECIDER.final.label} teamMeta={teamMeta} compact
+                      aCode={finalSeries.team_a} bCode={finalSeries.team_b}
+                      aScore={finalSeries.a_wins} bScore={finalSeries.b_wins} winner={finalSeries.winner_code} />
+                  : <SeriesBox title={DECIDER.final.label} teamMeta={teamMeta} compact aCode={finalA} bCode={finalB} scaffold />}
+                <QualifiedCol title="To Main Stage" codes={mainStageQualifier ? [mainStageQualifier] : []} teamMeta={teamMeta} />
               </div>
               {!finalSeries ? (
-                <div style={{ fontSize: 11, color: 'var(--muted2)', fontFamily: 'var(--font-mono)' }}>
-                  Decider results fill in automatically as each series is played; the Grand Final is set once both semifinals finish.
+                <div style={{ fontSize: 10, color: 'var(--muted2)', fontFamily: 'var(--font-mono)' }}>
+                  Fills in as each series is played; the Grand Final winner qualifies for the Main Stage.
                 </div>
               ) : null}
             </div>
@@ -569,14 +613,14 @@ function BracketCol({ title, series, teamMeta }) {
   );
 }
 
-function QualifiedCol({ codes, teamMeta }) {
+function QualifiedCol({ codes, teamMeta, title = 'Qualified' }) {
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-      <div style={{ fontSize: 10, fontFamily: 'var(--font-mono)', color: 'var(--accent)', fontWeight: 700, textTransform: 'uppercase', textAlign: 'center' }}>Qualified</div>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+      <div style={{ fontSize: 10, fontFamily: 'var(--font-mono)', color: 'var(--accent)', fontWeight: 700, textTransform: 'uppercase', textAlign: 'center' }}>{title}</div>
       {codes.length ? codes.map((c) => {
         const meta = teamMeta[c] || {};
         return (
-          <div key={c} style={{ border: '1px solid var(--win)', background: 'var(--surface)', padding: '10px 12px', display: 'flex', alignItems: 'center', gap: 8 }}>
+          <div key={c} style={{ border: '1px solid var(--win)', background: 'var(--surface)', padding: '8px 12px', display: 'flex', alignItems: 'center', gap: 8 }}>
             <TeamLogo src={meta.team_logo_dark} fallbackSrc={img.team(c)} alt="" style={{ width: 20, height: 20, objectFit: 'contain' }} />
             <Flag emoji={meta.country_flag} />
             <span style={{ fontWeight: 700, color: 'var(--win)' }}>{c}</span>
@@ -587,14 +631,17 @@ function QualifiedCol({ codes, teamMeta }) {
   );
 }
 
-// A single series box (two stacked teams + score). `scaffold` = TBD placeholder.
-function SeriesBox({ title, aCode, bCode, aScore, bScore, winner, teamMeta = {}, scaffold }) {
+// A single series box (two stacked teams + score). `scaffold` = TBD placeholder,
+// `compact` = tighter padding for dense brackets (Decider).
+function SeriesBox({ title, aCode, bCode, aScore, bScore, winner, teamMeta = {}, scaffold, compact }) {
+  const pad = compact ? '4px 10px' : '7px 10px';
+  const sz = compact ? 16 : 18;
   const row = (code) => {
     const meta = teamMeta[code] || {};
     const isWin = winner && winner === code;
     return (
-      <div style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '7px 10px' }}>
-        {code ? <TeamLogo src={meta.team_logo_dark} fallbackSrc={img.team(code)} alt="" style={{ width: 18, height: 18, objectFit: 'contain' }} /> : <span style={{ width: 18 }} />}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 7, padding: pad }}>
+        {code ? <TeamLogo src={meta.team_logo_dark} fallbackSrc={img.team(code)} alt="" style={{ width: sz, height: sz, objectFit: 'contain' }} /> : <span style={{ width: sz }} />}
         {code ? <Flag emoji={meta.country_flag} /> : null}
         <span style={{ fontSize: 13, color: code ? (isWin ? 'var(--win)' : 'var(--text)') : 'var(--muted2)', fontWeight: isWin ? 700 : 400 }}>{code || 'TBD'}</span>
         <span style={{ marginLeft: 'auto', fontFamily: 'var(--font-mono)', fontSize: 13, fontWeight: 700, color: isWin ? 'var(--win)' : 'var(--muted2)' }}>
@@ -605,7 +652,7 @@ function SeriesBox({ title, aCode, bCode, aScore, bScore, winner, teamMeta = {},
   };
   return (
     <div style={{ border: '1px solid var(--border)', background: 'var(--surface)' }}>
-      {title ? <div style={{ fontSize: 9, fontFamily: 'var(--font-mono)', color: 'var(--muted2)', padding: '6px 10px 0' }}>{title}</div> : null}
+      {title ? <div style={{ fontSize: 9, fontFamily: 'var(--font-mono)', color: 'var(--muted2)', padding: compact ? '4px 10px 0' : '6px 10px 0' }}>{title}</div> : null}
       {row(aCode)}
       <div style={{ borderTop: '1px solid rgba(30,30,58,0.4)' }} />
       {row(bCode)}
@@ -617,12 +664,14 @@ function RankList({ title, rows, valueFn, teamMeta = {} }) {
   return (
     <div style={card}>
       <div style={listHead}>{title.toUpperCase()}</div>
-      {rows.length ? rows.map((p, i) => (
+      {rows.length ? rows.map((p, i) => {
+        const photo = p.photo_url || PHOTO_FALLBACK[String(p.player || '').toUpperCase()];
+        return (
         <div key={p.player_key} style={listRow(i === rows.length - 1)}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 0 }}>
             <span style={{ fontFamily: 'var(--font-mono)', color: 'var(--accent)', fontWeight: 700, fontSize: 11, width: 10 }}>{i + 1}</span>
-            {p.photo_url
-              ? <img src={p.photo_url} alt="" referrerPolicy="no-referrer" style={{ width: 26, height: 26, borderRadius: '50%', objectFit: 'cover', background: 'var(--surface2)' }} />
+            {photo
+              ? <img src={photo} alt="" referrerPolicy="no-referrer" style={{ width: 26, height: 26, borderRadius: '50%', objectFit: 'cover', background: 'var(--surface2)' }} />
               : <span style={{ width: 26, height: 26, borderRadius: '50%', background: 'var(--surface2)', flexShrink: 0 }} />}
             <div style={{ display: 'flex', flexDirection: 'column', minWidth: 0 }}>
               <span style={{ fontSize: 12, fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.player}</span>
@@ -634,7 +683,8 @@ function RankList({ title, rows, valueFn, teamMeta = {} }) {
           </div>
           <span style={{ fontFamily: 'var(--font-mono)', fontSize: 11, fontWeight: 700, color: 'var(--win)' }}>{valueFn(p)}</span>
         </div>
-      )) : <Empty />}
+        );
+      }) : <Empty />}
     </div>
   );
 }

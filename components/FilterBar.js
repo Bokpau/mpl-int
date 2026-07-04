@@ -25,7 +25,7 @@ const ALL = 'all'; // explicit cross-edition aggregate sentinel
 
 const editionOptionLabel = (e) => editionTitle(e);
 
-export default function FilterBar({ editions = [], featured = null }) {
+export default function FilterBar({ editions = [], featured = null, showEvent = true, showEdition = true }) {
   const router = useRouter();
   const pathname = usePathname();
   const sp = useSearchParams();
@@ -76,6 +76,7 @@ export default function FilterBar({ editions = [], featured = null }) {
   // Active-filter chips — only deviations from the featured default appear. Clearing
   // an edition chip drops both season and scope, returning to the featured default.
   const chips = [];
+  if (showEdition) {
   if (eff.isAll) {
     chips.push({
       k: 'season',
@@ -86,34 +87,39 @@ export default function FilterBar({ editions = [], featured = null }) {
     const e = editions.find((x) => x.season === eff.season && (!eff.scope || x.tournament_code === eff.scope));
     chips.push({ k: 'season', label: e ? editionOptionLabel(e) : eff.season, clear: { season: '', scope: '' } });
   }
+  }
   if (eff.stage) chips.push({ k: 'stage', label: eff.stage === 'qualifier' ? 'Wildcard' : 'Main', clear: { stage: '' } });
   if (eff.min_games) chips.push({ k: 'min_games', label: `${eff.min_games}+ games`, clear: { min_games: '' } });
 
   return (
     <div className="filterbar-wrap" aria-busy={isPending}>
       <div className="filterbar" data-pending={isPending ? '' : undefined}>
-        <div className="filter-group">
-          <label>Event</label>
-          <div className="seg">
-            {FAMILIES.map((s) => (
-              <button key={s.val} className={eff.scope === s.val ? 'on' : ''} onClick={() => onFamily(s.val)}>
-                {s.label}
-              </button>
-            ))}
+        {showEvent ? (
+          <div className="filter-group">
+            <label>Event</label>
+            <div className="seg">
+              {FAMILIES.map((s) => (
+                <button key={s.val} className={eff.scope === s.val ? 'on' : ''} onClick={() => onFamily(s.val)}>
+                  {s.label}
+                </button>
+              ))}
+            </div>
           </div>
-        </div>
+        ) : null}
 
-        <div className="filter-group">
-          <label>Edition</label>
-          <select value={selectValue} onChange={(e) => push({ season: e.target.value })}>
-            <option value={ALL}>All editions</option>
-            {scopeEditions.map((e) => (
-              <option key={`${e.tournament_code}-${e.season}`} value={e.season}>
-                {editionOptionLabel(e)}
-              </option>
-            ))}
-          </select>
-        </div>
+        {showEdition ? (
+          <div className="filter-group">
+            <label>Edition</label>
+            <select value={selectValue} onChange={(e) => push({ season: e.target.value })}>
+              <option value={ALL}>All editions</option>
+              {scopeEditions.map((e) => (
+                <option key={`${e.tournament_code}-${e.season}`} value={e.season}>
+                  {editionOptionLabel(e)}
+                </option>
+              ))}
+            </select>
+          </div>
+        ) : null}
 
         <div className="filter-group">
           <label>Stage</label>
