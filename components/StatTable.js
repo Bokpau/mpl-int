@@ -256,10 +256,15 @@ function Cell({ col, row, rankIndex }) {
       const name = row[col.nameKey] || row[col.fallbackKey];
       const sub = col.subKey ? (row[col.subKey] || row[col.subFallbackKey] || '') : '';
       const href = `${col.hrefBase}${encodeURIComponent(row[col.hrefKey])}`;
+      // Per-era player photo (full-body cutout); anchor to top so the face shows.
+      const photo = col.photoKey ? row[col.photoKey] : null;
       return (
         <td className="l">
           <Link href={href} onClick={(e) => e.stopPropagation()}>
-            <span className="idcell"><span className="name">{name}</span></span>
+            <span className="idcell">
+              {photo ? <img className="avatar" src={photo} alt="" style={{ objectFit: 'cover', objectPosition: 'top' }} /> : null}
+              <span className="name">{name}</span>
+            </span>
             {sub ? <span className="sub">{sub}</span> : null}
           </Link>
         </td>

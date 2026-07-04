@@ -59,13 +59,17 @@ export default async function PlayerDetail({ params, searchParams }) {
 
   const t = career.totals;
   const logo = img.team(t.latest_team_code);
+  // Prefer the player's per-era photo; fall back to the team logo when there's none.
+  const photo = t.photo_url;
 
   return (
     <div className="container">
       <div className="crumb"><Link href="/history/players">← Players</Link></div>
 
       <div className="detail-head">
-        {logo ? <img className="big-avatar sq" src={logo} alt="" /> : null}
+        {photo
+          ? <img className="big-avatar sq" src={photo} alt="" style={{ objectFit: 'cover', objectPosition: 'top' }} />
+          : logo ? <img className="big-avatar sq" src={logo} alt="" /> : null}
         <div>
           <h1>{t.player || key}</h1>
           <div className="meta">

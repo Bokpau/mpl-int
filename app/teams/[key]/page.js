@@ -8,7 +8,7 @@ import StatTable from '../../../components/StatTable';
 import TeamLogo from '../../../components/TeamLogo';
 
 const ROSTER_COLUMNS = [
-  { key: 'player', type: 'player', label: 'Player', nameKey: 'player', fallbackKey: 'player_key', hrefBase: '/players/', hrefKey: 'player_key' },
+  { key: 'player', type: 'player', label: 'Player', nameKey: 'player', fallbackKey: 'player_key', photoKey: 'photo_url', hrefBase: '/players/', hrefKey: 'player_key' },
   { key: 'nationality', type: 'text', label: 'Nat.' },
   { key: 'games', label: 'Games', format: 'int' },
   { key: 'wins', label: 'Wins', format: 'int' },
