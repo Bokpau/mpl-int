@@ -24,17 +24,21 @@ const WILD_CARD_GROUPS = {
   B: ['HUNS', 'FLCN', 'SNR', 'NM'],
 };
 
-// Decider bracket — no schedule/results in the DB yet, so this is a SCAFFOLD
-// (edit here once fixtures land). Layout per BOK: Semifinal Match 1 on top,
-// Match 2 below, Match 3 is the Grand Final. Teams follow the Liquipedia MSC 2026
-// Wild Card decider seeding (group winners vs Gauntlet qualifiers).
+// Decider bracket SEEDING (Liquipedia MSC 2026 Wild Card): Semifinal Match 1 on
+// top, Match 2 below, Match 3 is the Grand Final. Real scores are overlaid from
+// the DB when those series exist (they're qualifier-stage Bo3s played after the
+// Gauntlet); until a series is played it shows as a placeholder. The pairings
+// are the two group winners vs the two Gauntlet qualifiers.
 const DECIDER = {
   semifinals: [
-    { label: 'Match 1', top: 'FUT', bottom: 'FLCN' },
-    { label: 'Match 2', top: 'HUNS', bottom: 'A7' },
+    { label: 'Match 1', a: 'HUNS', b: 'A7' },
+    { label: 'Match 2', a: 'FUT', b: 'FLCN' },
   ],
   final: { label: 'Match 3 · Grand Final' },
 };
+// How many Bo3 series make up the Cross-Group Gauntlet (2 rounds × 2). Bo3 series
+// beyond this many are the Decider (semifinals + grand final).
+const GAUNTLET_SERIES = 4;
 
 const ROLE_ORDER = ['EXP LANE', 'JUNGLE', 'MID LANE', 'ROAM', 'GOLD LANE'];
 
@@ -173,12 +177,27 @@ export default async function DashboardPage({ searchParams }) {
 
   // ── Standings: Wild Card (Groups + Gauntlet + Decider) vs single table ─────
   const isWildCard = eff.stage === 'qualifier';
-  // Group stage = single-game (Bo1) series; the Cross-Group Gauntlet = Bo3.
+  // Group stage = single-game (Bo1) series. The Bo3 series are, in order, the
+  // Cross-Group Gauntlet (first GAUNTLET_SERIES of them) then the Decider.
   const groupSeries = isWildCard ? allSeries.filter((s) => s.games <= 1) : [];
-  const gauntletSeries = isWildCard
+  const bo3Series = isWildCard
     ? allSeries.filter((s) => s.games > 1)
         .sort((a, b) => String(a.played_at || '').localeCompare(String(b.played_at || '')) || a.match_code.localeCompare(b.match_code))
     : [];
+  const gauntletSeries = bo3Series.slice(0, GAUNTLET_SERIES);
+  const deciderSeries = bo3Series.slice(GAUNTLET_SERIES);
+  // Match a seeded pairing to a played Decider series (order-independent).
+  const findDecider = (a, b) => deciderSeries.find(
+    (s) => (s.team_a === a && s.team_b === b) || (s.team_a === b && s.team_b === a)
+  );
+  // Overlay real results onto the seeded semifinals; derive the Grand Final.
+  const deciderSemis = DECIDER.semifinals.map((m) => ({ ...m, series: findDecider(m.a, m.b) || null }));
+  const semiWinners = deciderSemis.map((x) => x.series?.winner_code).filter(Boolean);
+  const finalSeries = deciderSeries.find(
+    (s) => !DECIDER.semifinals.some((m) => (s.team_a === m.a && s.team_b === m.b) || (s.team_a === m.b && s.team_b === m.a))
+  ) || null;
+  const finalA = finalSeries?.team_a || (semiWinners.length === 2 ? semiWinners[0] : null);
+  const finalB = finalSeries?.team_b || (semiWinners.length === 2 ? semiWinners[1] : null);
 
   function groupStandings(codes) {
     const rec = Object.fromEntries(codes.map((c) => [c, { code: c, w: 0, l: 0 }]));
@@ -311,19 +330,27 @@ export default async function DashboardPage({ searchParams }) {
               <SubHead>Decider</SubHead>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 16, alignItems: 'start' }}>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                  {DECIDER.semifinals.map((m) => (
-                    <SeriesBox key={m.label} title={m.label} teamMeta={teamMeta}
-                      aCode={m.top} bCode={m.bottom} scaffold />
+                  {deciderSemis.map((m) => (
+                    m.series
+                      ? <SeriesBox key={m.label} title={m.label} teamMeta={teamMeta}
+                          aCode={m.series.team_a} bCode={m.series.team_b}
+                          aScore={m.series.a_wins} bScore={m.series.b_wins} winner={m.series.winner_code} />
+                      : <SeriesBox key={m.label} title={m.label} teamMeta={teamMeta} aCode={m.a} bCode={m.b} scaffold />
                   ))}
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', minHeight: '100%' }}>
-                  <SeriesBox title={DECIDER.final.label} teamMeta={teamMeta} aCode={null} bCode={null} scaffold />
+                  {finalSeries
+                    ? <SeriesBox title={DECIDER.final.label} teamMeta={teamMeta}
+                        aCode={finalSeries.team_a} bCode={finalSeries.team_b}
+                        aScore={finalSeries.a_wins} bScore={finalSeries.b_wins} winner={finalSeries.winner_code} />
+                    : <SeriesBox title={DECIDER.final.label} teamMeta={teamMeta} aCode={finalA} bCode={finalB} scaffold />}
                 </div>
               </div>
-              <div style={{ fontSize: 11, color: 'var(--muted2)', fontFamily: 'var(--font-mono)' }}>
-                Decider schedule &amp; results aren&apos;t in the database yet — this bracket is a placeholder
-                and fills in automatically once those fixtures are fetched.
-              </div>
+              {!finalSeries ? (
+                <div style={{ fontSize: 11, color: 'var(--muted2)', fontFamily: 'var(--font-mono)' }}>
+                  Decider results fill in automatically as each series is played; the Grand Final is set once both semifinals finish.
+                </div>
+              ) : null}
             </div>
           </>
         ) : (
@@ -335,11 +362,11 @@ export default async function DashboardPage({ searchParams }) {
       <div style={{ display: 'flex', flexDirection: 'column', gap: 16, marginBottom: 28 }}>
         <SectionHeader>Player Rankings</SectionHeader>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(210px, 1fr))', gap: 14 }}>
-          <RankList title="KDA" rows={pKda} valueFn={(p) => dec(p.kda)} />
-          <RankList title="Avg Kills" rows={pKills} valueFn={(p) => dec(p.avg_kills)} />
-          <RankList title="Avg Assists" rows={pAssists} valueFn={(p) => dec(p.avg_assists)} />
-          <RankList title="Gold / Min" rows={pGpm} valueFn={(p) => int(p.gpm)} />
-          <RankList title="Game MVPs" rows={pMvps} valueFn={(p) => int(p.mvps)} />
+          <RankList title="KDA" rows={pKda} teamMeta={teamMeta} valueFn={(p) => dec(p.kda)} />
+          <RankList title="Avg Kills" rows={pKills} teamMeta={teamMeta} valueFn={(p) => dec(p.avg_kills)} />
+          <RankList title="Avg Assists" rows={pAssists} teamMeta={teamMeta} valueFn={(p) => dec(p.avg_assists)} />
+          <RankList title="Gold / Min" rows={pGpm} teamMeta={teamMeta} valueFn={(p) => int(p.gpm)} />
+          <RankList title="Game MVPs" rows={pMvps} teamMeta={teamMeta} valueFn={(p) => int(p.mvps)} />
         </div>
       </div>
 
@@ -589,7 +616,7 @@ function SeriesBox({ title, aCode, bCode, aScore, bScore, winner, teamMeta = {},
   );
 }
 
-function RankList({ title, rows, valueFn }) {
+function RankList({ title, rows, valueFn, teamMeta = {} }) {
   return (
     <div style={card}>
       <div style={listHead}>{title.toUpperCase()}</div>
@@ -603,7 +630,7 @@ function RankList({ title, rows, valueFn }) {
             <div style={{ display: 'flex', flexDirection: 'column', minWidth: 0 }}>
               <span style={{ fontSize: 12, fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.player}</span>
               <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                <TeamLogo fallbackSrc={img.team(p.latest_team_code)} alt="" style={{ width: 12, height: 12, objectFit: 'contain' }} />
+                <TeamLogo src={teamMeta[p.latest_team_code]?.team_logo_dark} fallbackSrc={img.team(p.latest_team_code)} alt="" style={{ width: 12, height: 12, objectFit: 'contain' }} />
                 <span style={{ fontSize: 9, fontFamily: 'var(--font-mono)', color: 'var(--muted)' }}>{p.latest_team_code}</span>
               </span>
             </div>
