@@ -1,73 +1,10 @@
-import Link from 'next/link';
-import { api } from '../../lib/api';
 import { resolveSelection } from '../../lib/featured';
-import { num, int, pct } from '../../lib/format';
-import ErrorBox from '../../components/ErrorBox';
-import PageHead from '../../components/PageHead';
-import StatTable from '../../components/StatTable';
-import { NATION_COLUMNS as COLUMNS, STAT_GROUPS } from '../../lib/columns';
+import NationsView from '../../components/views/NationsView';
 
 export const metadata = { title: 'Nations' };
 
-// "By Region" now uses the TEAM-SLOT basis (represented country -> region_group),
-// from /api/intl/regions, so these cards match the Regions page exactly. The
-// country table below stays player-nationality (what the Nations page is about).
-function regionCards(standings) {
-  const m = {};
-  for (const r of standings) {
-    const g = r.region_group || 'Other';
-    (m[g] ??= { region: g, countries: 0, games: 0, wins: 0 });
-    m[g].countries += 1;
-    m[g].games += num(r.games);
-    m[g].wins += num(r.wins);
-  }
-  return Object.values(m)
-    .map((x) => ({ ...x, win_rate: x.games ? (x.wins / x.games) * 100 : 0 }))
-    .sort((a, b) => b.games - a.games);
-}
-
 export default async function NationsPage({ searchParams }) {
   const sp = await searchParams;
-  const { q, label } = await resolveSelection(sp);
-
-  // Country table is primary (player nationality); region cards are the team-slot
-  // rollup. Fetch both; only a failed nations call blocks the page.
-  const [natRes, regRes] = await Promise.allSettled([api.nations(q), api.regions(q)]);
-  const rows = natRes.status === 'fulfilled' ? natRes.value : null;
-  const error = natRes.status === 'rejected' ? natRes.reason?.message : null;
-  const regions = regRes.status === 'fulfilled' ? regionCards(regRes.value.standings || []) : [];
-
-  return (
-    <div className="container">
-      <PageHead eyebrow={label} title="Nations">
-        Players by nationality. The region cards use team representation — see <Link href="/regions" className="accent">Regions</Link> for head-to-head.
-      </PageHead>
-
-      {error ? (
-        <ErrorBox error={error} />
-      ) : !rows || rows.length === 0 ? (
-        <div className="empty">No nationality data for this selection.</div>
-      ) : (
-        <>
-          {regions.length > 0 && (
-            <>
-              <div className="section-title">By Region <span className="sub">(team representation)</span></div>
-              <div className="cards">
-                {regions.map((r) => (
-                  <div className="card" key={r.region}>
-                    <div className="k">{r.region}</div>
-                    <div className="v">{pct(r.win_rate)}</div>
-                    <div className="sub">{int(r.countries)} countries · {int(r.games)} games</div>
-                  </div>
-                ))}
-              </div>
-            </>
-          )}
-
-          <div className="section-title">By Country <span className="sub">(player nationality)</span></div>
-          <StatTable columns={COLUMNS} groups={STAT_GROUPS} rows={rows} rowKey="country_code" defaultLimit={20} />
-        </>
-      )}
-    </div>
-  );
+  const sel = await resolveSelection(sp);
+  return <NationsView {...sel} />;
 }
