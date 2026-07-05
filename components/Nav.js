@@ -17,6 +17,7 @@ const NAV = [
       { label: 'Player Stats', href: '/players' },
       { label: 'Hero Stats', href: '/heroes' },
       { label: 'Team Stats', href: '/teams' },
+      { label: 'Draft Stats', href: '/draft' },
       { label: 'Nations', href: '/nations' },
       { label: 'Regions', href: '/regions' },
     ],

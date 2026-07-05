@@ -2,6 +2,14 @@
 
 import { img, PLACEHOLDER_HERO, PLACEHOLDER_ITEM } from '../lib/images';
 
+// Stopgap for 2 MSC 2026 players whose player_era_photo row isn't seeded yet
+// (KEI, MUIMINET) but whose photo files exist on the CDN — same map the Dashboard
+// uses; delete once seed_player_photos_msc2026.sql lands.
+const PHOTO_FALLBACK = {
+  KEI: 'https://raw.githubusercontent.com/Bokpau/mlbb-tool/main/int_player/mlbb_mgz_cut_kei_f.png',
+  MUIMINET: 'https://raw.githubusercontent.com/Bokpau/mlbb-tool/main/int_player/mlbb_sun_muiminet_cut_f.png',
+};
+
 // Image components for the match-detail page. Ported from the PH site, but the
 // hero/role/item/skill/rune assets are game-universal (same CDN), so they work
 // unchanged for the international site. Player PHOTOS are PH-repo-specific and keyed
@@ -63,7 +71,7 @@ export function RuneImg({ runeMap, size = 24, style = {}, alt }) {
     style={{ width: size, height: size, objectFit: 'contain', ...style }} />;
 }
 
-// No name-based player photo for intl — show the player's initial in a circle.
+// Initials fallback when there's no photo.
 export function PlayerAvatar({ name, size = 32, style = {} }) {
   const initial = (name || '?').trim().charAt(0).toUpperCase();
   return (
@@ -73,5 +81,32 @@ export function PlayerAvatar({ name, size = 32, style = {} }) {
       fontSize: size * 0.42, fontWeight: 700, color: 'var(--muted)', fontFamily: 'var(--font-display)',
       flexShrink: 0, ...style,
     }}>{initial}</div>
+  );
+}
+
+// Player's per-era photo (from the detail endpoint's photo_url), falling back to the
+// CDN stopgap by IGN. The initial sits underneath and the photo overlays it, so a
+// missing/broken image just hides itself (DOM onError, no setState) and the initial
+// shows through — no state, so no setState-in-render churn inside dense table rows.
+export function PlayerPhoto({ photoUrl, name, size = 32, style = {} }) {
+  const src = photoUrl || PHOTO_FALLBACK[String(name || '').toUpperCase()];
+  const initial = (name || '?').trim().charAt(0).toUpperCase();
+  return (
+    <div style={{
+      position: 'relative', width: size, height: size, borderRadius: '50%', overflow: 'hidden',
+      background: 'var(--surface2)', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center',
+      fontSize: size * 0.42, fontWeight: 700, color: 'var(--muted)', fontFamily: 'var(--font-display)', ...style,
+    }}>
+      {initial}
+      {src && (
+        <img
+          src={src}
+          alt={name || ''}
+          referrerPolicy="no-referrer"
+          onError={(e) => { e.target.style.display = 'none'; }}
+          style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }}
+        />
+      )}
+    </div>
   );
 }
