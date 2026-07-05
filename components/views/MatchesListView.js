@@ -215,7 +215,7 @@ export default function MatchesListView({ q = '', label = '' }) {
           teamByKey={teamByKey}
           metaByEra={metaByEra}
           wildCardGames={wildCardGames}
-          showDecider={(stage === 'all' || stage === 'qualifier') && wildCardGames.length > 0}
+          stage={stage}
         />
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
