@@ -240,7 +240,7 @@ export default function PlayerStatsView({ eff, label, initialRows }) {
                   onClick={() => setTeamFilter(code)}
                   style={{ display: 'inline-flex', alignItems: 'center', gap: 4, padding: '6px 10px' }}
                 >
-                  <TeamLogo src={teamLogoMap[code]} fallbackSrc={img.team(code)} className="avatar sq" style={{ width: 14, height: 14 }} />
+                  <TeamLogo src={teamLogoMap[code]} fallbackSrc={img.team(code)} className="avatar sq" style={{ width: 14, height: 14, objectFit: 'contain' }} />
                   <span style={{ fontSize: 10, fontFamily: 'var(--font-mono)' }}>{code}</span>
                 </button>
               ))}

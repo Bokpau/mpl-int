@@ -7,7 +7,7 @@ import { intlQuery } from '../lib/filters';
 import { num, int, dec, pct } from '../lib/format';
 import { img } from '../lib/images';
 import TeamLogo from './TeamLogo';
-import { RoleImg } from './Images';
+import { RoleImg, PlayerPhoto } from './Images';
 
 // Reusable, sortable stats table.
 //
@@ -280,7 +280,7 @@ function Cell({ col, row, rankIndex }) {
         <td className="l">
           <Link href={href} onClick={(e) => e.stopPropagation()}>
             <span className="idcell">
-              {photo ? <img className="avatar" src={photo} alt="" style={{ objectFit: 'cover', objectPosition: 'top' }} /> : null}
+              <PlayerPhoto photoUrl={photo} name={name} size={30} style={{ objectPosition: 'top' }} />
               <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                 <span className="name">{name}</span>
                 {country ? (
@@ -310,7 +310,7 @@ function Cell({ col, row, rankIndex }) {
           <Link href={href} onClick={(e) => e.stopPropagation()}>
             <span className="idcell">
               {flag ? <span style={{ fontSize: 13, display: 'inline-block', verticalAlign: 'middle' }}>{flag}</span> : null}
-              <TeamLogo src={logo} fallbackSrc={fallbackLogo} alt="" className="avatar sq" />
+              <TeamLogo src={logo} fallbackSrc={fallbackLogo} alt="" className="avatar sq" style={{ objectFit: 'contain' }} />
               <span className="name">{code}</span>
             </span>
             <span className="sub">{name}</span>
