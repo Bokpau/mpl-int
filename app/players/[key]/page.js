@@ -105,7 +105,7 @@ export default async function PlayerDetail({ params, searchParams }) {
           <div className="meta">
             {t.country_flag ? `${t.country_flag} ` : ''}
             {t.country ? `${t.country} · ` : ''}
-            {t.latest_team ? `${t.latest_team} · ` : ''}
+            {isCurrent && t.latest_team_era ? `${t.latest_team_era} · ` : t.latest_team ? `${t.latest_team} · ` : ''}
             {int(t.seasons_played)} editions · {int(t.matches_played)} matches · {int(t.games_played)} games
           </div>
         </div>

@@ -20,7 +20,13 @@ export default async function HistoryPlayers({ searchParams }) {
   const isSeasonFiltered = !!sel.eff.season;
   const configuredColumns = PLAYER_COLUMNS.map(c => {
     if (c.key === 'player') {
-      return { ...c, isHistory: true, isSeasonFiltered };
+      return {
+        ...c,
+        isHistory: true,
+        isSeasonFiltered,
+        subKey: isSeasonFiltered ? 'latest_team_name_era' : 'latest_team',
+        subFallbackKey: isSeasonFiltered ? 'latest_team_code_era' : 'latest_team_code'
+      };
     }
     return c;
   });

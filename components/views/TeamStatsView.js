@@ -6,7 +6,7 @@ import StatLegend from '../StatLegend';
 import { TEAM_COLUMNS as COLUMNS, STAT_GROUPS } from '../../lib/columns';
 
 // Team leaderboard for one selection. Selection-agnostic — the caller resolves `q`/`label`.
-export default async function TeamStatsView({ q, label, context = 'current' }) {
+export default async function TeamStatsView({ q, label, eff, context = 'current' }) {
   let rows = null;
   let error = null;
   try {
@@ -14,6 +14,19 @@ export default async function TeamStatsView({ q, label, context = 'current' }) {
   } catch (e) {
     error = e.message;
   }
+
+  const isSeasonFiltered = context === 'current' || (eff && !!eff.season);
+  const configuredColumns = COLUMNS.map(c => {
+    if (c.key === 'team') {
+      return {
+        ...c,
+        nameKey: isSeasonFiltered ? 'team_name_era' : 'team_name',
+        codeKey: isSeasonFiltered ? 'team_code_era' : 'team_code',
+        query: { context }
+      };
+    }
+    return c;
+  });
 
   return (
     <div className="container">
@@ -27,7 +40,7 @@ export default async function TeamStatsView({ q, label, context = 'current' }) {
         <div className="empty">No teams for this selection.</div>
       ) : (
         <StatTable
-          columns={COLUMNS}
+          columns={configuredColumns}
           groups={STAT_GROUPS}
           rows={rows}
           rowKey="team_key"

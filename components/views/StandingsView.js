@@ -17,7 +17,7 @@ const STANDINGS_COLUMNS = [
 
 // Team standings for one selection. Selection-agnostic — the caller resolves
 // `q`/`label` (resolveSelection for history, resolveCurrent for the live edition).
-export default async function StandingsView({ q, label }) {
+export default async function StandingsView({ q, label, eff, context = 'current' }) {
   let rows = null;
   let error = null;
   try {
@@ -27,6 +27,19 @@ export default async function StandingsView({ q, label }) {
   } catch (e) {
     error = e.message;
   }
+
+  const isSeasonFiltered = context === 'current' || (eff && !!eff.season);
+  const configuredColumns = STANDINGS_COLUMNS.map(c => {
+    if (c.key === 'team') {
+      return {
+        ...c,
+        nameKey: isSeasonFiltered ? 'team_name_era' : 'team_name',
+        codeKey: isSeasonFiltered ? 'team_code_era' : 'team_code',
+        query: { context }
+      };
+    }
+    return c;
+  });
 
   return (
     <div className="container">
@@ -40,10 +53,10 @@ export default async function StandingsView({ q, label }) {
         <div className="empty">No standings for this selection.</div>
       ) : (
         <StatTable
-          columns={STANDINGS_COLUMNS}
+          columns={configuredColumns}
           rows={rows}
           rowKey="team_key"
-          rowHref={{ base: '/teams/', key: 'team_key' }}
+          rowHref={{ base: '/teams/', key: 'team_key', query: { context } }}
           initialSort={{ key: 'wins', dir: 'desc' }}
         />
       )}
