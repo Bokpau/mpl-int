@@ -76,11 +76,11 @@ export default function DraftStatsView({ featured, eff, label }) {
 
   // Hero filter section
   const [selectedHero, setSelected] = useState(null);
-  const [synergyTab, setSynergyTab] = useState('overall'); // own side filter
   const [synergy, setSynergy] = useState(null);
   const [heroPatchesList, setHeroPatchesList] = useState([]); // selected hero patch distribution stats
   const [matchup, setMatchup] = useState(null);
   const [filterLoading, setFilterLoading] = useState(false);
+  const [modalData, setModalData] = useState(null); // { title: string, heroes: Array }
 
   // Fetch available patches list for the featured tournament on mount
   useEffect(() => {
@@ -126,7 +126,7 @@ export default function DraftStatsView({ featured, eff, label }) {
     });
   }, [side, phase, patch, scope, season]);
 
-  // Hero filter fetch (selectedHero, synergyTab, or global filters changes)
+  // Hero filter fetch (selectedHero or global filters changes)
   useEffect(() => {
     if (!selectedHero) { setSynergy(null); setHeroPatchesList([]); setMatchup(null); return; }
     setFilterLoading(true);
@@ -134,7 +134,7 @@ export default function DraftStatsView({ featured, eff, label }) {
     const qp = [];
     qp.push(`scope=${scope}`);
     qp.push(`season=${season}`);
-    if (synergyTab !== 'overall') qp.push(`side=${synergyTab}`);
+    if (side !== 'overall') qp.push(`side=${side}`);
     if (phase !== 'overall') qp.push(`stage=${phase}`);
     if (patch !== 'all') qp.push(`patch=${encodeURIComponent(patch)}`);
     
@@ -151,7 +151,7 @@ export default function DraftStatsView({ featured, eff, label }) {
       setMatchup(mu);
       setFilterLoading(false);
     });
-  }, [selectedHero, synergyTab, phase, patch, scope, season]);
+  }, [selectedHero, side, phase, patch, scope, season]);
 
   const toggleSort = (col) => {
     if (sort === col) setAsc(prev => !prev);
@@ -231,10 +231,10 @@ export default function DraftStatsView({ featured, eff, label }) {
     </th>
   );
 
-  const picked = heroes.filter(h => h.picks > 0).length;
-  const banned = heroes.filter(h => h.bans > 0).length;
-  const notBanned = heroes.filter(h => h.picks > 0 && h.bans === 0).length;
-  const notPicked = heroes.filter(h => h.bans > 0 && h.picks === 0).length;
+  const picked = heroes.filter(h => Number(h.picks) > 0).length;
+  const banned = heroes.filter(h => Number(h.bans) > 0).length;
+  const notBanned = heroes.filter(h => Number(h.picks) > 0 && Number(h.bans) === 0);
+  const notPicked = heroes.filter(h => Number(h.bans) > 0 && Number(h.picks) === 0);
 
   const filterLabel = () => {
     const parts = [];
@@ -292,17 +292,40 @@ export default function DraftStatsView({ featured, eff, label }) {
         <>
           {/* Hero Pool Summary */}
           <div style={{ display: 'flex', gap: 14, marginBottom: 24, flexWrap: 'wrap' }}>
-            {[
-              { label: 'Unique Heroes Picked', value: picked },
-              { label: 'Unique Heroes Banned', value: banned },
-              { label: 'Picked, Not Banned', value: notBanned },
-              { label: 'Banned, Not Picked', value: notPicked },
-            ].map(s => (
-              <div key={s.label} className="card" style={{ flex: '1 1 180px', padding: '14px 18px' }}>
-                <div className="k" style={{ marginBottom: 6 }}>{s.label}</div>
-                <div className="v" style={{ fontWeight: 800, color: 'var(--text)' }}>{s.value}</div>
+            <div className="card" style={{ flex: '1 1 180px', padding: '14px 18px' }}>
+              <div className="k" style={{ marginBottom: 6 }}>Unique Heroes Picked</div>
+              <div className="v" style={{ fontWeight: 800, color: 'var(--text)' }}>{picked}</div>
+            </div>
+            <div className="card" style={{ flex: '1 1 180px', padding: '14px 18px' }}>
+              <div className="k" style={{ marginBottom: 6 }}>Unique Heroes Banned</div>
+              <div className="v" style={{ fontWeight: 800, color: 'var(--text)' }}>{banned}</div>
+            </div>
+            <div className="card" style={{ flex: '1 1 180px', padding: '14px 18px' }}>
+              <div className="k" style={{ marginBottom: 6, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <span>Picked, Not Banned</span>
+                <button
+                  type="button"
+                  onClick={() => setModalData({ title: 'Picked, Not Banned Heroes', heroes: notBanned })}
+                  style={{ background: 'none', border: 'none', color: 'var(--accent)', cursor: 'pointer', fontFamily: 'var(--font-mono)', fontSize: 13, padding: 0 }}
+                >
+                  ⓘ
+                </button>
               </div>
-            ))}
+              <div className="v" style={{ fontWeight: 800, color: 'var(--text)' }}>{notBanned.length}</div>
+            </div>
+            <div className="card" style={{ flex: '1 1 180px', padding: '14px 18px' }}>
+              <div className="k" style={{ marginBottom: 6, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <span>Banned, Not Picked</span>
+                <button
+                  type="button"
+                  onClick={() => setModalData({ title: 'Banned, Not Picked Heroes', heroes: notPicked })}
+                  style={{ background: 'none', border: 'none', color: 'var(--accent)', cursor: 'pointer', fontFamily: 'var(--font-mono)', fontSize: 13, padding: 0 }}
+                >
+                  ⓘ
+                </button>
+              </div>
+              <div className="v" style={{ fontWeight: 800, color: 'var(--text)' }}>{notPicked.length}</div>
+            </div>
           </div>
 
           {/* Quick bar-list summary */}
@@ -502,23 +525,7 @@ export default function DraftStatsView({ featured, eff, label }) {
               // Select a hero below to view patch distribution, synergy, and role matchups
             </p>
 
-            {/* Side filter for hero section */}
-            <div style={{ display: 'flex', gap: 6, marginBottom: 16, flexWrap: 'wrap', alignItems: 'center' }}>
-              {[{ key: 'overall', label: 'Overall' }, { key: 'blue', label: 'Blue' }, { key: 'red', label: 'Red' }].map(t => (
-                <button
-                  type="button"
-                  key={t.key}
-                  onClick={() => setSynergyTab(t.key)}
-                  className={`col-toggle${synergyTab === t.key ? ' on' : ''}`}
-                  style={{ borderRadius: 4, padding: '4px 12px' }}
-                >
-                  {t.label}
-                </button>
-              ))}
-              <span style={{ fontFamily: 'var(--font-mono)', fontSize: 10, color: 'var(--muted2)', marginLeft: 8 }}>
-                // side filter applies to all hero detail stats below
-              </span>
-            </div>
+            {/* Side filter removed as it is redundant with the main filter */}
 
             {/* Hero buttons */}
             <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 24, padding: '16px', background: 'var(--surface2)', border: '1px solid var(--border)', borderRadius: 8 }}>
@@ -652,6 +659,44 @@ export default function DraftStatsView({ featured, eff, label }) {
             )}
           </div>
         </>
+      )}
+      {modalData && (
+        <div
+          onClick={() => setModalData(null)}
+          style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            style={{ width: 'min(480px, 100%)', maxHeight: '90vh', overflowY: 'auto', background: '#0b0b14', border: '1px solid var(--accent)', borderRadius: 4, boxShadow: '0 16px 36px rgba(0,0,0,0.85)' }}
+          >
+            <div className="match-popover-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--border)', padding: '12px 16px' }}>
+              <span className="match-popover-title" style={{ fontFamily: 'var(--font-mono)', fontSize: 12, fontWeight: 700, color: 'var(--accent)', letterSpacing: '.06em' }}>
+                // {modalData.title}
+              </span>
+              <button
+                className="match-popover-close"
+                onClick={() => setModalData(null)}
+                aria-label="Close"
+                style={{ background: 'none', border: 'none', color: 'var(--muted)', fontSize: 20, cursor: 'pointer' }}
+              >
+                &times;
+              </button>
+            </div>
+            <div style={{ padding: 16 }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(130px, 1fr))', gap: 12 }}>
+                {modalData.heroes.map(h => (
+                  <div key={h.heroid} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '6px 10px', background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 6 }}>
+                    <HeroImg heroid={h.heroid} size={24} />
+                    <span style={{ fontSize: 12, fontWeight: 600 }}>{h.hero_name}</span>
+                  </div>
+                ))}
+                {modalData.heroes.length === 0 && (
+                  <span style={{ color: 'var(--muted2)', fontSize: 12 }}>No heroes in this category.</span>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
