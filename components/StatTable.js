@@ -267,8 +267,21 @@ function Cell({ col, row, rankIndex }) {
     }
 
     case 'player': {
-      const name = row[col.nameKey] || row[col.fallbackKey];
-      const href = `${col.hrefBase}${encodeURIComponent(row[col.hrefKey])}`;
+      const eraName = row[col.nameKey] || row[col.fallbackKey];
+      const globalName = row.current_player;
+      
+      let name = eraName;
+      if (col.isHistory) {
+        if (col.isSeasonFiltered && globalName && globalName.toUpperCase() !== eraName.toUpperCase()) {
+          name = `${eraName} (${globalName})`;
+        } else if (!col.isSeasonFiltered && globalName) {
+          name = globalName;
+        }
+      }
+
+      const href = col.query
+        ? `${col.hrefBase}${encodeURIComponent(row[col.hrefKey])}?${new URLSearchParams(col.query).toString()}`
+        : `${col.hrefBase}${encodeURIComponent(row[col.hrefKey])}`;
       // Per-era player photo (full-body cutout); anchor to top so the face shows.
       const photo = col.photoKey ? row[col.photoKey] : null;
       
@@ -280,7 +293,7 @@ function Cell({ col, row, rankIndex }) {
         <td className="l">
           <Link href={href} onClick={(e) => e.stopPropagation()}>
             <span className="idcell">
-              <PlayerPhoto photoUrl={photo} name={name} size={30} style={{ objectPosition: 'top' }} />
+              <PlayerPhoto photoUrl={photo} name={eraName} size={30} style={{ objectPosition: 'top' }} />
               <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                 <span className="name">{name}</span>
                 {country ? (
@@ -302,7 +315,9 @@ function Cell({ col, row, rankIndex }) {
       const code = row[col.codeKey] || row[col.fallbackKey];
       const name = row[col.nameKey] || code;
       const logo = row[col.logoKey] || img.team(code);
-      const href = `${col.hrefBase}${encodeURIComponent(row[col.hrefKey])}`;
+      const href = col.query
+        ? `${col.hrefBase}${encodeURIComponent(row[col.hrefKey])}?${new URLSearchParams(col.query).toString()}`
+        : `${col.hrefBase}${encodeURIComponent(row[col.hrefKey])}`;
       const flag = col.flagKey ? row[col.flagKey] : null;
       const fallbackLogo = img.team(code);
       return (
@@ -469,7 +484,13 @@ export default function StatTable({ columns, rows, rowHref, rowKey, initialSort,
         </thead>
         <tbody>
           {visible.map((row, i) => {
-            const href = rowHref ? `${rowHref.base}${encodeURIComponent(row[rowHref.key])}` : null;
+            const href = rowHref ? (
+              rowHref.query ? (
+                `${rowHref.base}${encodeURIComponent(row[rowHref.key])}?${new URLSearchParams(rowHref.query).toString()}`
+              ) : (
+                `${rowHref.base}${encodeURIComponent(row[rowHref.key])}`
+              )
+            ) : null;
             return (
               <tr
                 key={(rowKey && row[rowKey]) ?? i}

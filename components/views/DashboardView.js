@@ -1,4 +1,3 @@
-import { Suspense } from 'react';
 import Link from 'next/link';
 import { api } from '../../lib/api';
 import { img } from '../../lib/images';
@@ -7,7 +6,6 @@ import { WILD_CARD_GROUPS, DECIDER, GAUNTLET_SERIES, buildSeries } from '../../l
 import ErrorBox from '../ErrorBox';
 import PageHead from '../PageHead';
 import TeamLogo from '../TeamLogo';
-import FilterBar from '../FilterBar';
 
 // WILD_CARD_GROUPS, DECIDER, GAUNTLET_SERIES and buildSeries now live in
 // lib/msc2026Bracket.js (shared with the Matches page Grid view) — imported above.
@@ -59,7 +57,7 @@ const listRow = (last) => ({ display: 'flex', alignItems: 'center', justifyConte
 // Full international dashboard for one selection. `q`/`label`/`eff`/`editions`/
 // `featured` come from a selection resolver (resolveSelection for history,
 // resolveCurrent for the live edition) — the view itself is selection-agnostic.
-export default async function DashboardView({ q, label, eff, editions = [], featured = null }) {
+export default async function DashboardView({ q, label, eff, editions = [], featured = null, context = 'current' }) {
   let matches = [], schedule = [], players = [], teams = [], heroes = [], bans = [], byRole = [], error = null;
   try {
     [matches, schedule, players, teams, heroes, bans, byRole] = await Promise.all([
@@ -78,15 +76,10 @@ export default async function DashboardView({ q, label, eff, editions = [], feat
   const hasData = matches.length || teams.length || players.length;
 
   const head = (
-    <>
-      <PageHead eyebrow={label} title="Dashboard">
-        The international stats hub — leading with the featured edition. Filter by
-        stage (Overall / Wild Card / Main) and minimum games.
-      </PageHead>
-      <Suspense fallback={<div className="filterbar" />}>
-        <FilterBar editions={editions} featured={featured} showEvent={false} showEdition={false} />
-      </Suspense>
-    </>
+    <PageHead eyebrow={label} title="Dashboard">
+      The international stats hub — leading with the featured edition. Filter by
+      stage (Overall / Wild Card / Main) and minimum games.
+    </PageHead>
   );
 
   if (error) {
@@ -253,7 +246,7 @@ export default async function DashboardView({ q, label, eff, editions = [], feat
           ))}
           {!recentSeries.length && !upcoming.length ? <div className="empty">No schedule data for this selection.</div> : null}
         </div>
-        <Link href="/results" style={{ display: 'block', textAlign: 'center', padding: '8px 12px', border: '1px solid var(--border2)', background: 'var(--surface2)', fontFamily: 'var(--font-mono)', fontSize: 10, color: 'var(--text)' }}>
+        <Link href={context === 'current' ? "/matches" : "/history/matches"} style={{ display: 'block', textAlign: 'center', padding: '8px 12px', border: '1px solid var(--border2)', background: 'var(--surface2)', fontFamily: 'var(--font-mono)', fontSize: 10, color: 'var(--text)' }}>
           View Full Schedule &amp; Matches →
         </Link>
       </div>

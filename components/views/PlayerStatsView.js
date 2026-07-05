@@ -13,9 +13,18 @@ import { CURRENT_PLAYER_COLUMNS as COLUMNS, STAT_GROUPS } from '../../lib/column
 // Player leaderboard for one selection. Customized specifically for the Current Tournament.
 // Supports interactive filters: Stage (Overall, Wild Card, Main), Side (Blue, Red),
 // W/L (Wins, Losses), Patches list, and client-side Role and Team filters.
-export default function PlayerStatsView({ eff, label, initialRows }) {
+export default function PlayerStatsView({ eff, label, initialRows, context = 'current', columns = COLUMNS }) {
   const scope = eff.scope || 'MSC';
   const season = eff.season || '2026';
+
+  const configuredColumns = useMemo(() => {
+    return columns.map(c => {
+      if (c.type === 'player' || c.type === 'team') {
+        return { ...c, query: { context } };
+      }
+      return c;
+    });
+  }, [columns, context]);
 
   // Server-side filter matches (refetched via API)
   const [stage, setStage] = useState(eff.stage || ''); // Overall = '', Wild Card = 'qualifier', Main = 'main'
@@ -282,11 +291,11 @@ export default function PlayerStatsView({ eff, label, initialRows }) {
         <div className="empty">No players matching the active filters.</div>
       ) : (
         <StatTable
-          columns={COLUMNS}
+          columns={configuredColumns}
           groups={STAT_GROUPS}
           rows={filteredRows}
           rowKey="player_key"
-          rowHref={{ base: '/players/', key: 'player_key' }}
+          rowHref={{ base: '/players/', key: 'player_key', query: { context } }}
           defaultLimit={20}
         />
       )}

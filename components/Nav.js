@@ -10,7 +10,7 @@ import Search from './Search';
 const NAV = [
   { label: 'Dashboard', href: '/' },
   { label: 'Standings', href: '/standings' },
-  { label: 'Matches', href: '/results' },
+  { label: 'Matches', href: '/matches' },
   {
     label: 'Stats',
     children: [
@@ -26,10 +26,14 @@ const NAV = [
     label: 'History',
     children: [
       { label: 'History Home', href: '/history' },
+      { label: 'Dashboard', href: '/history/dashboard' },
+      { label: 'Standings', href: '/history/standings' },
+      { label: 'Matches', href: '/history/matches' },
       { label: 'Players', href: '/history/players' },
       { label: 'Teams', href: '/history/teams' },
       { label: 'Heroes', href: '/history/heroes' },
       { label: 'Nations', href: '/history/nations' },
+      { label: 'Regions', href: '/history/regions' },
       { label: 'Records', href: '/history/records' },
     ],
   },

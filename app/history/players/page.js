@@ -1,43 +1,36 @@
+import { resolveSelection } from '../../../lib/featured';
 import { api } from '../../../lib/api';
-import { intlQuery } from '../../../lib/filters';
-import { PLAYER_COLUMNS, STAT_GROUPS } from '../../../lib/columns';
-import ErrorBox from '../../../components/ErrorBox';
-import StatTable from '../../../components/StatTable';
-import StatLegend from '../../../components/StatLegend';
+import { PLAYER_COLUMNS } from '../../../lib/columns';
+import PlayerStatsView from '../../../components/views/PlayerStatsView';
 
 export const metadata = { title: 'All-Time Players' };
 
-// Player careers — all editions by default; the History filter bar narrows them.
 export default async function HistoryPlayers({ searchParams }) {
   const sp = await searchParams;
-  const q = intlQuery(sp, null); // featured=null → aggregate unless a filter is set
-  let rows = null;
-  let error = null;
+  const sel = await resolveSelection(sp, false); // featured=null -> aggregate by default
+  
+  let initialRows = [];
   try {
-    rows = await api.leaderboard(q);
+    initialRows = await api.leaderboard(sel.q);
   } catch (e) {
-    error = e.message;
+    initialRows = [];
   }
 
+  // Format player names differently on season-filtered history pages
+  const isSeasonFiltered = !!sel.eff.season;
+  const configuredColumns = PLAYER_COLUMNS.map(c => {
+    if (c.key === 'player') {
+      return { ...c, isHistory: true, isSeasonFiltered };
+    }
+    return c;
+  });
+
   return (
-    <div>
-      {error ? (
-        <ErrorBox error={error} />
-      ) : !rows || rows.length === 0 ? (
-        <div className="empty">No players yet.</div>
-      ) : (
-        <>
-          <StatTable
-            columns={PLAYER_COLUMNS}
-            groups={STAT_GROUPS}
-            rows={rows}
-            rowKey="player_key"
-            rowHref={{ base: '/players/', key: 'player_key' }}
-            defaultLimit={20}
-          />
-          <StatLegend keys={['Win%', 'KDA', 'KP%', 'GPM', 'DPM', 'MVPs', 'Editions']} />
-        </>
-      )}
-    </div>
+    <PlayerStatsView
+      {...sel}
+      initialRows={initialRows}
+      context="history"
+      columns={configuredColumns}
+    />
   );
 }

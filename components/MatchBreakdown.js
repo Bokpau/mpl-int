@@ -35,7 +35,7 @@ function HeroCircle({ heroid, campid, size = 36 }) {
   );
 }
 
-export async function MatchBreakdown({ battleId }) {
+export async function MatchBreakdown({ battleId, isCurrent = true }) {
   let data = null;
   try { data = await api.match(battleId); } catch { }
   if (!data) return <div className="empty">Match not found.</div>;
@@ -79,7 +79,7 @@ export async function MatchBreakdown({ battleId }) {
   return (
     <>
       <div style={{ marginBottom: 12 }}>
-        <Link href="/results" style={{ fontFamily: 'var(--font-mono)', fontSize: 10, color: 'var(--muted2)', letterSpacing: '.1em', textTransform: 'uppercase' }}>
+        <Link href={isCurrent ? "/matches" : "/history/matches"} style={{ fontFamily: 'var(--font-mono)', fontSize: 10, color: 'var(--muted2)', letterSpacing: '.1em', textTransform: 'uppercase' }}>
           ← Matches
         </Link>
       </div>

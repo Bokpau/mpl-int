@@ -1,11 +1,11 @@
 import { Suspense } from 'react';
 import { resolveCurrent } from '../../lib/featured';
-import StandingsView from '../../components/views/StandingsView';
+import MatchesListView from '../../components/views/MatchesListView';
 import FilterBar from '../../components/FilterBar';
 
-export const metadata = { title: 'Standings' };
+export const metadata = { title: 'Matches' };
 
-export default async function StandingsPage({ searchParams }) {
+export default async function MatchesPage({ searchParams }) {
   const sp = await searchParams;
   const sel = await resolveCurrent(sp);
   return (
@@ -13,7 +13,7 @@ export default async function StandingsPage({ searchParams }) {
       <Suspense fallback={<div className="filterbar" />}>
         <FilterBar editions={sel.editions} featured={sel.featured} showEvent={false} showEdition={false} />
       </Suspense>
-      <StandingsView {...sel} />
+      <MatchesListView q={sel.q} label={sel.label} />
     </>
   );
 }

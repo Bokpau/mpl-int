@@ -6,7 +6,7 @@ import StatLegend from '../StatLegend';
 import { TEAM_COLUMNS as COLUMNS, STAT_GROUPS } from '../../lib/columns';
 
 // Team leaderboard for one selection. Selection-agnostic — the caller resolves `q`/`label`.
-export default async function TeamStatsView({ q, label }) {
+export default async function TeamStatsView({ q, label, context = 'current' }) {
   let rows = null;
   let error = null;
   try {
@@ -31,7 +31,7 @@ export default async function TeamStatsView({ q, label }) {
           groups={STAT_GROUPS}
           rows={rows}
           rowKey="team_key"
-          rowHref={{ base: '/teams/', key: 'team_key' }}
+          rowHref={{ base: '/teams/', key: 'team_key', query: { context } }}
           defaultLimit={20}
         />
       )}

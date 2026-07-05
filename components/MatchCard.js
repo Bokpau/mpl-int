@@ -307,7 +307,7 @@ export default function MatchCard({ info, games, match_mvp, teamByKey = {} }) {
                 </div>
               </div>
 
-              <Link href={`/results/${g.battle_id}`} className="game-row__detail-btn">
+              <Link href={`/matches/${g.battle_id}`} className="game-row__detail-btn">
                 DETAIL →
               </Link>
             </div>

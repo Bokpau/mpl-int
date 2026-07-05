@@ -32,6 +32,8 @@ function Stat({ k, v, cls }) {
 export default async function TeamDetail({ params, searchParams }) {
   const { key } = await params;
   const sp = await searchParams;
+  const isCurrent = sp.context !== 'history';
+  const crumbLink = isCurrent ? '/teams' : '/history/teams';
   const q = intlQuery(sp);
 
   let data = null;
@@ -47,7 +49,7 @@ export default async function TeamDetail({ params, searchParams }) {
   if (error) {
     return (
       <div className="container">
-        <div className="crumb"><Link href="/teams">← Teams</Link></div>
+        <div className="crumb"><Link href={crumbLink}>← Teams</Link></div>
         <ErrorBox error={error} />
       </div>
     );
@@ -56,7 +58,7 @@ export default async function TeamDetail({ params, searchParams }) {
   if (notFound || !data) {
     return (
       <div className="container">
-        <div className="crumb"><Link href="/teams">← Teams</Link></div>
+        <div className="crumb"><Link href={crumbLink}>← Teams</Link></div>
         <div className="empty">No international record for this team under the current filters.</div>
       </div>
     );
@@ -66,7 +68,7 @@ export default async function TeamDetail({ params, searchParams }) {
 
   return (
     <div className="container">
-      <div className="crumb"><Link href="/teams">← Teams</Link></div>
+      <div className="crumb"><Link href={crumbLink}>← Teams</Link></div>
 
       <div className="detail-head">
         <TeamLogo src={t.team_logo_dark} fallbackSrc={img.team(t.team_code)} alt="" className="big-avatar sq" />
