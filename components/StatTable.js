@@ -7,6 +7,7 @@ import { intlQuery } from '../lib/filters';
 import { num, int, dec, pct } from '../lib/format';
 import { img } from '../lib/images';
 import TeamLogo from './TeamLogo';
+import { RoleImg } from './Images';
 
 // Reusable, sortable stats table.
 //
@@ -21,7 +22,7 @@ import TeamLogo from './TeamLogo';
 // type: 'rank' | 'player' | 'team' | 'hero' | 'country' | 'text' | (default) numeric
 // format (numeric only): 'int' (rounded) | 'dec' | 'pct'
 
-const IDENTITY_TYPES = ['rank', 'player', 'team', 'hero', 'country', 'text'];
+const IDENTITY_TYPES = ['rank', 'player', 'team', 'hero', 'country', 'text', 'role'];
 const isNumeric = (col) => !IDENTITY_TYPES.includes(col.type);
 
 function sortValue(col, row) {
@@ -251,6 +252,19 @@ function Cell({ col, row, rankIndex }) {
 
     case 'last_used':
       return <LastUsedCell col={col} row={row} />;
+
+    case 'role': {
+      const role = row[col.key];
+      return (
+        <td className="center" style={{ textAlign: 'center' }}>
+          {role && role !== '—' ? (
+            <span title={role} aria-label={role} style={{ display: 'inline-flex', verticalAlign: 'middle' }}>
+              <RoleImg role={role} size={16} />
+            </span>
+          ) : '—'}
+        </td>
+      );
+    }
 
     case 'player': {
       const name = row[col.nameKey] || row[col.fallbackKey];
