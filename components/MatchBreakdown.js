@@ -4,6 +4,9 @@ import TeamLogo from './TeamLogo';
 import { img } from '../lib/images';
 import { HeroImg, HeroBanImg, RoleImg } from './Images';
 import { MatchAnalysis } from './MatchAnalysis';
+import { StatsAdvantageChart } from './StatsAdvantageChart';
+import { MatchViewer } from './MatchViewer';
+import { ItemTimings } from './ItemTimings';
 import { BoxScore } from './BoxScore';
 import { PlayerTable } from './PlayerTable';
 
@@ -37,7 +40,7 @@ export async function MatchBreakdown({ battleId }) {
   try { data = await api.match(battleId); } catch { }
   if (!data) return <div className="empty">Match not found.</div>;
 
-  const { match, era, teams, players, draft, gameMvp, matchMvp } = data;
+  const { match, era, teams, players, draft, events = [], gameMvp, matchMvp } = data;
 
   // Era code / key per camp (camp 1 = team_a, camp 2 = team_b).
   const eraCode = { 1: era?.team_a_era, 2: era?.team_b_era };
@@ -68,6 +71,10 @@ export async function MatchBreakdown({ battleId }) {
   );
 
   const gameMvpTeam = gameMvp ? eraCode[gameMvp.campid] || gameMvp.team_code : null;
+
+  const playerMap = Object.fromEntries(
+    players.map(p => [String(p.roleid), { heroid: p.heroid, campid: p.campid, name: p.player_name }])
+  );
 
   return (
     <>
@@ -211,10 +218,47 @@ export async function MatchBreakdown({ battleId }) {
 
       <PlayerTable camp1={camp1} camp2={camp2} camp1players={camp1players} camp2players={camp2players} />
 
+      {/* Realtime panels (Phase 4b) — populate only for games whose per-second CSVs
+          were imported; otherwise each shows its own "no data" state. */}
+      <details className="collapsible mt-8" open>
+        <summary><span className="section-header" style={{ marginBottom: 0 }}><span className="disclosure">▶</span>Stats Advantage</span></summary>
+        <div className="collapsible-body">
+          <div className="card">
+            <StatsAdvantageChart battleId={battleId} camp1Code={camp1?.team_code} camp2Code={camp2?.team_code} matchEvents={events} />
+          </div>
+        </div>
+      </details>
+
+      <details className="collapsible mt-8" open>
+        <summary><span className="section-header" style={{ marginBottom: 0 }}><span className="disclosure">▶</span>Map Viewer</span></summary>
+        <div className="collapsible-body">
+          <MatchViewer
+            battleId={battleId}
+            mapId={match.play_mode_id}
+            camp1Code={camp1?.team_code}
+            camp2Code={camp2?.team_code}
+            matchEvents={events}
+            playerMap={playerMap}
+            camp1={camp1}
+            camp2={camp2}
+            players={players}
+          />
+        </div>
+      </details>
+
       <details className="collapsible mt-8">
         <summary><span className="section-header" style={{ marginBottom: 0 }}><span className="disclosure">▶</span>Match Analysis</span></summary>
         <div className="collapsible-body">
           <MatchAnalysis players={players} camp1={camp1} camp2={camp2} />
+        </div>
+      </details>
+
+      <details className="collapsible mt-8">
+        <summary><span className="section-header" style={{ marginBottom: 0 }}><span className="disclosure">▶</span>Item Progression</span></summary>
+        <div className="collapsible-body">
+          <div className="card">
+            <ItemTimings battleId={battleId} camp1Code={camp1?.team_code} camp2Code={camp2?.team_code} />
+          </div>
         </div>
       </details>
     </>
