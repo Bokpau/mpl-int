@@ -64,24 +64,32 @@ export default function MatchResultsGrid({
     return m;
   }, [wildCardGames, series, isWildCard]);
 
-  const popoverFor = (mc, align) => {
-    const s = byCode[mc];
+  // The breakdown is a single screen-centered modal (not an inline popover): the
+  // match rows / series boxes are narrow and in columns, so an anchored popover
+  // clipped the data. Centered + scrollable = the full MatchCard is always visible.
+  const modal = (() => {
+    const s = active && byCode[active];
     if (!s) return null;
-    // Series boxes are narrow, so a centered 680px popover overflows the viewport —
-    // left-align it to the box instead. Full-width match rows stay centered.
-    const style = align === 'left' ? { left: 0, right: 'auto', transform: 'none' } : undefined;
     return (
-      <div className="match-popover" style={style}>
-        <div className="match-popover-header">
-          <span className="match-popover-title">// MATCH DETAILS</span>
-          <button className="match-popover-close" onClick={() => setActive(null)} aria-label="Close">&times;</button>
-        </div>
-        <div className="match-popover-body">
-          <MatchCard info={s.info} games={s.games} match_mvp={s.match_mvp} teamByKey={teamByKey} />
+      <div
+        onClick={() => setActive(null)}
+        style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}
+      >
+        <div
+          onClick={(e) => e.stopPropagation()}
+          style={{ width: 'min(680px, 100%)', maxHeight: '90vh', overflowY: 'auto', background: '#0b0b14', border: '1px solid var(--accent)', borderRadius: 4, boxShadow: '0 16px 36px rgba(0,0,0,0.85)' }}
+        >
+          <div className="match-popover-header">
+            <span className="match-popover-title">// MATCH DETAILS</span>
+            <button className="match-popover-close" onClick={() => setActive(null)} aria-label="Close">&times;</button>
+          </div>
+          <div style={{ padding: 12 }}>
+            <MatchCard info={s.info} games={s.games} match_mvp={s.match_mvp} teamByKey={teamByKey} />
+          </div>
         </div>
       </div>
     );
-  };
+  })();
 
   // A compact match row (used by Group Stage + the Main fallback grid). `s` is a
   // buildSeries() series.
@@ -112,18 +120,15 @@ export default function MatchResultsGrid({
           <TeamMark meta={teamByKey[bKey]} era={bEra} />
           <span className="team-code">{bEra}</span>
         </div>
-        {open && popoverFor(mc)}
       </div>
     );
   };
 
-  // A gauntlet/decider series box wired to the popover.
+  // A gauntlet/decider series box; its `i` opens the shared centered modal.
   const boxFor = (s, { title, compact } = {}) => (
     <SeriesBox key={s.match_code} title={title} teamMeta={metaByEra} compact={compact}
       aCode={s.team_a} bCode={s.team_b} aScore={s.a_wins} bScore={s.b_wins} winner={s.winner_code}
-      matchCode={s.match_code} open={active === s.match_code} onToggle={() => toggle(s.match_code)}>
-      {popoverFor(s.match_code, 'left')}
-    </SeriesBox>
+      matchCode={s.match_code} open={active === s.match_code} onToggle={() => toggle(s.match_code)} />
   );
 
   // ── Wild Card structure ─────────────────────────────────────────────────
@@ -183,6 +188,7 @@ export default function MatchResultsGrid({
           </details>
         ))}
         {mainWeeks.length === 0 && <div className="empty"><div>No matches found for the selected filter.</div></div>}
+        {modal}
       </div>
     );
   }
@@ -194,12 +200,14 @@ export default function MatchResultsGrid({
       {/* Group Stage — Day 1 / Day 2 match rows */}
       {wc.groupDays.length > 0 && (
         <Section title="Group Stage">
-          {wc.groupDays.map((d) => (
-            <div key={d.day} className="results-day-block">
-              <div className="results-day-header">DAY {d.day}</div>
-              <div className="results-day-matches">{d.matches.map(renderMatchRow)}</div>
-            </div>
-          ))}
+          <div style={{ display: 'grid', gridTemplateColumns: `repeat(${wc.groupDays.length}, minmax(0, 1fr))` }}>
+            {wc.groupDays.map((d, i) => (
+              <div key={d.day} className="results-day-block" style={i > 0 ? { borderLeft: '1px solid var(--border)' } : undefined}>
+                <div className="results-day-header">DAY {d.day}</div>
+                <div className="results-day-matches">{d.matches.map(renderMatchRow)}</div>
+              </div>
+            ))}
+          </div>
         </Section>
       )}
 
@@ -243,6 +251,7 @@ export default function MatchResultsGrid({
       {wc.groupDays.length === 0 && !hasDecider && wc.gauntletR1.length === 0 && (
         <div className="empty"><div>No matches found for the selected filter.</div></div>
       )}
+      {modal}
     </div>
   );
 }
