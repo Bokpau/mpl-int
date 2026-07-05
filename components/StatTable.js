@@ -268,35 +268,52 @@ function Cell({ col, row, rankIndex }) {
 
     case 'player': {
       const name = row[col.nameKey] || row[col.fallbackKey];
-      const sub = col.subKey ? (row[col.subKey] || row[col.subFallbackKey] || '') : '';
       const href = `${col.hrefBase}${encodeURIComponent(row[col.hrefKey])}`;
       // Per-era player photo (full-body cutout); anchor to top so the face shows.
       const photo = col.photoKey ? row[col.photoKey] : null;
+      
+      const country = row.country || '';
+      const flag = row.country_flag || '';
+      const sub = col.subKey ? (row[col.subKey] || row[col.subFallbackKey] || '') : '';
+      
       return (
         <td className="l">
           <Link href={href} onClick={(e) => e.stopPropagation()}>
             <span className="idcell">
               {photo ? <img className="avatar" src={photo} alt="" style={{ objectFit: 'cover', objectPosition: 'top' }} /> : null}
-              <span className="name">{name}</span>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                <span className="name">{name}</span>
+                {country ? (
+                  <span className="sub" style={{ fontSize: 9, display: 'inline-flex', alignItems: 'center', gap: 4, margin: 0, padding: 0 }}>
+                    <span>{flag}</span>
+                    <span>{country}</span>
+                  </span>
+                ) : sub ? (
+                  <span className="sub" style={{ margin: 0, padding: 0 }}>{sub}</span>
+                ) : null}
+              </div>
             </span>
-            {sub ? <span className="sub">{sub}</span> : null}
           </Link>
         </td>
       );
     }
 
     case 'team': {
-      const logo = col.logoKey ? row[col.logoKey] : null;
-      const fallbackLogo = img.team(row[col.codeKey]);
-      const name = row[col.nameKey] || row[col.codeKey] || row[col.fallbackKey];
+      const code = row[col.codeKey] || row[col.fallbackKey];
+      const name = row[col.nameKey] || code;
+      const logo = row[col.logoKey] || img.team(code);
       const href = `${col.hrefBase}${encodeURIComponent(row[col.hrefKey])}`;
+      const flag = col.flagKey ? row[col.flagKey] : null;
+      const fallbackLogo = img.team(code);
       return (
         <td className="l">
           <Link href={href} onClick={(e) => e.stopPropagation()}>
             <span className="idcell">
+              {flag ? <span style={{ fontSize: 13, display: 'inline-block', verticalAlign: 'middle' }}>{flag}</span> : null}
               <TeamLogo src={logo} fallbackSrc={fallbackLogo} alt="" className="avatar sq" />
-              <span className="name">{name}</span>
+              <span className="name">{code}</span>
             </span>
+            <span className="sub">{name}</span>
           </Link>
         </td>
       );

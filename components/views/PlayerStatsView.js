@@ -5,8 +5,10 @@ import ErrorBox from '../ErrorBox';
 import PageHead from '../PageHead';
 import StatTable from '../StatTable';
 import StatLegend from '../StatLegend';
-import { RoleImg, TeamImg } from '../Images';
-import { PLAYER_COLUMNS as COLUMNS, STAT_GROUPS } from '../../lib/columns';
+import { RoleImg } from '../Images';
+import TeamLogo from '../TeamLogo';
+import { img } from '../../lib/images';
+import { CURRENT_PLAYER_COLUMNS as COLUMNS, STAT_GROUPS } from '../../lib/columns';
 
 // Player leaderboard for one selection. Customized specifically for the Current Tournament.
 // Supports interactive filters: Stage (Overall, Wild Card, Main), Side (Blue, Red),
@@ -89,6 +91,19 @@ export default function PlayerStatsView({ eff, label, initialRows }) {
     if (!rows) return ['ALL'];
     const codes = [...new Set(rows.map(r => r.latest_team_code).filter(Boolean))].sort();
     return ['ALL', ...codes];
+  }, [rows]);
+
+  // Map of team code to its database dark logo URL for filters
+  const teamLogoMap = useMemo(() => {
+    const map = {};
+    if (rows) {
+      rows.forEach(r => {
+        if (r.latest_team_code && r.team_logo_dark) {
+          map[r.latest_team_code] = r.team_logo_dark;
+        }
+      });
+    }
+    return map;
   }, [rows]);
 
   // Apply client-side filters (Role, Team)
@@ -225,7 +240,7 @@ export default function PlayerStatsView({ eff, label, initialRows }) {
                   onClick={() => setTeamFilter(code)}
                   style={{ display: 'inline-flex', alignItems: 'center', gap: 4, padding: '6px 10px' }}
                 >
-                  <TeamImg code={code} size={14} />
+                  <TeamLogo src={teamLogoMap[code]} fallbackSrc={img.team(code)} className="avatar sq" style={{ width: 14, height: 14 }} />
                   <span style={{ fontSize: 10, fontFamily: 'var(--font-mono)' }}>{code}</span>
                 </button>
               ))}
