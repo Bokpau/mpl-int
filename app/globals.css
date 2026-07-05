@@ -959,3 +959,36 @@ table.h2h td .sub { font-size: 11px; }
   letter-spacing: 0.04em;
   opacity: 0.8;
 }
+
+/* ───────────────────────────────────────────────────────────────────
+   Match detail page — utility + layout classes ported from the PH site.
+   ─────────────────────────────────────────────────────────────────── */
+.mb-6 { margin-bottom: 24px !important; }
+.mt-8 { margin-top: 32px !important; }
+.tbl-scroll {
+  overflow-x: auto;
+  scrollbar-width: thin;
+  -webkit-overflow-scrolling: touch;
+}
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+.match-summary-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 24px;
+  align-items: start;
+}
+@media (min-width: 1024px) {
+  .match-summary-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
