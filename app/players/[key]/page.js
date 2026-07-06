@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { api } from '../../../lib/api';
 import { intlQuery } from '../../../lib/filters';
-import { img } from '../../../lib/images';
+import { resolveTeam } from '../../../lib/identity';
 import { int } from '../../../lib/format';
 import { pickFeatured, featuredPin } from '../../../lib/featured';
 import ErrorBox from '../../../components/ErrorBox';
@@ -71,7 +71,10 @@ export default async function PlayerDetail({ params, searchParams }) {
   ]);
 
   const t = career.totals;
-  const logo = img.team(t.latest_team_code);
+  // Era-correct team in Current context (FLCM / Team Falcons MENA), franchise in
+  // History/all-time context (FLCN / Team Falcons). See lib/identity.js.
+  const team = resolveTeam(t, isCurrent ? 'current' : 'alltime');
+  const logo = team.logo;
   
   // Resolve context-specific player photo:
   // - Current Tournament: Use current photo for the featured tournament
@@ -105,7 +108,7 @@ export default async function PlayerDetail({ params, searchParams }) {
           <div className="meta">
             {t.country_flag ? `${t.country_flag} ` : ''}
             {t.country ? `${t.country} · ` : ''}
-            {isCurrent && t.latest_team_era ? `${t.latest_team_era} · ` : t.latest_team ? `${t.latest_team} · ` : ''}
+            {team.name ? `${team.name} · ` : ''}
             {int(t.seasons_played)} editions · {int(t.matches_played)} matches · {int(t.games_played)} games
           </div>
         </div>
