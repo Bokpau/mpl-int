@@ -1,9 +1,11 @@
 'use client';
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import Link from 'next/link';
-import { HeroImg, TeamImg, ItemImg, SkillImg, RuneImg, PlayerAvatar } from '../../../components/Images';
+import { HeroImg, TeamImg, ItemImg, SkillImg, RuneImg, PlayerAvatar, PlayerPhoto } from '../../../components/Images';
 import FilterSidebar from '../../../components/FilterSidebar';
 import { VsTeamsTable } from '../../../components/VsTeamsTable';
+import TeamLogo from '../../../components/TeamLogo';
+import { img } from '../../../lib/images';
 
 // Current-tournament rich player dashboard — the recreated PH player page, scoped to
 // the featured edition (MSC 2026). Basics only; the 12 advanced-analytics tabs are a
@@ -93,15 +95,9 @@ export default function CurrentPlayerDashboard({ playerKey, scope, season, initi
   const [allPlayers, setAllPlayers] = useState([]);
   const [loading, setLoading] = useState(false);
   const [phase, setPhase] = useState('overall');
-  const [segment, setSegment] = useState('all');
-  const [week, setWeek] = useState(1);
-  const [rangeFrom, setRangeFrom] = useState(1);
-  const [rangeTo, setRangeTo] = useState(9);
   const [perfFilter, setPerfFilter] = useState('average');
   const [side, setSide] = useState('overall');
   const [result, setResult] = useState('all');
-  const [dateFrom, setDateFrom] = useState('');
-  const [dateTo, setDateTo] = useState('');
   const [patch, setPatch] = useState(null);
   const [patches, setPatches] = useState([]);
   const [heroPool, setHeroPool] = useState([]);
@@ -124,14 +120,11 @@ export default function CurrentPlayerDashboard({ playerKey, scope, season, initi
   const buildQ = useCallback(() => {
     const p = [`scope=${encodeURIComponent(scope)}`, `season=${encodeURIComponent(season)}`];
     if (phase !== 'overall') p.push(`phase=${encodeURIComponent(phase)}`);
-    if (segment === 'exact') p.push(`week=${week}`);
-    else if (segment === 'range') p.push(`week_from=${rangeFrom}`, `week_max=${rangeTo}`);
-    else if (segment === 'date_range' && dateFrom && dateTo) p.push(`date_from=${dateFrom}`, `date_to=${dateTo}`);
     if (side !== 'overall') p.push(`side=${side}`);
     if (patch && patch !== 'all') p.push(`patch=${encodeURIComponent(patch)}`);
     if (result !== 'all') p.push(`result=${result}`);
     return '?' + p.join('&');
-  }, [scope, season, phase, segment, week, rangeFrom, rangeTo, side, patch, result, dateFrom, dateTo]);
+  }, [scope, season, phase, side, patch, result]);
 
   // Detail (by key) + roster (for comparison / ranks). Re-fetch on any filter change.
   const q = buildQ();
@@ -266,9 +259,6 @@ export default function CurrentPlayerDashboard({ playerKey, scope, season, initi
   const filterLabel = () => {
     const p = [];
     if (phase !== 'overall') p.push(phase);
-    if (segment === 'exact') p.push(`W${week}`);
-    else if (segment === 'range') p.push(`W${rangeFrom}–${rangeTo}`);
-    else if (segment === 'date_range' && dateFrom && dateTo) p.push(`${dateFrom} – ${dateTo}`);
     if (side !== 'overall') p.push(side === 'blue' ? 'Blue Side' : 'Red Side');
     if (patch && patch !== 'all') p.push(patch);
     return p.length ? p.join(' · ') : 'All Games';
@@ -292,13 +282,13 @@ export default function CurrentPlayerDashboard({ playerKey, scope, season, initi
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <Link href="/players" style={{ fontFamily: 'var(--font-mono)', fontSize: 10, color: 'var(--accent)', textDecoration: 'none', letterSpacing: '.08em', textTransform: 'uppercase' }}>← Back to Players</Link>
             <Link href={`/teams/${player.team_code}`} style={{ display: 'flex', alignItems: 'center', gap: 8, textDecoration: 'none', background: 'rgba(255,255,255,0.03)', border: '1px solid var(--border)', borderRadius: 4, padding: '4px 10px' }}>
-              <TeamImg code={player.team_code} size={20} />
+              <TeamLogo src={player.team_logo_dark} fallbackSrc={img.team(player.team_code)} alt={player.team_code} style={{ width: 20, height: 20, objectFit: 'contain' }} />
               <span style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--text)', fontWeight: 700 }}>{player.team_code} PROFILE</span>
             </Link>
           </div>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: 20, flexWrap: 'wrap' }}>
-            <PlayerAvatar name={player.player_name} size={64} />
+            <PlayerPhoto photoUrl={player.photo_url} name={player.player_name} size={64} />
             <div style={{ flex: 1, minWidth: 200 }}>
               <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 32, fontWeight: 900, color: 'var(--text)', lineHeight: 1.1, margin: 0, textTransform: 'uppercase', letterSpacing: '0.02em' }}>{player.player_name}</h1>
               <div style={{ fontFamily: 'var(--font-mono)', fontSize: 12, color: 'var(--muted)', marginTop: 8, display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
@@ -337,12 +327,6 @@ export default function CurrentPlayerDashboard({ playerKey, scope, season, initi
         <div className="page-layout">
           <FilterSidebar
             phase={phase} setPhase={setPhase}
-            segment={segment} setSegment={setSegment}
-            week={week} setWeek={setWeek}
-            rangeFrom={rangeFrom} setRangeFrom={setRangeFrom}
-            rangeTo={rangeTo} setRangeTo={setRangeTo}
-            dateFrom={dateFrom} setDateFrom={setDateFrom}
-            dateTo={dateTo} setDateTo={setDateTo}
             patch={patch} setPatch={setPatch} patches={patches}
             side={side} setSide={setSide}
             result={result} setResult={setResult}

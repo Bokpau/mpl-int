@@ -124,12 +124,12 @@ export default function FilterSidebar({
       {/* SEASON */}
       {setPhase && (
         <div className="filter-section">
-          <div className="filter-section-label">Season</div>
+          <div className="filter-section-label">Stage</div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 4 }}>
             {[
-              { key: 'overall',        label: 'All', gridSpan: true },
-              { key: 'Regular Season', label: 'Reg. Season' },
-              { key: 'Playoffs',       label: 'Playoffs' },
+              { key: 'overall',   label: 'Overall', gridSpan: true },
+              { key: 'Wild Card', label: 'Wild Card' },
+              { key: 'Main',      label: 'Main' },
             ].map(t => (
               <button key={t.key} className={`filter-pill${phase === t.key ? ' active' : ''}`}
                 style={{
