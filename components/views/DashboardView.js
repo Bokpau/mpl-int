@@ -60,9 +60,9 @@ const listRow = (last) => ({ display: 'flex', alignItems: 'center', justifyConte
 // `featured` come from a selection resolver (resolveSelection for history,
 // resolveCurrent for the live edition) — the view itself is selection-agnostic.
 export default async function DashboardView({ q, label, eff, editions = [], featured = null, context = 'current' }) {
-  let matches = [], schedule = [], players = [], teams = [], heroes = [], bans = [], byRole = [], error = null;
+  let matches = [], schedule = [], players = [], teams = [], heroes = [], bans = [], byRole = [], eraTeams = [], error = null;
   try {
-    [matches, schedule, players, teams, heroes, bans, byRole] = await Promise.all([
+    [matches, schedule, players, teams, heroes, bans, byRole, eraTeams] = await Promise.all([
       api.matches(`${q}${q ? '&' : '?'}limit=2000`).catch(() => []),
       api.schedule(q).catch(() => []),
       api.leaderboard(q).catch(() => []),
@@ -70,9 +70,18 @@ export default async function DashboardView({ q, label, eff, editions = [], feat
       api.heroes(q).catch(() => []),
       api.heroBansSummary(q).catch(() => []),
       api.heroesByRole(q).catch(() => []),
+      api.eraTeams(q).catch(() => []),
     ]);
   } catch (e) {
     error = e.message;
+  }
+
+  // Era-code → { logo, flag } from team_era_name — the ONLY source that covers
+  // teams with no games yet, so the Main Group Stage bracket seeds show correct
+  // logos before Day 1. See lib/msc2026MainBracket.js.
+  const eraMeta = {};
+  for (const t of eraTeams) {
+    if (t.era_code) eraMeta[t.era_code] = { team_logo_dark: t.team_logo_dark, country_flag: t.country_flag };
   }
 
   const hasData = matches.length || teams.length || players.length;
@@ -102,8 +111,8 @@ export default async function DashboardView({ q, label, eff, editions = [], feat
         <div className="container">{head}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
             <SectionHeader>Main Group Stage</SectionHeader>
-            <MainGroupBracket title="Group A" group={a} teamMeta={{}} />
-            <MainGroupBracket title="Group B" group={b} teamMeta={{}} />
+            <MainGroupBracket title="Group A" group={a} teamMeta={eraMeta} />
+            <MainGroupBracket title="Group B" group={b} teamMeta={eraMeta} />
             <div style={{ fontSize: 10, color: 'var(--muted2)', fontFamily: 'var(--font-mono)' }}>
               Bo3 double elimination · fills in as each series is played · top 4 of each group advance to the Knockout.
             </div>
@@ -311,8 +320,8 @@ export default async function DashboardView({ q, label, eff, editions = [], feat
         <SectionHeader>{isWildCard ? 'Wild Card Standings' : isMainStage ? 'Main Group Stage' : 'Standings'}</SectionHeader>
         {isMainStage ? (
           <>
-            <MainGroupBracket title="Group A" group={mainA} teamMeta={teamMeta} />
-            <MainGroupBracket title="Group B" group={mainB} teamMeta={teamMeta} />
+            <MainGroupBracket title="Group A" group={mainA} teamMeta={{ ...eraMeta, ...teamMeta }} />
+            <MainGroupBracket title="Group B" group={mainB} teamMeta={{ ...eraMeta, ...teamMeta }} />
             <div style={{ fontSize: 10, color: 'var(--muted2)', fontFamily: 'var(--font-mono)' }}>
               Bo3 double elimination · fills in as each series is played · top 4 of each group advance to the Knockout.
             </div>

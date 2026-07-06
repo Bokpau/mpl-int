@@ -52,6 +52,7 @@ export default function MatchesListView({ q = '', label = '' }) {
   const [games, setGames] = useState([]);
   const [teams, setTeams] = useState([]);
   const [schedule, setSchedule] = useState([]);
+  const [eraTeams, setEraTeams] = useState([]);
   const [loading, setLoading] = useState(true);
   const [stage, setStage] = useState('all');
   const [week, setWeek] = useState(null);
@@ -71,11 +72,13 @@ export default function MatchesListView({ q = '', label = '' }) {
       fetch(`/api/intl/matches/rich${q}`).then(r => r.json()).catch(() => []),
       fetch(`/api/intl/teams${q}`).then(r => r.json()).catch(() => []),
       fetch(`/api/intl/schedule${q}`).then(r => r.json()).catch(() => []),
-    ]).then(([g, t, s]) => {
+      fetch(`/api/intl/era-teams${q}`).then(r => r.json()).catch(() => []),
+    ]).then(([g, t, s, e]) => {
       if (!alive) return;
       setGames(Array.isArray(g) ? g : []);
       setTeams(Array.isArray(t) ? t : []);
       setSchedule(Array.isArray(s) ? s : []);
+      setEraTeams(Array.isArray(e) ? e : []);
       setLoading(false);
     });
     return () => { alive = false; };
@@ -87,19 +90,24 @@ export default function MatchesListView({ q = '', label = '' }) {
     return m;
   }, [teams]);
 
-  // Era-code -> { logo, flag } lookup for the Decider bracket (keyed by era code).
+  // Era-code -> { logo, flag } lookup for the brackets (keyed by era code). Seeded
+  // from team_era_name (covers teams with no games yet — needed for the Main Group
+  // Stage bracket seeds), then overlaid with per-game data for played teams.
   const metaByEra = useMemo(() => {
     const m = {};
+    for (const t of eraTeams) {
+      if (t.era_code) m[t.era_code] = { team_logo_dark: t.team_logo_dark, country_flag: t.country_flag };
+    }
     for (const g of games) {
       for (const [era, key, flag] of [
         [g.team_a_era, g.team_a_key, g.team_a_flag],
         [g.team_b_era, g.team_b_key, g.team_b_flag],
       ]) {
-        if (era && !m[era]) m[era] = { team_logo_dark: teamByKey[key]?.team_logo_dark, country_flag: flag };
+        if (era && !m[era]?.team_logo_dark) m[era] = { team_logo_dark: teamByKey[key]?.team_logo_dark, country_flag: flag };
       }
     }
     return m;
-  }, [games, teamByKey]);
+  }, [games, teamByKey, eraTeams]);
 
   // All Wild Card games (unfiltered by week) — the Decider spans the whole stage.
   const wildCardGames = useMemo(() => games.filter(g => g.stage_type === 'qualifier'), [games]);
