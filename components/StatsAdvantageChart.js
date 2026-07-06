@@ -5,7 +5,7 @@ const BLUE = '#4da6ff';
 const RED  = '#ff4757';
 const API  = '';
 
-const ICONS = 'https://raw.githubusercontent.com/Bokpau/mlbb-tool/main/icons';
+const ICONS = 'https://cdn.jsdelivr.net/gh/Bokpau/mlbb-tool@main/icons';
 const iconUrl = name => `${ICONS}/${name}.png`;
 
 const W   = 800;

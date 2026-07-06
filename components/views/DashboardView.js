@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { api } from '../../lib/api';
-import { img } from '../../lib/images';
+import { img, cdnify } from '../../lib/images';
 import { num, int, dec } from '../../lib/format';
 import { WILD_CARD_GROUPS, DECIDER, GAUNTLET_SERIES, buildSeries } from '../../lib/msc2026Bracket';
 import { resolveMainGroup } from '../../lib/msc2026MainBracket';
@@ -688,7 +688,7 @@ function RankList({ title, rows, valueFn, teamMeta = {} }) {
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 0 }}>
             <span style={{ fontFamily: 'var(--font-mono)', color: 'var(--accent)', fontWeight: 700, fontSize: 11, width: 10 }}>{i + 1}</span>
             {photo
-              ? <img src={photo} alt="" referrerPolicy="no-referrer" style={{ width: 26, height: 26, borderRadius: '50%', objectFit: 'cover', background: 'var(--surface2)' }} />
+              ? <img src={cdnify(photo)} alt="" referrerPolicy="no-referrer" style={{ width: 26, height: 26, borderRadius: '50%', objectFit: 'cover', background: 'var(--surface2)' }} />
               : <span style={{ width: 26, height: 26, borderRadius: '50%', background: 'var(--surface2)', flexShrink: 0 }} />}
             <div style={{ display: 'flex', flexDirection: 'column', minWidth: 0 }}>
               <span style={{ fontSize: 12, fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.player}</span>

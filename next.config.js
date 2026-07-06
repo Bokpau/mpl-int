@@ -11,9 +11,11 @@ const CSP = [
   "object-src 'none'",
   "frame-ancestors 'none'",
   "form-action 'self'",
-  // Runtime images come from the shared raw.githubusercontent CDN; some team
-  // logos come from media.aerena.gg. data: covers inline placeholders.
-  "img-src 'self' data: https://raw.githubusercontent.com https://media.aerena.gg",
+  // Runtime images are served through jsDelivr (cdn.jsdelivr.net), which mirrors
+  // the mlbb-tool repo — raw.githubusercontent.com rate-limits (429) under load
+  // and is kept only as a fallback. Some team logos come from media.aerena.gg.
+  // data: covers inline placeholders.
+  "img-src 'self' data: https://cdn.jsdelivr.net https://raw.githubusercontent.com https://media.aerena.gg",
   // Next.js injects inline hydration scripts and inline styles (no nonce setup),
   // so 'unsafe-inline' is required. 'unsafe-eval'/ws: are dev-only (React refresh
   // + HMR) and never shipped to production.

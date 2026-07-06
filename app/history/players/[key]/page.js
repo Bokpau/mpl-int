@@ -3,6 +3,7 @@ import { api } from '../../../../lib/api';
 import { intlQuery } from '../../../../lib/filters';
 import { resolveTeam } from '../../../../lib/identity';
 import { int } from '../../../../lib/format';
+import { cdnify } from '../../../../lib/images';
 import ErrorBox from '../../../../components/ErrorBox';
 import PlayerLegacy from '../../../players/[key]/PlayerLegacy';
 
@@ -69,8 +70,8 @@ export default async function HistoryPlayerDetail({ params, searchParams }) {
 
       <div className="detail-head">
         {photo
-          ? <img className="big-avatar sq" src={photo} alt="" style={{ objectFit: 'cover', objectPosition: 'top' }} />
-          : logo ? <img className="big-avatar sq" src={logo} alt="" /> : null}
+          ? <img className="big-avatar sq" src={cdnify(photo)} alt="" style={{ objectFit: 'cover', objectPosition: 'top' }} />
+          : logo ? <img className="big-avatar sq" src={cdnify(logo)} alt="" /> : null}
         <div>
           <h1>{t.player || key}</h1>
           <div className="meta">

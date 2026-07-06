@@ -1,6 +1,6 @@
 'use client';
 
-import { img, PLACEHOLDER_HERO, PLACEHOLDER_ITEM } from '../lib/images';
+import { img, PLACEHOLDER_HERO, PLACEHOLDER_ITEM, cdnify } from '../lib/images';
 
 // Stopgap for 2 MSC 2026 players whose player_era_photo row isn't seeded yet
 // (KEI, MUIMINET) but whose photo files exist on the CDN — same map the Dashboard
@@ -89,7 +89,7 @@ export function PlayerAvatar({ name, size = 32, style = {} }) {
 // missing/broken image just hides itself (DOM onError, no setState) and the initial
 // shows through — no state, so no setState-in-render churn inside dense table rows.
 export function PlayerPhoto({ photoUrl, name, size = 32, style = {} }) {
-  const src = photoUrl || PHOTO_FALLBACK[String(name || '').toUpperCase()];
+  const src = cdnify(photoUrl || PHOTO_FALLBACK[String(name || '').toUpperCase()]);
   const initial = (name || '?').trim().charAt(0).toUpperCase();
   return (
     <div style={{

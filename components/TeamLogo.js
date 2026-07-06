@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { cdnify } from '../lib/images';
 
 /**
  * TeamLogo component handles loading external team logos (e.g., from Liquipedia).
@@ -9,13 +10,17 @@ import { useState, useEffect } from 'react';
  * If that fallback also fails, it hides the image gracefully to avoid showing a broken image icon.
  */
 export default function TeamLogo({
-  src,
-  fallbackSrc,
+  src: rawSrc,
+  fallbackSrc: rawFallback,
   alt = '',
   style = {},
   className = '',
   ...props
 }) {
+  // Route any raw.githubusercontent URL (incl. DB-stored team_logo_dark) through
+  // the jsDelivr CDN to avoid GitHub's 429 rate limiting.
+  const src = cdnify(rawSrc);
+  const fallbackSrc = cdnify(rawFallback);
   // We determine the initial source. If both are present, try `src` first.
   const [currentSrc, setCurrentSrc] = useState(src || fallbackSrc || '');
   const [hasFailedPrimary, setHasFailedPrimary] = useState(false);
