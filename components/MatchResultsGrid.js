@@ -6,6 +6,7 @@ import { img } from '../lib/images';
 import MatchCard from './MatchCard';
 import { SeriesBox, QualifiedCol, SubHead, BracketCol } from './BracketBits';
 import { buildSeries, computeDecider, DECIDER, GAUNTLET_SERIES } from '../lib/msc2026Bracket';
+import { resolveMainGroup } from '../lib/msc2026MainBracket';
 
 // Grid view for the Matches page. For the Wild Card it mirrors the Dashboard's
 // bracket format, split into three collapsible sections classified the way BOK
@@ -37,7 +38,7 @@ function Section({ title, children }) {
 }
 
 export default function MatchResultsGrid({
-  series = [], teamByKey = {}, metaByEra = {}, wildCardGames = [], stage = 'all',
+  series = [], teamByKey = {}, metaByEra = {}, wildCardGames = [], mainGames = [], stage = 'all',
 }) {
   const [active, setActive] = useState(null); // open match_code
   const isWildCard = stage !== 'main';
@@ -53,7 +54,7 @@ export default function MatchResultsGrid({
 
   // match_code -> { info, games, match_mvp } for the popover MatchCard.
   const byCode = useMemo(() => {
-    const src = isWildCard ? wildCardGames : series.flatMap((s) => s.games);
+    const src = isWildCard ? wildCardGames : mainGames;
     const m = {};
     for (const g of src) {
       const c = g.match_code || g.battle_id;
@@ -150,44 +151,47 @@ export default function MatchResultsGrid({
     return { groupDays, gauntletR1: gauntlet.slice(0, 2), gauntletR2: gauntlet.slice(2, 4), ...computeDecider(all) };
   }, [wildCardGames]);
 
-  // ── Main fallback: Week → Day match-row grid ────────────────────────────
-  const mainWeeks = useMemo(() => {
-    if (isWildCard) return [];
-    const all = buildSeries(series.flatMap((s) => s.games));
-    const groups = {};
-    for (const s of all) {
-      const wk = s.week_number || 0, gk = `W${wk}`;
-      if (!groups[gk]) groups[gk] = { key: gk, label: wk ? `WEEK ${wk}` : 'OTHER', weekNum: wk, days: {} };
-      const dnum = s.day_number || 99, dk = `D${dnum}`;
-      if (!groups[gk].days[dk]) groups[gk].days[dk] = { label: dnum !== 99 ? `DAY ${dnum}` : 'OTHER DAYS', dayNum: dnum, matches: [] };
-      groups[gk].days[dk].matches.push(s);
-    }
-    return Object.values(groups).sort((a, b) => a.weekNum - b.weekNum);
-  }, [series, isWildCard]);
+  // ── Main stage: two double-elimination group brackets ───────────────────
+  // Resolved by team pairing off ALL Main games (mainGames), so the bracket spans
+  // the whole stage and advances regardless of the schedule's match_code numbering.
+  const mainGroups = useMemo(() => {
+    if (isWildCard) return null;
+    const all = buildSeries(mainGames);
+    return { A: resolveMainGroup('A', all), B: resolveMainGroup('B', all) };
+  }, [mainGames, isWildCard]);
+
+  // A single M1–M10 bracket node → SeriesBox. Scaffolds show the feeder label
+  // (e.g. "W M1") until the upstream result flows in.
+  const nodeBox = (n) => (
+    <SeriesBox key={n.id} title={n.id} teamMeta={metaByEra} compact
+      aCode={n.a} bCode={n.b} aLabel={n.aLabel} bLabel={n.bLabel}
+      aScore={n.aScore} bScore={n.bScore} winner={n.winner}
+      scaffold={!n.series}
+      matchCode={n.series ? n.series.match_code : undefined}
+      open={n.series ? active === n.series.match_code : false}
+      onToggle={n.series ? () => toggle(n.series.match_code) : undefined} />
+  );
+
+  const groupBracket = (label, g) => {
+    const byRound = (r) => g.nodes.filter((n) => n.round === r);
+    return (
+      <Section key={label} title={label}>
+        <div style={{ padding: 16, display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 16, alignItems: 'start' }}>
+          <BracketCol title="Upper R1" series={byRound('Upper R1')} renderBox={nodeBox} />
+          <BracketCol title="Upper R2" series={byRound('Upper R2')} renderBox={nodeBox} />
+          <BracketCol title="Lower R1" series={byRound('Lower R1')} renderBox={nodeBox} />
+          <BracketCol title="Lower R2" series={byRound('Lower R2')} renderBox={nodeBox} />
+          <QualifiedCol title="To Knockout" codes={g.qualifiers} teamMeta={metaByEra} />
+        </div>
+      </Section>
+    );
+  };
 
   if (!isWildCard) {
     return (
-      <div className="results-grid-container">
-        {mainWeeks.map((group) => (
-          <details key={group.key} className="results-week collapsible" open>
-            <summary className="results-week-summary">
-              <div className="results-week-head">
-                <span className="disclosure">▶</span>
-                <span className="results-week-title">{group.label}</span>
-                <span className="results-week-toggle-label">// Expand/Collapse</span>
-              </div>
-            </summary>
-            <div className="collapsible-body results-week-body">
-              {Object.values(group.days).sort((a, b) => a.dayNum - b.dayNum).map((day) => (
-                <div key={day.label} className="results-day-block">
-                  <div className="results-day-header">{day.label}</div>
-                  <div className="results-day-matches">{day.matches.map(renderMatchRow)}</div>
-                </div>
-              ))}
-            </div>
-          </details>
-        ))}
-        {mainWeeks.length === 0 && <div className="empty"><div>No matches found for the selected filter.</div></div>}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+        {mainGroups && groupBracket('Group A', mainGroups.A)}
+        {mainGroups && groupBracket('Group B', mainGroups.B)}
         {modal}
       </div>
     );

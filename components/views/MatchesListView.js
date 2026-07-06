@@ -103,6 +103,9 @@ export default function MatchesListView({ q = '', label = '' }) {
 
   // All Wild Card games (unfiltered by week) — the Decider spans the whole stage.
   const wildCardGames = useMemo(() => games.filter(g => g.stage_type === 'qualifier'), [games]);
+  // All Main-stage games (unfiltered by week) — the group bracket spans the whole
+  // stage, so it needs every Main game regardless of the week chip.
+  const mainGames = useMemo(() => games.filter(g => g.stage_type !== 'qualifier'), [games]);
 
   // Weeks present in the (stage-filtered) data, for the week chips.
   const weeks = useMemo(() => {
@@ -215,6 +218,7 @@ export default function MatchesListView({ q = '', label = '' }) {
           teamByKey={teamByKey}
           metaByEra={metaByEra}
           wildCardGames={wildCardGames}
+          mainGames={mainGames}
           stage={stage}
         />
       ) : (

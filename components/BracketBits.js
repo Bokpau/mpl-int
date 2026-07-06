@@ -23,19 +23,21 @@ export function SubHead({ children }) {
 
 export function SeriesBox({
   title, aCode, bCode, aScore, bScore, winner, teamMeta = {}, scaffold, compact,
-  matchCode, open, onToggle, children,
+  matchCode, open, onToggle, children, aLabel, bLabel,
 }) {
   const pad = compact ? '4px 10px' : '7px 10px';
   const sz = compact ? 16 : 18;
   const showInfo = matchCode && !scaffold && onToggle;
-  const row = (code) => {
+  // `label` is the display fallback (e.g. a feeder like "W M1") shown when a team
+  // slot isn't resolved to a real code yet — keeps the logo/flag off placeholders.
+  const row = (code, label) => {
     const meta = teamMeta[code] || {};
     const isWin = winner && winner === code;
     return (
       <div style={{ display: 'flex', alignItems: 'center', gap: 7, padding: pad }}>
         {code ? <TeamLogo src={meta.team_logo_dark} fallbackSrc={img.team(code)} alt="" style={{ width: sz, height: sz, objectFit: 'contain' }} /> : <span style={{ width: sz }} />}
         {code ? <Flag emoji={meta.country_flag} /> : null}
-        <span style={{ fontSize: 13, color: code ? (isWin ? 'var(--win)' : 'var(--text)') : 'var(--muted2)', fontWeight: isWin ? 700 : 400 }}>{code || 'TBD'}</span>
+        <span style={{ fontSize: 13, color: code ? (isWin ? 'var(--win)' : 'var(--text)') : 'var(--muted2)', fontWeight: isWin ? 700 : 400 }}>{code || label || 'TBD'}</span>
         <span style={{ marginLeft: 'auto', fontFamily: 'var(--font-mono)', fontSize: 13, fontWeight: 700, color: isWin ? 'var(--win)' : 'var(--muted2)' }}>
           {scaffold ? '–' : (code === aCode ? aScore : bScore)}
         </span>
@@ -50,9 +52,9 @@ export function SeriesBox({
           <button className={`match-info-btn ${open ? 'active' : ''}`} onClick={(e) => { e.stopPropagation(); onToggle(); }} aria-label="Toggle match breakdown">i</button>
         )}
       </div>
-      {row(aCode)}
+      {row(aCode, aLabel)}
       <div style={{ borderTop: '1px solid rgba(30,30,58,0.4)' }} />
-      {row(bCode)}
+      {row(bCode, bLabel)}
       {open && children}
     </div>
   );

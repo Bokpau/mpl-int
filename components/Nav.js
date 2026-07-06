@@ -9,7 +9,6 @@ import Search from './Search';
    real international (box-score) data are included — no dead-end tabs. ── */
 const NAV = [
   { label: 'Dashboard', href: '/' },
-  { label: 'Standings', href: '/standings' },
   { label: 'Matches', href: '/matches' },
   {
     label: 'Stats',
@@ -27,7 +26,6 @@ const NAV = [
     children: [
       { label: 'History Home', href: '/history' },
       { label: 'Dashboard', href: '/history/dashboard' },
-      { label: 'Standings', href: '/history/standings' },
       { label: 'Matches', href: '/history/matches' },
       { label: 'Players', href: '/history/players' },
       { label: 'Teams', href: '/history/teams' },
@@ -43,13 +41,6 @@ const I = { width: 18, height: 18 };
 const HomeIcon = () => (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" style={I}>
     <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" /><polyline points="9 22 9 12 15 12 15 22" />
-  </svg>
-);
-const TrophyIcon = () => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" style={I}>
-    <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6" /><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18" /><path d="M4 22h16" />
-    <path d="M10 14.66V17c0 .55-.45 1-1 1H4v2h16v-2h-5c-.55 0-1-.45-1-1v-2.34" />
-    <path d="M12 2a6 6 0 0 0-6 6v1c0 2.2 1.8 4 4 4h4c2.2 0 4-1.8 4-4V8a6 6 0 0 0-6-6z" />
   </svg>
 );
 const SwordsIcon = () => (
@@ -73,7 +64,7 @@ const ChevronIcon = () => (
     <polyline points="6 9 12 15 18 9" />
   </svg>
 );
-const ICONS = { Dashboard: HomeIcon, Standings: TrophyIcon, Matches: SwordsIcon, Stats: StatsIcon, History: HistoryIcon };
+const ICONS = { Dashboard: HomeIcon, Matches: SwordsIcon, Stats: StatsIcon, History: HistoryIcon };
 
 export default function Nav({ siteName }) {
   const pathname = usePathname();

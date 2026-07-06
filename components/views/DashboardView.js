@@ -3,6 +3,7 @@ import { api } from '../../lib/api';
 import { img } from '../../lib/images';
 import { num, int, dec } from '../../lib/format';
 import { WILD_CARD_GROUPS, DECIDER, GAUNTLET_SERIES, buildSeries } from '../../lib/msc2026Bracket';
+import { resolveMainGroup } from '../../lib/msc2026MainBracket';
 import ErrorBox from '../ErrorBox';
 import PageHead from '../PageHead';
 import TeamLogo from '../TeamLogo';
@@ -76,6 +77,12 @@ export default async function DashboardView({ q, label, eff, editions = [], feat
 
   const hasData = matches.length || teams.length || players.length;
 
+  // Main Group Stage bracket applies only to the MSC 2026 (EWC 26) Main stage.
+  // Computed up front so the bracket scaffold can show BEFORE the first Main game
+  // is played (otherwise the no-data guard below hides it).
+  const isMainStage = eff.stage === 'main'
+    && String(eff.season || '').includes('2026') && eff.scope !== 'MWC';
+
   const head = (
     <PageHead eyebrow={label} title="Dashboard">
       The international stats hub — leading with the featured edition. Filter by
@@ -87,6 +94,23 @@ export default async function DashboardView({ q, label, eff, editions = [], feat
     return <div className="container">{head}<ErrorBox error={error} /></div>;
   }
   if (!hasData) {
+    // Show the empty bracket scaffold for the Main stage even with no games yet.
+    if (isMainStage) {
+      const a = resolveMainGroup('A', []);
+      const b = resolveMainGroup('B', []);
+      return (
+        <div className="container">{head}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+            <SectionHeader>Main Group Stage</SectionHeader>
+            <MainGroupBracket title="Group A" group={a} teamMeta={{}} />
+            <MainGroupBracket title="Group B" group={b} teamMeta={{}} />
+            <div style={{ fontSize: 10, color: 'var(--muted2)', fontFamily: 'var(--font-mono)' }}>
+              Bo3 double elimination · fills in as each series is played · top 4 of each group advance to the Knockout.
+            </div>
+          </div>
+        </div>
+      );
+    }
     return (
       <div className="container">{head}
         <div className="empty">No games yet for this selection. Choose another edition or stage above.</div>
@@ -191,6 +215,14 @@ export default async function DashboardView({ q, label, eff, editions = [], feat
   const gauntletR2 = gauntletSeries.slice(2, 4);
   const qualified = gauntletR2.map((s) => s.winner_code).filter(Boolean);
 
+  // ── Main Group Stage bracket (MSC 2026 / EWC 26 only) ─────────────────────
+  // Two Bo3 double-elim groups, resolved by team pairing off the Main-stage
+  // series (allSeries here are already Main-only because the Main stage filter is
+  // applied to the query). `isMainStage` is computed up front (near the no-data
+  // guard) so the scaffold can render before the first game.
+  const mainA = isMainStage ? resolveMainGroup('A', allSeries) : null;
+  const mainB = isMainStage ? resolveMainGroup('B', allSeries) : null;
+
   const standingsTeams = [...teamsEra].sort((a, b) => (num(b.win_rate) - num(a.win_rate)) || (num(b.wins) - num(a.wins)));
 
   // ── Player rankings ────────────────────────────────────────────────────
@@ -276,8 +308,16 @@ export default async function DashboardView({ q, label, eff, editions = [], feat
 
       {/* Standings */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: 20, marginBottom: 28 }}>
-        <SectionHeader>{isWildCard ? 'Wild Card Standings' : 'Standings'}</SectionHeader>
-        {isWildCard ? (
+        <SectionHeader>{isWildCard ? 'Wild Card Standings' : isMainStage ? 'Main Group Stage' : 'Standings'}</SectionHeader>
+        {isMainStage ? (
+          <>
+            <MainGroupBracket title="Group A" group={mainA} teamMeta={teamMeta} />
+            <MainGroupBracket title="Group B" group={mainB} teamMeta={teamMeta} />
+            <div style={{ fontSize: 10, color: 'var(--muted2)', fontFamily: 'var(--font-mono)' }}>
+              Bo3 double elimination · fills in as each series is played · top 4 of each group advance to the Knockout.
+            </div>
+          </>
+        ) : isWildCard ? (
           <>
             {/* Group Stage */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
@@ -568,17 +608,19 @@ function QualifiedCol({ codes, teamMeta, title = 'Qualified' }) {
 
 // A single series box (two stacked teams + score). `scaffold` = TBD placeholder,
 // `compact` = tighter padding for dense brackets (Decider).
-function SeriesBox({ title, aCode, bCode, aScore, bScore, winner, teamMeta = {}, scaffold, compact }) {
+function SeriesBox({ title, aCode, bCode, aScore, bScore, winner, teamMeta = {}, scaffold, compact, aLabel, bLabel }) {
   const pad = compact ? '4px 10px' : '7px 10px';
   const sz = compact ? 16 : 18;
-  const row = (code) => {
+  // `label` is the display fallback (e.g. a feeder like "W M1") shown when a slot
+  // isn't resolved to a real team code yet.
+  const row = (code, label) => {
     const meta = teamMeta[code] || {};
     const isWin = winner && winner === code;
     return (
       <div style={{ display: 'flex', alignItems: 'center', gap: 7, padding: pad }}>
         {code ? <TeamLogo src={meta.team_logo_dark} fallbackSrc={img.team(code)} alt="" style={{ width: sz, height: sz, objectFit: 'contain' }} /> : <span style={{ width: sz }} />}
         {code ? <Flag emoji={meta.country_flag} /> : null}
-        <span style={{ fontSize: 13, color: code ? (isWin ? 'var(--win)' : 'var(--text)') : 'var(--muted2)', fontWeight: isWin ? 700 : 400 }}>{code || 'TBD'}</span>
+        <span style={{ fontSize: 13, color: code ? (isWin ? 'var(--win)' : 'var(--text)') : 'var(--muted2)', fontWeight: isWin ? 700 : 400 }}>{code || label || 'TBD'}</span>
         <span style={{ marginLeft: 'auto', fontFamily: 'var(--font-mono)', fontSize: 13, fontWeight: 700, color: isWin ? 'var(--win)' : 'var(--muted2)' }}>
           {scaffold ? '–' : (code === aCode ? aScore : bScore)}
         </span>
@@ -588,9 +630,40 @@ function SeriesBox({ title, aCode, bCode, aScore, bScore, winner, teamMeta = {},
   return (
     <div style={{ border: '1px solid var(--border)', background: 'var(--surface)' }}>
       {title ? <div style={{ fontSize: 9, fontFamily: 'var(--font-mono)', color: 'var(--muted2)', padding: compact ? '4px 10px 0' : '6px 10px 0' }}>{title}</div> : null}
-      {row(aCode)}
+      {row(aCode, aLabel)}
       <div style={{ borderTop: '1px solid rgba(30,30,58,0.4)' }} />
-      {row(bCode)}
+      {row(bCode, bLabel)}
+    </div>
+  );
+}
+
+// One round column of Main-stage bracket NODES (resolveMainGroup output).
+function MainBracketCol({ title, nodes, teamMeta }) {
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+      <div style={{ fontSize: 10, fontFamily: 'var(--font-mono)', color: 'var(--muted)', fontWeight: 700, textTransform: 'uppercase', textAlign: 'center' }}>{title}</div>
+      {nodes.map((n) => (
+        <SeriesBox key={n.id} title={n.id} teamMeta={teamMeta} compact
+          aCode={n.a} bCode={n.b} aLabel={n.aLabel} bLabel={n.bLabel}
+          aScore={n.aScore} bScore={n.bScore} winner={n.winner} scaffold={!n.series} />
+      ))}
+    </div>
+  );
+}
+
+// One group's full double-elimination bracket (Upper/Lower rounds + qualifiers).
+function MainGroupBracket({ title, group, teamMeta }) {
+  const byRound = (r) => group.nodes.filter((n) => n.round === r);
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+      <SubHead>{title}</SubHead>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 16, alignItems: 'start' }}>
+        <MainBracketCol title="Upper R1" nodes={byRound('Upper R1')} teamMeta={teamMeta} />
+        <MainBracketCol title="Upper R2" nodes={byRound('Upper R2')} teamMeta={teamMeta} />
+        <MainBracketCol title="Lower R1" nodes={byRound('Lower R1')} teamMeta={teamMeta} />
+        <MainBracketCol title="Lower R2" nodes={byRound('Lower R2')} teamMeta={teamMeta} />
+        <QualifiedCol title="To Knockout" codes={group.qualifiers} teamMeta={teamMeta} />
+      </div>
     </div>
   );
 }
