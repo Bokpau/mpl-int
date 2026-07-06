@@ -74,6 +74,9 @@ these true:
   (`img-src` / `font-src` / `style-src` / `connect-src`) in `next.config.js`, or
   the browser will silently block it. Widen by exact origin — never fall back to a
   blanket `*` or add `'unsafe-eval'` to production `script-src`.
+- Images are served from `https://cdn.jsdelivr.net` (see architecture-rules.md →
+  Rule 4); `img-src` must keep it allowed. A CSP change only takes effect after a
+  **server restart**, not HMR — restart and re-check before calling it done.
 
 ## Rule 5 — Environment variables
 

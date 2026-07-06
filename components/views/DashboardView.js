@@ -18,8 +18,8 @@ import { resolveTeam, identityMode } from '../../lib/identity';
 // database/seed_player_photos_msc2026.sql (their player_name_alias rows are the
 // real gap).
 const PHOTO_FALLBACK = {
-  KEI: 'https://raw.githubusercontent.com/Bokpau/mlbb-tool/main/int_player/mlbb_mgz_cut_kei_f.png',
-  MUIMINET: 'https://raw.githubusercontent.com/Bokpau/mlbb-tool/main/int_player/mlbb_sun_muiminet_cut_f.png',
+  KEI: 'https://cdn.jsdelivr.net/gh/Bokpau/mlbb-tool@main/int_player/mlbb_mgz_cut_kei_f.png',
+  MUIMINET: 'https://cdn.jsdelivr.net/gh/Bokpau/mlbb-tool@main/int_player/mlbb_sun_muiminet_cut_f.png',
 };
 
 

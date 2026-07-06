@@ -46,6 +46,26 @@ turn raw rows into stats or roll per-frame snapshots into series. If you find yo
 writing `.reduce()` to sum raw metrics, or grouping snapshots into a time-series inside
 a client component, stop — that logic goes in a backend endpoint.
 
+## Rule 4 — Images are served through jsDelivr, never `raw.githubusercontent.com`
+
+All runtime images (team logos, hero portraits, player photos, icons) load from the
+jsDelivr CDN (`https://cdn.jsdelivr.net/gh/Bokpau/mlbb-tool@main/…`). **`raw.githubusercontent.com`
+is not a CDN — it returns HTTP 429 (rate limit) under load and breaks images
+site-wide** (in the browser this surfaces as `net::ERR_BLOCKED_BY_ORB`, not an obvious
+429). jsDelivr mirrors the same repo with proper CDN caching.
+
+- Build image URLs with the [`lib/images.js`](lib/images.js) `img.*` helpers — their
+  base already points at jsDelivr. Do **not** hardcode a `raw.githubusercontent.com`
+  URL in a component.
+- Any image URL that comes from the **API / database** (e.g. `team_logo_dark`,
+  `photo_url`, which the backend stores as `raw.githubusercontent` URLs) MUST be passed
+  through `cdnify()` from `lib/images.js` before it reaches an `<img>`/`TeamLogo` `src`.
+  `cdnify()` rewrites a raw URL to jsDelivr and is a safe no-op otherwise. The shared
+  components `TeamLogo` and `PlayerPhoto` already do this — prefer them over a bare `<img>`.
+- Adding a **new image host** means widening the CSP `img-src` in `next.config.js`
+  (security-rules.md → Rule 4), or the browser silently blocks it. CSP changes need a
+  **server restart**, not just HMR, to take effect.
+
 ## What IS allowed on the client (not a violation)
 
 The site is genuinely interactive. These are presentation, not computation-to-hide:

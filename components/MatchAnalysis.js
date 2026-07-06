@@ -139,7 +139,7 @@ function DonutChart({ players, statKey, fmtFn, camp1, camp2 }) {
               {s.pct >= 5 && s.player.role_lane && (
                 <>
                   <image
-                    href={`https://raw.githubusercontent.com/Bokpau/mlbb-tool/main/Role/${encodeURIComponent(s.player.role_lane)}.png`}
+                    href={`https://cdn.jsdelivr.net/gh/Bokpau/mlbb-tool@main/Role/${encodeURIComponent(s.player.role_lane)}.png`}
                     x={s.lx - 10} y={s.ly - (s.pct >= 10 ? 14 : 10)}
                     width={s.pct >= 10 ? 20 : 16} height={s.pct >= 10 ? 20 : 16}
                     style={{ filter: 'drop-shadow(0 1px 2px rgba(0,0,0,.8))' }}

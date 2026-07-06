@@ -6,8 +6,8 @@ import { img, PLACEHOLDER_HERO, PLACEHOLDER_ITEM, cdnify } from '../lib/images';
 // (KEI, MUIMINET) but whose photo files exist on the CDN — same map the Dashboard
 // uses; delete once seed_player_photos_msc2026.sql lands.
 const PHOTO_FALLBACK = {
-  KEI: 'https://raw.githubusercontent.com/Bokpau/mlbb-tool/main/int_player/mlbb_mgz_cut_kei_f.png',
-  MUIMINET: 'https://raw.githubusercontent.com/Bokpau/mlbb-tool/main/int_player/mlbb_sun_muiminet_cut_f.png',
+  KEI: 'https://cdn.jsdelivr.net/gh/Bokpau/mlbb-tool@main/int_player/mlbb_mgz_cut_kei_f.png',
+  MUIMINET: 'https://cdn.jsdelivr.net/gh/Bokpau/mlbb-tool@main/int_player/mlbb_sun_muiminet_cut_f.png',
 };
 
 // Image components for the match-detail page. Ported from the PH site, but the
