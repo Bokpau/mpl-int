@@ -297,7 +297,7 @@ export default function PlayerStatsView({ eff, label, initialRows, context = 'cu
           groups={STAT_GROUPS}
           rows={filteredRows}
           rowKey="player_key"
-          rowHref={{ base: '/players/', key: 'player_key', query: { context } }}
+          rowHref={{ base: context === 'history' ? '/history/players/' : '/players/', key: 'player_key' }}
           defaultLimit={20}
         />
       )}

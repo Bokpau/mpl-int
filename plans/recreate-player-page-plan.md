@@ -166,11 +166,29 @@ meta scans currently see only MSC 2026 rows (the only live-collected edition) �
 revisit when MWC data lands. All aggregation is server-side and follows `stats-rules.md`
 (No-Averaging for KDA/KP/Turtle/Lord/Turret%/win%; averages for GPM/DPM/DTPM).
 
-**STATUS (implemented, awaiting deploy):** the 5 endpoints + `intlRichFilters()` +
-`resolveCurrentRoleid()` are written in `mpl-ph-s17-backend/index.js` (inserted before the
-`/api/intl/teams` route). `node --check` passes; helper/column refs verified against the
-schema. **Not deployed** (this sandbox can't push) — BOK reviews + deploys to Render, then
-the frontend can be built and verified against live routes.
+**STATUS — backend DONE (committed by BOK), frontend BUILT (compiles), awaiting browser
+verification.** The 5 endpoints + `intlRichFilters()` + `resolveCurrentRoleid()` live in
+`mpl-ph-s17-backend/index.js` before the `/api/intl/teams` route.
+
+Frontend built:
+- `app/history/players/[key]/page.js` — standalone career view (renders `PlayerLegacy`
+  under `history/layout.js`'s FilterBar). Compiles, returns 200.
+- `app/players/[key]/page.js` — server wrapper: resolves featured edition, fetches
+  `currentPlayer`, **redirects to `/history/players/[key]` on 404** (non-participant) or
+  when no featured edition resolves; else renders the dashboard.
+- `app/players/[key]/CurrentPlayerDashboard.js` — `'use client'` dashboard (masthead,
+  FilterSidebar, Performance Overview, Hero Pool, Comparison, vs-Teams, Win/Loss, Game
+  Log). Advanced-analytics section stripped (Phase 2).
+- Ported `components/FilterSidebar.js`, `components/VsTeamsTable.js`; added the missing
+  CSS classes to `app/globals.css`; `PlayerStatsView` history rows now link to
+  `/history/players/`; new `lib/api.js` methods (`currentRoster`/`currentPlayer`/
+  `currentRole*`/`patches`). Uses `PlayerAvatar` (intl has no `PlayerImg`).
+
+**Verification gap:** the MCP preview server (:3100) cannot reach BOK's local backend
+(:3001) — `ECONNREFUSED` (the earlier "500s" were this, not SQL). Whole module graph
+compiles clean (no build errors). Data/visual verification must happen in **BOK's browser**
+against a player who HAS current-edition rows (kairi has none yet → correctly redirects to
+history).
 
 ### Frontend: [mpl-intl](file:///Users/bok/Documents/GitHub/mpl-intl)
 

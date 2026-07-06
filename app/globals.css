@@ -992,3 +992,156 @@ table.h2h td .sub { font-size: 11px; }
     grid-template-columns: 1fr 1fr;
   }
 }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Player dashboard (current-tournament) — classes ported from the PH site for
+   the recreated rich player page: filter sidebar layout, sticky scroll tables,
+   and the loading spinner. See plans/recreate-player-page-plan.md. intl already
+   defines --surface2/--nav-h/--border2/--muted2, so these reuse them.
+   ═══════════════════════════════════════════════════════════════════════════ */
+.sr-only {
+  position: absolute;
+  width: 1px; height: 1px;
+  padding: 0; margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.page-layout { display: flex; align-items: flex-start; gap: 0; }
+
+.filter-sidebar {
+  width: 200px;
+  flex-shrink: 0;
+  position: sticky;
+  top: var(--nav-h);
+  max-height: calc(100vh - var(--nav-h));
+  overflow-y: auto;
+  padding: 16px 12px;
+  border-right: 1px solid var(--border);
+  scrollbar-width: none;
+}
+.filter-sidebar::-webkit-scrollbar { display: none; }
+
+.sidebar-content { flex: 1; min-width: 0; padding: 0 0 0 24px; }
+
+.filter-section {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 12px;
+  margin-bottom: 12px;
+}
+.filter-section-label {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: .1em;
+  color: var(--muted2);
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+.filter-pill {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  text-align: left;
+  min-height: 44px;
+  padding: 5px 11px;
+  font-family: var(--font-body);
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--muted);
+  background: none;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background .12s, color .12s, border-color .12s;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.filter-pill:hover { background: var(--surface2); color: var(--text); }
+.filter-pill.active {
+  border-color: var(--accent);
+  background: transparent;
+  color: var(--accent);
+  font-weight: 700;
+}
+
+@media (max-width: 640px) {
+  .filter-sidebar { display: none; }
+  .filter-sidebar.open {
+    display: block;
+    position: fixed;
+    bottom: 56px; left: 0; right: 0;
+    width: 100%;
+    max-height: 60vh;
+    overflow-y: auto;
+    border: none;
+    border-top: 1px solid var(--border);
+    background: var(--bg);
+    z-index: 50;
+    padding: 20px 16px;
+  }
+  .sidebar-content { padding: 0; }
+  .filter-toggle-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 14px;
+    font-family: var(--font-body);
+    font-size: 13px;
+    font-weight: 600;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text);
+    cursor: pointer;
+    margin-bottom: 16px;
+    border-radius: 4px;
+  }
+}
+@media (min-width: 641px) {
+  .filter-toggle-btn { display: none; }
+}
+
+/* Sticky scroll tables used by the dashboard (Hero Pool, Game Log, vs-Teams). */
+.tbl-wrap {
+  overflow: auto;
+  max-height: calc(100vh - var(--nav-h) - 32px);
+}
+.tbl-wrap .tbl thead th {
+  position: sticky;
+  top: 0;
+  z-index: 3;
+  background: var(--surface);
+}
+.tbl td.num {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+.tbl td.center,
+.tbl th.center { text-align: center; }
+
+/* Loading spinner. */
+.loading {
+  text-align: center;
+  padding: 60px 20px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--muted2);
+  letter-spacing: .06em;
+}
+.loading::before {
+  content: '';
+  display: block;
+  width: 28px; height: 28px;
+  border: 2px solid var(--border2);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  margin: 0 auto 16px;
+  animation: spin .7s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }

@@ -1,129 +1,61 @@
 import Link from 'next/link';
+import { redirect } from 'next/navigation';
 import { api } from '../../../lib/api';
-import { intlQuery } from '../../../lib/filters';
-import { resolveTeam } from '../../../lib/identity';
-import { int } from '../../../lib/format';
-import { pickFeatured, featuredPin } from '../../../lib/featured';
+import { getFeatured } from '../../../lib/featured';
 import ErrorBox from '../../../components/ErrorBox';
-import PlayerLegacy from './PlayerLegacy';
+import CurrentPlayerDashboard from './CurrentPlayerDashboard';
 
 export async function generateMetadata({ params }) {
   const { key } = await params;
   return { title: decodeURIComponent(key) };
 }
 
-// Full player legacy profile — career, per-team, per-season, hero pool, vs teams,
-// vs nation, and head-to-head compare. All editions by default; the History filter
-// bar (?season=…&stage=…) narrows every section the same way.
-export default async function PlayerDetail({ params, searchParams }) {
+// Current-tournament player dashboard (rich, MSC/MWC current edition only). Locked to
+// the featured edition. If the player has no rows in the current edition, we redirect
+// to their historical career profile — the two pages are otherwise independent (no
+// shared layout, no cross-links). See plans/recreate-player-page-plan.md.
+export default async function CurrentPlayerPage({ params }) {
   const { key } = await params;
-  const sp = await searchParams;
-  const isCurrent = sp.context === 'current';
-  
-  // If isCurrent is true, we want to fetch stats unfiltered by season/scope
-  const cleanSp = { ...sp };
-  if (isCurrent) {
-    delete cleanSp.season;
-    delete cleanSp.scope;
-    delete cleanSp.context;
-  }
-  const statsQ = intlQuery(cleanSp);
-  const q = intlQuery(sp);
 
-  let career = null;
+  const featured = await getFeatured();
+  // No featured edition resolvable -> there is no "current" context to show; send the
+  // visitor to the standalone history profile.
+  if (!featured) redirect(`/history/players/${encodeURIComponent(key)}`);
+
+  const scope = featured.tournament_code;
+  const season = featured.season;
+  const q = `?scope=${encodeURIComponent(scope)}&season=${encodeURIComponent(season)}`;
+
+  let initial = null;
   let error = null;
-  let notFound = false;
+  let notCurrent = false;
   try {
-    career = await api.playerCareer(key, statsQ);
+    initial = await api.currentPlayer(key, q);
   } catch (e) {
-    if (String(e.message).includes('404')) notFound = true;
+    // 404 from the backend = player not in the current edition -> history redirect.
+    // Any other error (e.g. backend unreachable) surfaces, so a transient failure
+    // never silently punts a real participant to history.
+    if (String(e.message).includes('404')) notCurrent = true;
     else error = e.message;
   }
 
-  const crumbLink = isCurrent ? '/players' : '/history/players';
+  if (notCurrent) redirect(`/history/players/${encodeURIComponent(key)}`);
 
   if (error) {
     return (
       <div className="container">
-        <div className="crumb"><Link href={crumbLink}>← Players</Link></div>
+        <div className="crumb"><Link href="/players">← Players</Link></div>
         <ErrorBox error={error} />
       </div>
     );
   }
 
-  if (notFound || !career || !career.totals) {
-    return (
-      <div className="container">
-        <div className="crumb"><Link href={crumbLink}>← Players</Link></div>
-        <div className="empty">No international record for this player under the current filters.</div>
-      </div>
-    );
-  }
-
-  // The remaining sections always exist for a player with games; fall back to empty
-  // shapes so one slow/failed section never blanks the whole page.
-  const [seasons, heroes, vsTeams, vsNations, players] = await Promise.all([
-    api.playerSeasons(key, statsQ).catch(() => null),
-    api.playerHeroes(key, statsQ).catch(() => []),
-    api.playerVsTeams(key, statsQ).catch(() => []),
-    api.playerVsNations(key, statsQ).catch(() => []),
-    api.leaderboard(statsQ).catch(() => []),
-  ]);
-
-  const t = career.totals;
-  // Era-correct team in Current context (FLCM / Team Falcons MENA), franchise in
-  // History/all-time context (FLCN / Team Falcons). See lib/identity.js.
-  const team = resolveTeam(t, isCurrent ? 'current' : 'alltime');
-  const logo = team.logo;
-  
-  // Resolve context-specific player photo:
-  // - Current Tournament: Use current photo for the featured tournament
-  // - History: Use the latest overall photo (default)
-  let photo = t.photo_url;
-  if (isCurrent) {
-    try {
-      const editions = await api.editions().catch(() => []);
-      const featured = pickFeatured(editions, featuredPin());
-      if (featured) {
-        const curCareer = await api.playerCareer(key, `?season=${encodeURIComponent(featured.season)}`);
-        if (curCareer?.totals?.photo_url) {
-          photo = curCareer.totals.photo_url;
-        }
-      }
-    } catch (e) {
-      // fallback to latest
-    }
-  }
-
   return (
-    <div className="container">
-      <div className="crumb"><Link href={crumbLink}>← Players</Link></div>
-
-      <div className="detail-head">
-        {photo
-          ? <img className="big-avatar sq" src={photo} alt="" style={{ objectFit: 'cover', objectPosition: 'top' }} />
-          : logo ? <img className="big-avatar sq" src={logo} alt="" /> : null}
-        <div>
-          <h1>{t.player || key}</h1>
-          <div className="meta">
-            {t.country_flag ? `${t.country_flag} ` : ''}
-            {t.country ? `${t.country} · ` : ''}
-            {team.name ? `${team.name} · ` : ''}
-            {int(t.seasons_played)} editions · {int(t.matches_played)} matches · {int(t.games_played)} games
-          </div>
-        </div>
-      </div>
-
-      <PlayerLegacy
-        playerKey={key}
-        query={q}
-        career={career}
-        seasons={seasons}
-        heroes={heroes}
-        vsTeams={vsTeams}
-        vsNations={vsNations}
-        players={players}
-      />
-    </div>
+    <CurrentPlayerDashboard
+      playerKey={key}
+      scope={scope}
+      season={season}
+      initial={initial}
+    />
   );
 }
