@@ -153,6 +153,8 @@ Phase 0.2 completeness query = 0 rows.
   deployed), Phase 1 (`lib/identity.js` resolver + Player Stats filter fix), Phase 2.2 (player
   detail header), Phase 3 (Teams/Standings/Dashboard routed through the resolver), Phase 4
   (`current-vs-history-rules.md` rewritten as the enforceable spec). Each frontend change verified
-  against the deployed backend (Falcons show `FLCM` / *Team Falcons MENA*). Remaining: schedule-seed
-  fix for `MSC2026GA_M2` (`FLCN 🇵🇭` → `FLCM 🇸🇦`), tracked separately.
+  against the deployed backend (MENA Falcons show `FLCM` / *Team Falcons MENA* on current pages).
+  Note: `FLCN` 🇵🇭 (PH Falcons) and `FLCM` 🇸🇦 (MENA Falcons) are two distinct MSC 2026 teams — the
+  earlier "schedule-seed bug" was a misread; that row is correct. Open question raised with BOK:
+  the MENA team's *franchise* code is `FLCN` (same as the PH team) — see below.
 </content>

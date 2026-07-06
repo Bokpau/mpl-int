@@ -72,8 +72,9 @@ Route every team render through:
 Era field names: teams → `team_code_era`, `team_name_era`; player rows → `latest_team_code_era`,
 `latest_team_name_era`. Logo → `team_logo_dark` (already era-correct), CDN fallback `img.team(eraCode)`.
 
-**Known data exception (not a code path):** the schedule feed row `MSC2026GA_M2` is seeded
-`FLCN 🇵🇭` instead of `FLCM 🇸🇦`; fix in the backend schedule seed (see task chip).
+**Two distinct Falcons teams in MSC 2026 — both codes are correct, never merge them (decision 3):**
+`FLCN` 🇵🇭 = the PH Team Falcons roster (Main stage); `FLCM` 🇸🇦 = Team Falcons MENA (Wildcard
+winner). The schedule row `MSC2026GA_M2` showing `FLCN 🇵🇭` is correct.
 
 ---
 
