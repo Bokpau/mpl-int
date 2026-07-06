@@ -19,6 +19,9 @@ out/
 *.swp
 *.swo
 
+# Other coding-assistant workspace files (tool-specific, not part of the app)
+.agents/
+
 # Logs
 *.log
 npm-debug.log*
