@@ -3,9 +3,11 @@ import { api } from '../../../lib/api';
 import { intlQuery } from '../../../lib/filters';
 import { img } from '../../../lib/images';
 import { int, dec, pct, wrClass } from '../../../lib/format';
+import { resolveCurrent } from '../../../lib/featured';
 import ErrorBox from '../../../components/ErrorBox';
 import StatTable from '../../../components/StatTable';
 import TeamLogo from '../../../components/TeamLogo';
+import CurrentTeamDashboard from './CurrentTeamDashboard';
 
 const ROSTER_COLUMNS = [
   { key: 'player', type: 'player', label: 'Player', nameKey: 'player', fallbackKey: 'player_key', photoKey: 'photo_url', hrefBase: '/players/', hrefKey: 'player_key' },
@@ -34,6 +36,47 @@ export default async function TeamDetail({ params, searchParams }) {
   const sp = await searchParams;
   const isCurrent = sp.context !== 'history';
   const crumbLink = isCurrent ? '/teams' : '/history/teams';
+
+  if (isCurrent) {
+    const sel = await resolveCurrent(sp);
+    let initial = null;
+    let error = null;
+    let notFound = false;
+    try {
+      initial = await api.team(key, sel.q);
+    } catch (e) {
+      if (String(e.message).includes('404')) notFound = true;
+      else error = e.message;
+    }
+
+    if (error) {
+      return (
+        <div className="container">
+          <div className="crumb"><Link href={crumbLink}>← Teams</Link></div>
+          <ErrorBox error={error} />
+        </div>
+      );
+    }
+
+    if (notFound || !initial) {
+      return (
+        <div className="container">
+          <div className="crumb"><Link href={crumbLink}>← Teams</Link></div>
+          <div className="empty">No international record for this team under the current filters.</div>
+        </div>
+      );
+    }
+
+    return (
+      <CurrentTeamDashboard
+        teamKey={key}
+        scope={sel.eff.scope || 'MSC'}
+        season={sel.eff.season || '2026'}
+        initial={initial}
+      />
+    );
+  }
+
   const q = intlQuery(sp);
 
   let data = null;
