@@ -155,6 +155,10 @@ Phase 0.2 completeness query = 0 rows.
   (`current-vs-history-rules.md` rewritten as the enforceable spec). Each frontend change verified
   against the deployed backend (MENA Falcons show `FLCM` / *Team Falcons MENA* on current pages).
   Note: `FLCN` 🇵🇭 (PH Falcons) and `FLCM` 🇸🇦 (MENA Falcons) are two distinct MSC 2026 teams — the
-  earlier "schedule-seed bug" was a misread; that row is correct. Open question raised with BOK:
-  the MENA team's *franchise* code is `FLCN` (same as the PH team) — see below.
+  earlier "schedule-seed bug" was a misread; that row is correct.
+- **2026-07-06** — Franchise split: the MENA Falcons `team_key 68a6f2a285…` had franchise code
+  `FLCN` (same as the separate PH team), colliding in All-Time/aggregate. Per BOK, gave it its own
+  franchise identity `FLCM` / *Team Falcons MENA* (backend `fix_falcons_mena_identity_intl.sql` +
+  seed update). Per-season era names unchanged; PH Team Falcons keeps `FLCN`. Needs BOK to apply the
+  UPDATE + deploy.
 </content>

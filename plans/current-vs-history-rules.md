@@ -74,7 +74,11 @@ Era field names: teams → `team_code_era`, `team_name_era`; player rows → `la
 
 **Two distinct Falcons teams in MSC 2026 — both codes are correct, never merge them (decision 3):**
 `FLCN` 🇵🇭 = the PH Team Falcons roster (Main stage); `FLCM` 🇸🇦 = Team Falcons MENA (Wildcard
-winner). The schedule row `MSC2026GA_M2` showing `FLCN 🇵🇭` is correct.
+winner, `team_key 68a6f2a285…`). The schedule row `MSC2026GA_M2` showing `FLCN 🇵🇭` is correct.
+The MENA team_key's **franchise** identity was set to `FLCM` / *Team Falcons MENA* (was `FLCN`) so
+it stays separate from the PH team in All-Time/aggregate too — see the backend
+`fix_falcons_mena_identity_intl.sql`. Its per-season era names (FLCN in 2024/2025/M5/M7) are
+unchanged.
 
 ---
 
