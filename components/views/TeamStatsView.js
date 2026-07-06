@@ -4,6 +4,7 @@ import PageHead from '../PageHead';
 import StatTable from '../StatTable';
 import StatLegend from '../StatLegend';
 import { TEAM_COLUMNS as COLUMNS, STAT_GROUPS } from '../../lib/columns';
+import { teamFieldKeys, identityMode } from '../../lib/identity';
 
 // Team leaderboard for one selection. Selection-agnostic — the caller resolves `q`/`label`.
 export default async function TeamStatsView({ q, label, eff, context = 'current' }) {
@@ -15,18 +16,11 @@ export default async function TeamStatsView({ q, label, eff, context = 'current'
     error = e.message;
   }
 
-  const isSeasonFiltered = context === 'current' || (eff && !!eff.season);
-  const configuredColumns = COLUMNS.map(c => {
-    if (c.key === 'team') {
-      return {
-        ...c,
-        nameKey: isSeasonFiltered ? 'team_name_era' : 'team_name',
-        codeKey: isSeasonFiltered ? 'team_code_era' : 'team_code',
-        query: { context }
-      };
-    }
-    return c;
-  });
+  // Era code/name for Current + season-filtered; franchise for all-time aggregate.
+  const keys = teamFieldKeys(identityMode(context, eff), 'team');
+  const configuredColumns = COLUMNS.map(c =>
+    c.key === 'team' ? { ...c, ...keys, query: { context } } : c
+  );
 
   return (
     <div className="container">

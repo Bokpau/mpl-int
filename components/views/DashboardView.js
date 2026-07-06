@@ -6,6 +6,7 @@ import { WILD_CARD_GROUPS, DECIDER, GAUNTLET_SERIES, buildSeries } from '../../l
 import ErrorBox from '../ErrorBox';
 import PageHead from '../PageHead';
 import TeamLogo from '../TeamLogo';
+import { resolveTeam, identityMode } from '../../lib/identity';
 
 // WILD_CARD_GROUPS, DECIDER, GAUNTLET_SERIES and buildSeries now live in
 // lib/msc2026Bracket.js (shared with the Matches page Grid view) — imported above.
@@ -94,25 +95,19 @@ export default async function DashboardView({ q, label, eff, editions = [], feat
   }
 
   // ── Team lookup (logo + represented-country flag) ───────────────────────────
-  // Keyed by BOTH franchise display code AND this edition's era code, so a lookup
-  // works with "FLCN" (display) or "FLCM" (era). Era codes + the display→era map
-  // come from the matches rows (which carry both).
-  const teamByKey = Object.fromEntries(teams.map((t) => [t.team_key, t]));
+  // Keyed by BOTH the franchise display code AND this edition's era code, so a
+  // lookup works with "FLCN" (franchise) or "FLCM" (era). The era code comes from
+  // the row itself via the identity resolver — teams/leaderboard rows carry the era
+  // fields directly, so no match-row re-derivation is needed. See lib/identity.js.
+  const mode = identityMode(context, eff);
   const teamMeta = {};
-  for (const t of teams) teamMeta[t.team_code] = t;
-  const displayToEra = {};
-  for (const m of matches) {
-    for (const [disp, era, key] of [[m.team_a, m.team_a_era, m.team_a_key], [m.team_b, m.team_b_era, m.team_b_key]]) {
-      if (disp && era) displayToEra[disp] = era;
-      const meta = teamByKey[key] || teamMeta[disp];
-      if (era && meta && !teamMeta[era]) teamMeta[era] = meta;
-    }
+  for (const t of teams) {
+    teamMeta[t.team_code] = t;
+    const rc = resolveTeam(t, mode).code;
+    if (rc && !teamMeta[rc]) teamMeta[rc] = t;
   }
-  // Franchise display code -> this edition's era code (teams/leaderboard rows only
-  // carry the display code). Identity: show the era name per edition.
-  const eCode = (c) => displayToEra[c] || c;
-  const teamsEra = teams.map((t) => ({ ...t, team_code: eCode(t.team_code) }));
-  const playersEra = players.map((p) => ({ ...p, latest_team_code: eCode(p.latest_team_code) }));
+  const teamsEra = teams.map((t) => ({ ...t, team_code: resolveTeam(t, mode).code }));
+  const playersEra = players.map((p) => ({ ...p, latest_team_code: resolveTeam(p, mode).code }));
 
   // ── Tournament Summary ──────────────────────────────────────────────────
   const gamesPlayed = matches.length;

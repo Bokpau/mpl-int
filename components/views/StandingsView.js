@@ -3,6 +3,7 @@ import ErrorBox from '../ErrorBox';
 import PageHead from '../PageHead';
 import StatTable from '../StatTable';
 import { num } from '../../lib/format';
+import { teamFieldKeys, identityMode } from '../../lib/identity';
 
 // League-table view: a leaner, wins-first cut of the team data.
 const STANDINGS_COLUMNS = [
@@ -28,18 +29,11 @@ export default async function StandingsView({ q, label, eff, context = 'current'
     error = e.message;
   }
 
-  const isSeasonFiltered = context === 'current' || (eff && !!eff.season);
-  const configuredColumns = STANDINGS_COLUMNS.map(c => {
-    if (c.key === 'team') {
-      return {
-        ...c,
-        nameKey: isSeasonFiltered ? 'team_name_era' : 'team_name',
-        codeKey: isSeasonFiltered ? 'team_code_era' : 'team_code',
-        query: { context }
-      };
-    }
-    return c;
-  });
+  // Era code/name for Current + season-filtered; franchise for all-time aggregate.
+  const keys = teamFieldKeys(identityMode(context, eff), 'team');
+  const configuredColumns = STANDINGS_COLUMNS.map(c =>
+    c.key === 'team' ? { ...c, ...keys, query: { context } } : c
+  );
 
   return (
     <div className="container">
