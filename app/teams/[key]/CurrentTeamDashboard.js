@@ -395,24 +395,53 @@ export default function CurrentTeamDashboard({ teamKey, scope, season, initial }
           {/* ── 2. ROSTER ── */}
           <div className="section-title">Roster</div>
           <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', marginBottom: 32 }}>
-            {sortedRoster.map(p => (
-              <div key={p.player_key} className="card" style={{ padding: '14px 16px', flex: '1 1 180px', maxWidth: 260 }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
-                  <span title={p.role_lane} aria-label={p.role_lane} style={{ display: 'inline-flex' }}>
-                    <RoleImg role={p.role_lane} size={20} />
-                  </span>
-                  <PlayerPhoto photoUrl={p.photo_url} name={p.player} size={40} />
-                  <Link href={`/players/${p.player_key}`} style={{ fontWeight: 700, fontSize: 14, color: 'var(--text)', textDecoration: 'none' }}>
-                    {p.player}
-                  </Link>
+            {sortedRoster.map(p => {
+              const heroes = (teamData?.player_heroes?.[p.player_key] || []).slice(0, 5);
+              return (
+                <div key={p.player_key} className="card" style={{ padding: '14px 16px', flex: '1 1 200px', maxWidth: 280, display: 'flex', flexDirection: 'column', gap: 12 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                    <span title={p.role_lane} aria-label={p.role_lane} style={{ display: 'inline-flex' }}>
+                      <RoleImg role={p.role_lane} size={20} />
+                    </span>
+                    <PlayerPhoto photoUrl={p.photo_url} name={p.player} size={40} />
+                    <Link href={`/players/${p.player_key}`} style={{ fontWeight: 700, fontSize: 14, color: 'var(--text)', textDecoration: 'none' }}>
+                      {p.player}
+                    </Link>
+                  </div>
+                  <div style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--muted)', display: 'flex', gap: 14 }}>
+                    <div>Games: <span style={{ color: 'var(--text)', fontWeight: 700 }}>{int(p.games)}</span></div>
+                    <div>Win%: <span style={{ color: wrClass(getPct(p.wins, p.games)), fontWeight: 700 }}>{getPct(p.wins, p.games)}%</span></div>
+                    <div>KDA: <span style={{ color: 'var(--accent)', fontWeight: 700 }}>{dec(p.kda)}</span></div>
+                  </div>
+                  {heroes.length > 0 && (
+                    <div style={{ borderTop: '1px solid rgba(255,255,255,.07)', paddingTop: 10 }}>
+                      <div style={{ fontFamily: 'var(--font-mono)', fontSize: 10, fontWeight: 600, color: 'rgba(255,255,255,.5)', letterSpacing: '.06em', marginBottom: 6 }}>
+                        TOP HEROES
+                      </div>
+                      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                        {heroes.map(h => {
+                          const wr = getPct(h.wins, h.games);
+                          return (
+                            <div key={h.hero_id || h.hero_name} title={`${h.hero_name} — ${h.games}G ${h.wins}W-${h.games - h.wins}L (${wr}% WR)`}
+                                 style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
+                              <div style={{
+                                borderRadius: '50%', overflow: 'hidden', width: 26, height: 26,
+                                boxShadow: `0 0 0 2px ${wr >= 50 ? 'var(--win)' : 'var(--loss)'}`
+                              }}>
+                                <HeroImg heroid={h.hero_id} size={26} style={{ display: 'block' }} />
+                              </div>
+                              <span style={{ fontFamily: 'var(--font-mono)', fontSize: 8, color: 'rgba(255,255,255,.6)' }}>
+                                {h.wins}W-{h.games - h.wins}L
+                              </span>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
                 </div>
-                <div style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--muted)' }}>
-                  <div>Games: {int(p.games)}</div>
-                  <div>Win%: {getPct(p.wins, p.games)}%</div>
-                  <div>KDA: {dec(p.kda)}</div>
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
 
           {/* ── 3. MATCH RESULTS ── */}
