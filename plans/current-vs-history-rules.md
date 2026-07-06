@@ -1,51 +1,114 @@
-# Mandatory Rules: Current Tournament vs. Historical Data
+# MANDATORY: Current-Tournament vs History Identity Rules
 
-This document defines the mandatory rules and display guidelines for handling current tournament data versus historical data. All frontend components, routes, and views must adhere to these rules.
+This is the enforceable contract for how Team code/name/logo and Player name/photo are
+displayed across **Current** (live/featured edition) vs **History** (edition-switchable)
+pages. It is not guidance — it is the spec every route, view, and endpoint must satisfy.
 
----
+Implementation: the resolver in [`lib/identity.js`](../lib/identity.js). Backend fields:
+`mpl-ph-s17-backend/database/schema_intl_views.sql` (`intl_player_stats` view).
 
-## 1. Naming & Branding Guidelines
-
-### Player Name Display
-1. **Current Tournament Pages** (all pages outside `/history`):
-   - Display the player's era-specific IGN for the current tournament. This is authoritative from the `player` field returned by the backend (already corrected in the API).
-2. **History Pages - Season-Filtered** (under `/history/...` with a specific season selected):
-   - Display the player's era-specific IGN followed by their stable global name in parentheses to prevent confusion.
-   - Format: `[Era IGN] ([Global Name])`, e.g., `FULLCLIP (Kairi)`.
-3. **History Pages - All-Time / Aggregate** (under `/history/...` with no specific season filter, showing all-time leaderboards):
-   - Display the player's latest global display name (e.g., `Kairi`).
-
-### Player Photo Display
-1. **Current Tournament Pages**:
-   - Display the player's photo for the current tournament (`photo_url`).
-   - **Fallback:** Initials Avatar (e.g., a circle with the first letter of their name, such as `K` for Kairi). Do not fallback to team logos.
-2. **History Pages**:
-   - Display the player's era-specific photo if available.
-   - **Fallback:** Initials Avatar.
-3. **Player Detail Page Header** (`/players/[key]`):
-   - This detail page is shared. The header photo must dynamically adjust:
-     - If accessed in the **Current Tournament** context (e.g. without historical query parameters or coming from `/players`), show the current tournament era photo.
-     - If accessed in the **History** context (e.g. from `/history/players` or with historical filter parameters), show their latest global photo.
-
-### Team Name & Logo Display
-1. **Current Tournament Pages**:
-   - Display the team's era-specific name (e.g., `Team Liquid PH`) and era-specific logo for the current tournament.
-2. **History Pages - Season-Filtered**:
-   - Display the era-correct name and logo for that specific season (e.g., `AURA PH` and the AURA logo in MSC 2021; `ECHO` and the ECHO logo in MSC 2023).
-3. **History Pages - All-Time / Aggregate**:
-   - Always roll up and display the stable franchise under its latest lineage name and latest logo (e.g., `Team Liquid PH` and the Team Liquid logo for the TLPH lineage).
-4. **Fallback:**
-   - There are no missing team era logos in the DB seed; the DB holds all required logos.
+Last updated: 2026-07-06.
 
 ---
 
-## 2. Route Separation & Locking
+## 0. Decisions (locked with BOK, 2026-07-06)
 
-1. **Current Tournament Pages**:
-   - Must be locked strictly to the live/featured tournament.
-   - Use the `resolveCurrent` helper to force-set the featured `scope` and `season` (ignoring any `season` or `scope` URL parameters).
-   - Only `stage` (e.g. qualifier, main) and `min_games` URL parameters are allowed.
-2. **History Pages**:
-   - Must be fully filterable.
-   - Use the `resolveSelection` helper which honors the `FilterBar` values (`scope`, `season`, `stage`, `min_games`).
-   - If no filters are chosen, default to all-time/aggregate.
+1. **A franchise code must NEVER appear on a Current or season-filtered page.** Those
+   pages show the edition's **era** code/name/logo. Example: MSC 2026 Falcons show `FLCM` /
+   *Team Falcons MENA*, never the PH franchise `FLCN` / *Team Falcons*.
+2. **Franchise code/name is allowed only in All-Time / cross-edition aggregates.**
+3. **Regional rosters of the same brand stay SEPARATE franchises.** Team Falcons MENA
+   (`FLCM`) and a PH Falcons roster (`FLCN`) do not merge in aggregates. This is already the
+   DB's behavior (distinct `team_key` per roster) — do not "helpfully" merge them.
+
+---
+
+## 1. The three-layer contract (all three must hold)
+
+Era-correctness is derived by `intl_player_stats` as
+`team_code_era = COALESCE(team_era_name.era_code, team_code)`. A franchise code leaks if any
+layer fails:
+
+| Layer | Requirement | If it fails |
+|---|---|---|
+| **A — Data** | Every participating `(season, team_key)` has a `team_era_name` row | `COALESCE` silently falls back to the franchise code |
+| **B — Backend** | Every endpoint that surfaces a team on a current/season page SELECTs the era fields | the frontend has no era value to show |
+| **C — Frontend** | Every current/season surface reads the era field **via `lib/identity.js`** | the reported filter/header bugs |
+
+**A** is gated by `database/diagnose_intl_era_gaps.sql` — it must return **zero rows** before an
+edition is featured. **B** is satisfied by all intl endpoints today (incl. `intlCareerTotals`).
+**C** is enforced by the resolver below.
+
+---
+
+## 2. The mandatory resolver (`lib/identity.js`)
+
+Never read `latest_team_code` / `team_code` (or the `_era` variants) directly in a component.
+Route every team render through:
+
+- `identityMode(context, eff)` → `'current' | 'season' | 'alltime'`
+  (`context === 'current'` → current; else a chosen `season` → season; else alltime).
+- `resolveTeam(row, mode)` → `{ code, name, logo, fallbackLogo }`. Auto-detects player rows
+  (`latest_team_*`) vs team rows (`team_*`). Era for current/season, franchise for alltime.
+- `teamFieldKeys(mode, shape)` → `{ codeKey, nameKey, logoKey }` for `StatTable` column configs.
+
+---
+
+## 3. Team display — field contract by Surface × Context
+
+`mode` = `identityMode(context, eff)`. "Era" = era fields; "Franchise" = franchise fields.
+
+| Surface | Current | Season-filtered | All-Time / aggregate | Wiring |
+|---|---|---|---|---|
+| Player Stats table (Team col) | Era | Era | Franchise | `CURRENT_PLAYER_COLUMNS` (era) / `PLAYER_COLUMNS` sub (franchise) |
+| **Player Stats Team filter** | Era | — | — | `resolveTeam(row,'current').code` |
+| Teams table | Era | Era | Franchise | `teamFieldKeys(mode,'team')` |
+| Standings table | Era | Era | Franchise | `teamFieldKeys(mode,'team')` |
+| Dashboard (rank lists, groups, standings) | Era | Era | Franchise | `resolveTeam(row, mode)` |
+| Player detail header | Era | Era | Franchise | `resolveTeam(totals, mode)` |
+| Team detail header | — | — | Franchise (latest lineage) | `team_code` / `team_name` |
+| Team detail per-season rows | — | Era | — | `team_code_era` / `team_name_era` |
+
+Era field names: teams → `team_code_era`, `team_name_era`; player rows → `latest_team_code_era`,
+`latest_team_name_era`. Logo → `team_logo_dark` (already era-correct), CDN fallback `img.team(eraCode)`.
+
+**Known data exception (not a code path):** the schedule feed row `MSC2026GA_M2` is seeded
+`FLCN 🇵🇭` instead of `FLCM 🇸🇦`; fix in the backend schedule seed (see task chip).
+
+---
+
+## 4. Player name & photo
+
+| Context | Name | Photo (fallback: **Initials avatar**, never a team logo) |
+|---|---|---|
+| Current | Era IGN (backend `player`, already corrected) | Current-edition era photo (`photo_url`) |
+| Season-filtered history | `Era IGN (Global Name)` — e.g. `FULLCLIP (Kairi)` | Era photo for that season |
+| All-Time history | Latest global display name — e.g. `Kairi` | Latest global photo |
+
+Player detail header (`/players/[key]`): Current context → current-edition photo; History → latest
+global photo. (Player name/photo is currently followed by convention in the columns + page wiring;
+a `resolvePlayer()` companion to `resolveTeam()` is the natural future extension if drift appears.)
+
+---
+
+## 5. Route separation & locking
+
+- **Current pages** (outside `/history`): locked to the live/featured edition via `resolveCurrent`
+  — `season`/`scope` URL params are ignored; only `stage` and `min_games` are honored.
+- **History pages** (`/history/...`): fully filterable via `resolveSelection` (FilterBar `scope`,
+  `season`, `stage`, `min_games`); no filters → All-Time aggregate.
+
+---
+
+## 6. Checklists
+
+**Every PR that touches team/player identity:**
+- [ ] No component reads `latest_team_code`/`team_code`/`*_era` directly — it goes through
+      `resolveTeam` / `teamFieldKeys` / `identityMode`.
+- [ ] Current/season surfaces show the era code (verify with the Falcons case: `FLCM`, never `FLCN`).
+- [ ] Any NEW team-surfacing endpoint SELECTs the `*_era` fields (Layer B).
+
+**Before featuring a new edition:**
+- [ ] `database/diagnose_intl_era_gaps.sql` returns **zero rows** (Layer A — every team seeded in
+      `team_era_name`).
+- [ ] Schedule/bracket seed uses era codes, not franchise codes.

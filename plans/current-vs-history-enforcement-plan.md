@@ -145,4 +145,14 @@ Phase 0.2 completeness query = 0 rows.
 - **Low risk:** backend change is additive (new columns on a response); no consumer breaks.
 - **Regional-roster separation** (decision 3) is already the DB's behavior (distinct `team_key`
   per roster) — document it so no one "helpfully" merges Falcons MENA into PH Falcons.
+
+---
+
+## Status log
+- **2026-07-06** — All phases complete. Phase 0 (backend career era fields + era-gap diagnostic,
+  deployed), Phase 1 (`lib/identity.js` resolver + Player Stats filter fix), Phase 2.2 (player
+  detail header), Phase 3 (Teams/Standings/Dashboard routed through the resolver), Phase 4
+  (`current-vs-history-rules.md` rewritten as the enforceable spec). Each frontend change verified
+  against the deployed backend (Falcons show `FLCM` / *Team Falcons MENA*). Remaining: schedule-seed
+  fix for `MSC2026GA_M2` (`FLCN 🇵🇭` → `FLCM 🇸🇦`), tracked separately.
 </content>
