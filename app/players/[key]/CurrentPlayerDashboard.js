@@ -1,7 +1,7 @@
 'use client';
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import Link from 'next/link';
-import { HeroImg, TeamImg, ItemImg, SkillImg, RuneImg, PlayerAvatar, PlayerPhoto } from '../../../components/Images';
+import { HeroImg, ItemImg, SkillImg, RuneImg, PlayerAvatar, PlayerPhoto } from '../../../components/Images';
 import FilterSidebar from '../../../components/FilterSidebar';
 import { VsTeamsTable } from '../../../components/VsTeamsTable';
 import TeamLogo from '../../../components/TeamLogo';
@@ -455,11 +455,11 @@ export default function CurrentPlayerDashboard({ playerKey, scope, season, initi
                           <div style={{ fontFamily: 'var(--font-display)', fontSize: 16, fontWeight: 800, color: 'var(--text)' }}>{me.player_name}</div>
                           <div style={{ fontFamily: 'var(--font-mono)', fontSize: 10, color: 'var(--muted2)' }}>{me.team_code} · {me.games || 0} GP</div>
                         </div>
-                        <PlayerAvatar name={me.player_name} size={40} />
+                        <PlayerPhoto photoUrl={me.photo_url} name={me.player_name} size={40} />
                       </div>
                       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'var(--font-mono)', fontSize: 10, fontWeight: 700, color: 'rgba(255,255,255,.3)', letterSpacing: '.1em' }}>VS</div>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '12px 16px', borderLeft: '1px solid var(--border)' }}>
-                        <PlayerAvatar name={them.player_name} size={40} />
+                        <PlayerPhoto photoUrl={them.photo_url} name={them.player_name} size={40} />
                         <div>
                           <div style={{ fontFamily: 'var(--font-display)', fontSize: 16, fontWeight: 800, color: 'var(--text)' }}>{them.player_name}</div>
                           <div style={{ fontFamily: 'var(--font-mono)', fontSize: 10, color: 'var(--muted2)' }}>{them.team_code} · {them.games || 0} GP</div>
@@ -719,7 +719,14 @@ export default function CurrentPlayerDashboard({ playerKey, scope, season, initi
                           <tr key={g.battle_id} style={{ background: rowBg, borderLeft: `3px solid ${rowAccent}` }}>
                             <td style={{ position: 'sticky', left: 0, zIndex: 2, background: stickyBg, boxShadow: '2px 0 8px rgba(0,0,0,.5)' }}>
                               <Link href={`/matches/${g.battle_id}`} style={{ color: 'var(--text)', textDecoration: 'none', display: 'flex', flexDirection: 'column', gap: 4 }}>
-                                {oppTeamCode && <TeamImg code={oppTeamCode} size={24} />}
+                                {g.opp_team_code && (
+                                  <TeamLogo
+                                    src={g.opp_team_logo_dark}
+                                    fallbackSrc={img.team(g.opp_team_code)}
+                                    alt={g.opp_team_code}
+                                    style={{ width: 24, height: 24, objectFit: 'contain' }}
+                                  />
+                                )}
                                 <div style={{ fontWeight: 700, fontSize: 13 }}>{g.series_name || g.room_name || '--'}</div>
                                 <div style={{ fontFamily: 'var(--font-mono)', fontSize: 10, color: 'var(--muted2)' }}>{g.week_number ? `W${g.week_number}` : ''} {g.game_number ? `G${g.game_number}` : ''}</div>
                               </Link>

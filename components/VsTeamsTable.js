@@ -2,7 +2,8 @@
 
 import React, { useState, useMemo } from 'react';
 import Link from 'next/link';
-import { TeamImg } from './Images';
+import TeamLogo from './TeamLogo';
+import { img } from '../lib/images';
 
 function n(v) { return (v !== null && v !== undefined && v !== '' && !isNaN(v)) ? v : '--'; }
 function big(v) { return (v !== null && v !== undefined && v !== '') ? Math.round(v).toLocaleString() : '--'; }
@@ -152,7 +153,7 @@ export function VsTeamsTable({ vsTeams, vsLoading }) {
                   <tr key={t.opp_team}>
                     <td style={{ position: 'sticky', left: 0, zIndex: 2, background: 'var(--surface)', boxShadow: '2px 0 8px rgba(0,0,0,.5)', whiteSpace: 'nowrap' }}>
                       <Link href={`/teams/${t.opp_team}`} style={{ display: 'flex', alignItems: 'center', gap: 8, color: 'var(--text)', textDecoration: 'none' }}>
-                        <TeamImg code={t.opp_team} size={28} />
+                        <TeamLogo src={t.opp_team_logo_dark} fallbackSrc={img.team(t.opp_team)} alt={t.opp_team} style={{ width: 28, height: 28, objectFit: 'contain' }} />
                         <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 700, fontSize: 12 }}>{t.opp_team}</span>
                       </Link>
                     </td>
