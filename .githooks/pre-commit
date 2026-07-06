@@ -1,0 +1,77 @@
+#!/usr/bin/env bash
+#
+# Pre-commit secret guard for mpl-intl.
+# Blocks a commit if staged changes contain secret-shaped files or values.
+# Dependency-free (pure git + grep); also runs `gitleaks` if it is installed.
+#
+# Enable once per clone:   git config core.hooksPath .githooks
+# Bypass in a real emergency (avoid):   git commit --no-verify
+#
+# See security-rules.md → Rule 5 (env vars) and Rule 6 (verify).
+
+set -euo pipefail
+
+RED=$'\033[0;31m'; YEL=$'\033[0;33m'; NC=$'\033[0m'
+fail() { echo "${RED}✖ pre-commit blocked:${NC} $1" >&2; BLOCKED=1; }
+BLOCKED=0
+
+# Staged files (Added/Copied/Modified/Renamed), NUL-safe.
+# Portable read loop (macOS ships bash 3.2, which has no `mapfile`).
+STAGED=()
+while IFS= read -r -d '' f; do STAGED+=("$f"); done \
+  < <(git diff --cached --name-only --diff-filter=ACMR -z)
+[ ${#STAGED[@]} -eq 0 ] && exit 0
+
+# ---------------------------------------------------------------------------
+# 1) Block secret-shaped FILES from being committed (even with `git add -f`).
+#    .env.local.example is the one allowed env file (placeholders only).
+# ---------------------------------------------------------------------------
+for f in "${STAGED[@]}"; do
+  case "$f" in
+    .env.local.example) : ;;                              # allowed placeholder
+    *.env|.env|.env.*|*/.env|*/.env.*) \
+      fail "env file staged: $f (secrets belong in the hosting dashboard, not git)";;
+    *.pem|*.key|*.p12|*.pfx|*id_rsa*|*/id_rsa*) \
+      fail "key/cert file staged: $f";;
+  esac
+done
+
+# ---------------------------------------------------------------------------
+# 2) Scan the ADDED lines of the staged diff for secret-shaped VALUES.
+#    Only added lines ('+') are checked, excluding the placeholder example
+#    and the lockfile. High-signal patterns only, to avoid false positives.
+# ---------------------------------------------------------------------------
+ADDED="$(git diff --cached --no-color -U0 --diff-filter=ACMR \
+          -- . ':(exclude).env.local.example' ':(exclude)package-lock.json' \
+          ':(exclude).githooks/pre-commit' ':(exclude)security-rules.md' \
+        | grep -E '^\+' | grep -Ev '^\+\+\+' || true)"
+
+if [ -n "$ADDED" ]; then
+  # Credential token shapes: JWT, Supabase sb_ keys, OpenAI sk-, AWS AKIA,
+  # GitHub ghp_/gho_, private-key headers, and postgres URLs with a password.
+  TOKENS='(eyJ[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,})|(sb_(secret|publishable)_[A-Za-z0-9]{10,})|(sk-[A-Za-z0-9]{20,})|(AKIA[0-9A-Z]{16})|(gh[pousr]_[A-Za-z0-9]{20,})|(-----BEGIN [A-Z ]*PRIVATE KEY-----)|(postgres(ql)?://[^:@/ ]+:[^@/ ]+@)'
+  HITS="$(echo "$ADDED" | grep -nEi "$TOKENS" || true)"
+  [ -n "$HITS" ] && { fail "credential-shaped value in staged diff:"; echo "$HITS" >&2; }
+
+  # Sensitive env var names assigned to a LITERAL (not process.env / a placeholder).
+  SECRET_ASSIGN='(INTERNAL_API_KEY|SUPABASE_SERVICE_ROLE_KEY|SERVICE_ROLE_KEY|ADMIN_PASSWORD|DATABASE_URL|SUPABASE_ANON_KEY)[[:space:]]*[:=][[:space:]]*["'"'"'][^"'"'"']'
+  ASSIGN="$(echo "$ADDED" | grep -nE "$SECRET_ASSIGN" \
+             | grep -Ev 'process\.env|replace-with|<[^>]+>|your-|example|placeholder|CHANGE|xxx' || true)"
+  [ -n "$ASSIGN" ] && { fail "hardcoded secret assignment (use process.env):"; echo "$ASSIGN" >&2; }
+fi
+
+# ---------------------------------------------------------------------------
+# 3) Deep scan with gitleaks when available (optional, no-op if not installed).
+# ---------------------------------------------------------------------------
+if command -v gitleaks >/dev/null 2>&1; then
+  gitleaks protect --staged --redact --no-banner 2>/dev/null || \
+    fail "gitleaks flagged staged changes (run: gitleaks protect --staged -v)"
+fi
+
+if [ "$BLOCKED" -ne 0 ]; then
+  echo "" >&2
+  echo "${YEL}Nothing was committed. Remove the secret, or if this is a false positive," >&2
+  echo "commit with --no-verify (discouraged).${NC}" >&2
+  exit 1
+fi
+exit 0

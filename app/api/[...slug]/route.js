@@ -22,6 +22,11 @@ export async function GET(request, { params }) {
     !Array.isArray(slug) ||
     slug.length === 0 ||
     slug.length > MAX_SLUG_DEPTH ||
+    // Scope the proxy to the international API only. Without this, the route would
+    // attach the shared INTERNAL_API_KEY to *any* backend path (e.g. /api/players),
+    // turning this deployment into an authenticated open proxy for the whole PH
+    // backend. Every browser call from this site is /api/intl/* (see lib/api.js).
+    slug[0] !== 'intl' ||
     slug.some((s) => !s || s === '.' || s === '..' || s.includes('/') || s.includes('\\'))
   ) {
     return NextResponse.json({ error: 'Bad request' }, { status: 400 });
