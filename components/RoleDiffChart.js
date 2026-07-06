@@ -63,53 +63,6 @@ function fmtTime(s) {
   return `${m}:${String(sec).padStart(2, '0')}`;
 }
 
-function buildSeries(snapshots) {
-  const byTime = new Map();
-  for (const snap of snapshots) {
-    const t = snap.game_time;
-    if (!byTime.has(t)) byTime.set(t, []);
-    byTime.get(t).push(snap);
-  }
-  const times = [...byTime.keys()].sort((a, b) => a - b);
-
-  return times.map(t => {
-    const frame = byTime.get(t);
-    const camp1 = frame.filter(p => p.campid === 1);
-    const camp2 = frame.filter(p => p.campid === 2);
-
-    const point = { game_time: t };
-
-    for (const stat of STATS) {
-      const k = stat.key;
-      // TEAM aggregate
-      const b = camp1.reduce((s, p) => s + (p[k] || 0), 0);
-      const r = camp2.reduce((s, p) => s + (p[k] || 0), 0);
-      point[`TEAM_blue_${k}`] = b;
-      point[`TEAM_red_${k}`]  = r;
-      point[`TEAM_diff_${k}`] = b - r;
-
-      // Per-role
-      for (const scope of SCOPES) {
-        if (scope.key === 'TEAM') continue;
-        const p1 = camp1.find(p => p.role === scope.key);
-        const p2 = camp2.find(p => p.role === scope.key);
-        if (p1 && p2) {
-          const bv = p1[k] || 0;
-          const rv = p2[k] || 0;
-          point[`${scope.key}_blue_${k}`] = bv;
-          point[`${scope.key}_red_${k}`]  = rv;
-          point[`${scope.key}_diff_${k}`] = bv - rv;
-        } else {
-          point[`${scope.key}_blue_${k}`] = null;
-          point[`${scope.key}_red_${k}`]  = null;
-          point[`${scope.key}_diff_${k}`] = null;
-        }
-      }
-    }
-    return point;
-  });
-}
-
 export function RoleDiffChart({ battleId, matchEvents = [], mapTime = 0, camp1Code, camp2Code }) {
   const [series, setSeries]     = useState(null);
   const [scope,  setScope]      = useState('TEAM');
@@ -118,9 +71,10 @@ export function RoleDiffChart({ battleId, matchEvents = [], mapTime = 0, camp1Co
   const svgRef                  = useRef(null);
 
   useEffect(() => {
-    fetch(`/api/intl/matches/${battleId}/map-data`)
+    // Series is pre-aggregated server-side (/role-diff); the chart only renders it.
+    fetch(`/api/intl/matches/${battleId}/role-diff`)
       .then(r => r.json())
-      .then(d => setSeries(buildSeries(d.snapshots || [])))
+      .then(d => setSeries(d.series || []))
       .catch(() => setSeries([]));
   }, [battleId]);
 
