@@ -8,6 +8,7 @@ import StatLegend from '../StatLegend';
 import { RoleImg } from '../Images';
 import TeamLogo from '../TeamLogo';
 import { img } from '../../lib/images';
+import { resolveTeam } from '../../lib/identity';
 import { CURRENT_PLAYER_COLUMNS as COLUMNS, STAT_GROUPS } from '../../lib/columns';
 
 // Player leaderboard for one selection. Customized specifically for the Current Tournament.
@@ -95,21 +96,22 @@ export default function PlayerStatsView({ eff, label, initialRows, context = 'cu
       });
   }, [stage, side, result, patch]);
 
-  // Client-side populated team list based on the active rows
+  // Client-side populated team list based on the active rows. Current pages are
+  // era-locked, so the filter must key on the era code (FLCM), never the franchise
+  // code (FLCN) — resolveTeam enforces that. See lib/identity.js.
   const availableTeams = useMemo(() => {
     if (!rows) return ['ALL'];
-    const codes = [...new Set(rows.map(r => r.latest_team_code).filter(Boolean))].sort();
+    const codes = [...new Set(rows.map(r => resolveTeam(r, 'current').code).filter(Boolean))].sort();
     return ['ALL', ...codes];
   }, [rows]);
 
-  // Map of team code to its database dark logo URL for filters
+  // Map of era team code -> its database dark logo URL for the filter chips.
   const teamLogoMap = useMemo(() => {
     const map = {};
     if (rows) {
       rows.forEach(r => {
-        if (r.latest_team_code && r.team_logo_dark) {
-          map[r.latest_team_code] = r.team_logo_dark;
-        }
+        const { code, logo } = resolveTeam(r, 'current');
+        if (code && logo) map[code] = logo;
       });
     }
     return map;
@@ -120,7 +122,7 @@ export default function PlayerStatsView({ eff, label, initialRows, context = 'cu
     if (!rows) return [];
     return rows.filter(row => {
       if (roleFilter !== 'ALL' && row.role_lane !== roleFilter) return false;
-      if (teamFilter !== 'ALL' && row.latest_team_code !== teamFilter) return false;
+      if (teamFilter !== 'ALL' && resolveTeam(row, 'current').code !== teamFilter) return false;
       return true;
     });
   }, [rows, roleFilter, teamFilter]);
