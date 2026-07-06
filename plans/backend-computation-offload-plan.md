@@ -22,14 +22,14 @@ Last updated: 2026-07-06.
   double-fetching. The only browser-shipped rollup is `MatchResultsGrid`'s **trivial win-count**
   `buildSeries`; `DashboardView`'s copy already runs **server-side**. Net value ≈ 0, so
   `buildSeries` stays in `lib/msc2026Bracket.js`. Recorded as an accepted exception in
-  [`architecture-rules.md`](architecture-rules.md).
+  [`architecture-rules.md`](../architecture-rules.md).
 - **Phase 3 — SKIPPED (BOK, 2026-07-06).** `PlayerStatsView` (client) refetches
   `/api/intl/leaderboard` on filter changes and re-derives team codes with `resolveTeam`, so the
   only removal paths were the Decision-7-rejected backend `team_display_*` route or a filter
   rearchitecture. `resolveTeam` is ~40 lines of publicly-documented era-vs-franchise field
   selection, not a secret formula → accepted as-is. Recorded in
-  [`architecture-rules.md`](architecture-rules.md).
-- **Phase 4 — DONE.** [`architecture-rules.md`](architecture-rules.md) written with the honest
+  [`architecture-rules.md`](../architecture-rules.md).
+- **Phase 4 — DONE.** [`architecture-rules.md`](../architecture-rules.md) written with the honest
   boundary: no *raw-data* aggregation in client components (rule holds), but trivial
   presentation-filtering / grouping / counting over already-computed rows is allowed. No
   automated grep added (false-positives on the allowed cases).
