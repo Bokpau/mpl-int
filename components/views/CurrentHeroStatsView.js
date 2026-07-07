@@ -541,7 +541,7 @@ export default function CurrentHeroStatsView({ featured, eff, label }) {
                     : (
                       <div className="hero-grid">
                         {gridHeroes.map((h, i) => (
-                          <HeroCard key={h.hero_id} hero={h} rank={i + 1} onClick={() => setSelected(h)} />
+                          <HeroCard key={h.hero_id} hero={h} rank={i + 1} onClick={() => router.push(`/heroes/${h.hero_id}`)} />
                         ))}
                       </div>
                     )
@@ -595,7 +595,7 @@ export default function CurrentHeroStatsView({ featured, eff, label }) {
                         {tableWithRanks.map(h => {
                           const wp = h.win_pct ?? 0;
                           return (
-                            <tr key={h.hero_id} className="clickable" onClick={() => setSelected(h)}>
+                            <tr key={h.hero_id} className="clickable" onClick={() => router.push(`/heroes/${h.hero_id}`)}>
                               <td style={{ position: 'sticky', left: 0, zIndex: 2, background: 'var(--surface)', boxShadow: '2px 0 8px rgba(0,0,0,.4)' }}>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 150 }}>
                                   <HeroImg heroid={h.hero_id} size={26} />
@@ -629,7 +629,7 @@ export default function CurrentHeroStatsView({ featured, eff, label }) {
                               <td className="num center">{h.total_savages || '—'}</td>
                               <td className="num center">{h.players_played || '—'}</td>
                               <td style={{ position: 'sticky', right: 0, zIndex: 2, background: 'var(--surface)', boxShadow: '-2px 0 8px rgba(0,0,0,.4)', textAlign: 'center', padding: '0 12px' }}>
-                                <button onClick={(e) => { e.stopPropagation(); setSelected(h); }} style={{ background: 'none', border: 'none', fontFamily: 'var(--font-mono)', fontSize: 10, color: 'var(--accent)', letterSpacing: '.08em', whiteSpace: 'nowrap', cursor: 'pointer' }}>DETAIL →</button>
+                                <button onClick={(e) => { e.stopPropagation(); router.push(`/heroes/${h.hero_id}`); }} style={{ background: 'none', border: 'none', fontFamily: 'var(--font-mono)', fontSize: 10, color: 'var(--accent)', letterSpacing: '.08em', whiteSpace: 'nowrap', cursor: 'pointer' }}>DETAIL →</button>
                               </td>
                             </tr>
                           );
