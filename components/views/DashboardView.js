@@ -139,6 +139,7 @@ export default async function DashboardView({ q, label, eff, editions = [], feat
     const rc = resolveTeam(t, mode).code;
     if (rc && !teamMeta[rc]) teamMeta[rc] = t;
   }
+  const mergedMeta = { ...eraMeta, ...teamMeta };
   const teamsEra = teams.map((t) => ({ ...t, team_code: resolveTeam(t, mode).code }));
   const playersEra = players.map((p) => ({ ...p, latest_team_code: resolveTeam(p, mode).code }));
 
@@ -270,13 +271,13 @@ export default async function DashboardView({ q, label, eff, editions = [], feat
         <SectionHeader>Schedule</SectionHeader>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: 16 }}>
           {recentSeries.map((s) => (
-            <ScheduleCard key={s.match_code} status="FINAL" accent teamMeta={teamMeta}
+            <ScheduleCard key={s.match_code} status="FINAL" accent teamMeta={mergedMeta}
               detail={scheduleLabel(s.match_code, s.stage)}
               a={s.team_a} b={s.team_b} aFlag={s.team_a_flag} bFlag={s.team_b_flag}
               aScore={s.a_wins} bScore={s.b_wins} winner={s.winner_code} />
           ))}
           {upcoming.map((s, i) => (
-            <ScheduleCard key={s.match_code || i} status="UPCOMING" teamMeta={teamMeta}
+            <ScheduleCard key={s.match_code || i} status="UPCOMING" teamMeta={mergedMeta}
               detail={scheduleLabel(s.match_code, s.phase)}
               a={s.home_team} b={s.away_team} aFlag={s.home_flag} bFlag={s.away_flag} />
           ))}
@@ -316,82 +317,84 @@ export default async function DashboardView({ q, label, eff, editions = [], feat
       </div>
 
       {/* Standings */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 20, marginBottom: 28 }}>
-        <SectionHeader>{isWildCard ? 'Wild Card Standings' : isMainStage ? 'Main Group Stage' : 'Standings'}</SectionHeader>
-        {isMainStage ? (
-          <>
-            <MainGroupBracket title="Group A" group={mainA} teamMeta={{ ...eraMeta, ...teamMeta }} />
-            <MainGroupBracket title="Group B" group={mainB} teamMeta={{ ...eraMeta, ...teamMeta }} />
-            <div style={{ fontSize: 10, color: 'var(--muted2)', fontFamily: 'var(--font-mono)' }}>
-              Bo3 double elimination · fills in as each series is played · top 4 of each group advance to the Knockout.
-            </div>
-          </>
-        ) : isWildCard ? (
-          <>
-            {/* Group Stage */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-              <SubHead>Group Stage</SubHead>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 16 }}>
-                <GroupTable title="Group A" rows={groupA} teamMeta={teamMeta} />
-                <GroupTable title="Group B" rows={groupB} teamMeta={teamMeta} />
+      {eff.stage ? (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 20, marginBottom: 28 }}>
+          <SectionHeader>{isWildCard ? 'Wild Card Standings' : isMainStage ? 'Main Group Stage' : 'Standings'}</SectionHeader>
+          {isMainStage ? (
+            <>
+              <MainGroupBracket title="Group A" group={mainA} teamMeta={mergedMeta} />
+              <MainGroupBracket title="Group B" group={mainB} teamMeta={mergedMeta} />
+              <div style={{ fontSize: 10, color: 'var(--muted2)', fontFamily: 'var(--font-mono)' }}>
+                Bo3 double elimination · fills in as each series is played · top 4 of each group advance to the Knockout.
               </div>
-            </div>
-
-            {/* Cross-Group Gauntlet */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-              <SubHead>Cross-Group Gauntlet</SubHead>
-              {gauntletSeries.length ? (
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 16, alignItems: 'start' }}>
-                  <BracketCol title="Round 1" series={gauntletR1} teamMeta={teamMeta} />
-                  <BracketCol title="Round 2" series={gauntletR2} teamMeta={teamMeta} />
-                  <QualifiedCol codes={qualified} teamMeta={teamMeta} />
+            </>
+          ) : isWildCard ? (
+            <>
+              {/* Group Stage */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                <SubHead>Group Stage</SubHead>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 16 }}>
+                  <GroupTable title="Group A" rows={groupA} teamMeta={mergedMeta} />
+                  <GroupTable title="Group B" rows={groupB} teamMeta={mergedMeta} />
                 </div>
-              ) : (
-                <div className="empty">Gauntlet fixtures not fetched yet for this selection.</div>
-              )}
-            </div>
-
-            {/* Decider — semifinals → grand final → Main Stage qualifier */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-              <SubHead>Decider</SubHead>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 12, alignItems: 'center' }}>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                  {deciderSemis.map((m) => (
-                    m.series
-                      ? <SeriesBox key={m.label} title={m.label} teamMeta={teamMeta} compact
-                          aCode={m.series.team_a} bCode={m.series.team_b}
-                          aScore={m.series.a_wins} bScore={m.series.b_wins} winner={m.series.winner_code} />
-                      : <SeriesBox key={m.label} title={m.label} teamMeta={teamMeta} compact aCode={m.a} bCode={m.b} scaffold />
-                  ))}
-                </div>
-                {finalSeries
-                  ? <SeriesBox title={DECIDER.final.label} teamMeta={teamMeta} compact
-                      aCode={finalSeries.team_a} bCode={finalSeries.team_b}
-                      aScore={finalSeries.a_wins} bScore={finalSeries.b_wins} winner={finalSeries.winner_code} />
-                  : <SeriesBox title={DECIDER.final.label} teamMeta={teamMeta} compact aCode={finalA} bCode={finalB} scaffold />}
-                <QualifiedCol title="To Main Stage" codes={mainStageQualifier ? [mainStageQualifier] : []} teamMeta={teamMeta} />
               </div>
-              {!finalSeries ? (
-                <div style={{ fontSize: 10, color: 'var(--muted2)', fontFamily: 'var(--font-mono)' }}>
-                  Fills in as each series is played; the Grand Final winner qualifies for the Main Stage.
+
+              {/* Cross-Group Gauntlet */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                <SubHead>Cross-Group Gauntlet</SubHead>
+                {gauntletSeries.length ? (
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 16, alignItems: 'start' }}>
+                    <BracketCol title="Round 1" series={gauntletR1} teamMeta={mergedMeta} />
+                    <BracketCol title="Round 2" series={gauntletR2} teamMeta={mergedMeta} />
+                    <QualifiedCol codes={qualified} teamMeta={mergedMeta} />
+                  </div>
+                ) : (
+                  <div className="empty">Gauntlet fixtures not fetched yet for this selection.</div>
+                )}
+              </div>
+
+              {/* Decider — semifinals → grand final → Main Stage qualifier */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                <SubHead>Decider</SubHead>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 12, alignItems: 'center' }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                    {deciderSemis.map((m) => (
+                      m.series
+                        ? <SeriesBox key={m.label} title={m.label} teamMeta={mergedMeta} compact
+                            aCode={m.series.team_a} bCode={m.series.team_b}
+                            aScore={m.series.a_wins} bScore={m.series.b_wins} winner={m.series.winner_code} />
+                        : <SeriesBox key={m.label} title={m.label} teamMeta={mergedMeta} compact aCode={m.a} bCode={m.b} scaffold />
+                    ))}
+                  </div>
+                  {finalSeries
+                    ? <SeriesBox title={DECIDER.final.label} teamMeta={mergedMeta} compact
+                        aCode={finalSeries.team_a} bCode={finalSeries.team_b}
+                        aScore={finalSeries.a_wins} bScore={finalSeries.b_wins} winner={finalSeries.winner_code} />
+                    : <SeriesBox title={DECIDER.final.label} teamMeta={mergedMeta} compact aCode={finalA} bCode={finalB} scaffold />}
+                  <QualifiedCol title="To Main Stage" codes={mainStageQualifier ? [mainStageQualifier] : []} teamMeta={mergedMeta} />
                 </div>
-              ) : null}
-            </div>
-          </>
-        ) : (
-          <StandingsTable rows={standingsTeams} />
-        )}
-      </div>
+                {!finalSeries ? (
+                  <div style={{ fontSize: 10, color: 'var(--muted2)', fontFamily: 'var(--font-mono)' }}>
+                    Fills in as each series is played; the Grand Final winner qualifies for the Main Stage.
+                  </div>
+                ) : null}
+              </div>
+            </>
+          ) : (
+            <StandingsTable rows={standingsTeams} />
+          )}
+        </div>
+      ) : null}
 
       {/* Player Rankings */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: 16, marginBottom: 28 }}>
         <SectionHeader>Player Rankings</SectionHeader>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(210px, 1fr))', gap: 14 }}>
-          <RankList title="KDA" rows={pKda} teamMeta={teamMeta} valueFn={(p) => dec(p.kda)} />
-          <RankList title="Avg Kills" rows={pKills} teamMeta={teamMeta} valueFn={(p) => dec(p.avg_kills)} />
-          <RankList title="Avg Assists" rows={pAssists} teamMeta={teamMeta} valueFn={(p) => dec(p.avg_assists)} />
-          <RankList title="Gold / Min" rows={pGpm} teamMeta={teamMeta} valueFn={(p) => int(p.gpm)} />
-          <RankList title="Game MVPs" rows={pMvps} teamMeta={teamMeta} valueFn={(p) => int(p.mvps)} />
+          <RankList title="KDA" rows={pKda} teamMeta={mergedMeta} valueFn={(p) => dec(p.kda)} />
+          <RankList title="Avg Kills" rows={pKills} teamMeta={mergedMeta} valueFn={(p) => dec(p.avg_kills)} />
+          <RankList title="Avg Assists" rows={pAssists} teamMeta={mergedMeta} valueFn={(p) => dec(p.avg_assists)} />
+          <RankList title="Gold / Min" rows={pGpm} teamMeta={mergedMeta} valueFn={(p) => int(p.gpm)} />
+          <RankList title="Game MVPs" rows={pMvps} teamMeta={mergedMeta} valueFn={(p) => int(p.mvps)} />
         </div>
       </div>
 
@@ -480,13 +483,16 @@ function Flag({ emoji }) {
 
 function ScheduleCard({ status, accent, phase, detail, a, b, aFlag, bFlag, aScore, bScore, winner, teamMeta = {} }) {
   const hasScore = aScore != null && bScore != null;
-  const side = (code, flag, score, alignRight) => (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 7, flexDirection: alignRight ? 'row-reverse' : 'row', minWidth: 0 }}>
-      <TeamLogo src={teamMeta[code]?.team_logo_dark} fallbackSrc={img.team(code)} alt="" style={{ width: 20, height: 20, objectFit: 'contain' }} />
-      <Flag emoji={flag} />
-      <span style={{ color: winner && winner === code ? 'var(--win)' : 'var(--text)', fontWeight: winner && winner === code ? 700 : 400, fontSize: 13 }}>{code}</span>
-    </div>
-  );
+  const side = (code, flag, score, alignRight) => {
+    const emoji = flag || teamMeta[code]?.country_flag;
+    return (
+      <div style={{ display: 'flex', alignItems: 'center', gap: 7, flexDirection: alignRight ? 'row-reverse' : 'row', minWidth: 0 }}>
+        <TeamLogo src={teamMeta[code]?.team_logo_dark} fallbackSrc={img.team(code)} alt="" style={{ width: 20, height: 20, objectFit: 'contain' }} />
+        <Flag emoji={emoji} />
+        <span style={{ color: winner && winner === code ? 'var(--win)' : 'var(--text)', fontWeight: winner && winner === code ? 700 : 400, fontSize: 13 }}>{code}</span>
+      </div>
+    );
+  };
   return (
     <div style={{ ...card, borderLeft: accent ? '3px solid var(--win)' : undefined, padding: '12px 14px', display: 'flex', flexDirection: 'column', gap: 8 }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 9, fontFamily: 'var(--font-mono)', color: 'var(--muted2)', gap: 6 }}>
