@@ -106,7 +106,6 @@ export default function CurrentHeroStatsView({ featured, eff, label }) {
   const [searchQuery, setSearchQuery] = useState('');
   const [phase, setPhase] = useState('overall'); // 'overall', 'Wild Card', 'Main'
   const [side, setSide] = useState('overall');
-  const [result, setResult] = useState('all');
   const [patch, setPatch] = useState(null);
   const [roleFilter, setRoleFilter] = useState('ALL');
   const [teamFilter, setTeamFilter] = useState('ALL');
@@ -149,7 +148,6 @@ export default function CurrentHeroStatsView({ featured, eff, label }) {
       params.push(`stage=${phase === 'Wild Card' ? 'qualifier' : 'main'}`);
     }
     if (side !== 'overall') params.push(`side=${side}`);
-    if (result !== 'all') params.push(`result=${result}`);
     if (patch !== null && patch !== 'all') params.push(`patch=${encodeURIComponent(patch)}`);
     if (roleFilter !== 'ALL') params.push(`role=${encodeURIComponent(roleFilter)}`);
     if (teamFilter !== 'ALL') params.push(`team=${encodeURIComponent(teamFilter)}`);
@@ -203,7 +201,7 @@ export default function CurrentHeroStatsView({ featured, eff, label }) {
 
       setLoading(false);
     }).catch(() => setLoading(false));
-  }, [phase, side, result, patch, roleFilter, teamFilter, scope, season]);
+  }, [phase, side, patch, roleFilter, teamFilter, scope, season]);
 
   // Fetch details for selected hero analysis
   useEffect(() => {
@@ -232,10 +230,14 @@ export default function CurrentHeroStatsView({ featured, eff, label }) {
   }, [selectedHero, side, phase, patch, scope, season]);
 
   const filteredHeroes = useMemo(() => {
-    if (!searchQuery.trim()) return heroes;
+    let list = heroes;
+    if (roleFilter !== 'ALL' || teamFilter !== 'ALL') {
+      list = list.filter(h => (parseInt(h.games) || 0) > 0);
+    }
+    if (!searchQuery.trim()) return list;
     const q = searchQuery.toLowerCase();
-    return heroes.filter(h => (h.hero_name || '').toLowerCase().includes(q) || (h.primary_role || '').toLowerCase().includes(q));
-  }, [heroes, searchQuery]);
+    return list.filter(h => (h.hero_name || '').toLowerCase().includes(q) || (h.primary_role || '').toLowerCase().includes(q));
+  }, [heroes, searchQuery, roleFilter, teamFilter]);
 
   const scatterData = useMemo(() => {
     const q = searchQuery.trim().toLowerCase();
@@ -334,7 +336,6 @@ export default function CurrentHeroStatsView({ featured, eff, label }) {
     const parts = [];
     if (phase !== 'overall') parts.push(phase);
     if (side !== 'overall') parts.push(side === 'blue' ? 'Blue Side' : 'Red Side');
-    if (result !== 'all') parts.push(result === 'wins' ? 'Wins' : 'Losses');
     if (patch !== null && patch !== 'all') parts.push(`Patch ${patch}`);
     if (roleFilter !== 'ALL') parts.push(roleFilter);
     if (teamFilter !== 'ALL') parts.push(teamFilter);
@@ -369,7 +370,6 @@ export default function CurrentHeroStatsView({ featured, eff, label }) {
         <FilterSidebar
           phase={phase} setPhase={setPhase}
           side={side} setSide={setSide}
-          result={result} setResult={setResult}
           patch={patch} setPatch={setPatch} patches={patches}
           roleFilter={roleFilter} setRoleFilter={setRoleFilter}
           teamFilter={teamFilter} setTeamFilter={setTeamFilter} teams={teams}
