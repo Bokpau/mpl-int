@@ -106,7 +106,7 @@ function PlayerRow({ p, hi, lo, expanded }) {
 
   return (
     <tr style={{ borderBottom: '1px solid var(--border)' }}>
-      <td style={{ padding: '6px 8px', whiteSpace: 'nowrap' }}>
+      <td className="sticky-col-player" style={{ padding: '6px 8px', whiteSpace: 'nowrap' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           <RoleImg role={p.role_lane} size={18} style={{ flexShrink: 0 }} />
           {/* Player: image stacked above name */}
@@ -195,7 +195,7 @@ export function PlayerTable({ camp1, camp2, camp1players, camp2players }) {
           </caption>
           <thead>
             <tr>
-              <th style={{ textAlign: 'left', padding: '6px 8px', fontFamily: 'var(--font-mono)', fontSize: 9, color: 'var(--muted)', letterSpacing: '.08em', borderBottom: '1px solid var(--border)', whiteSpace: 'nowrap' }}>PLAYER</th>
+              <th className="sticky-col-player" style={{ textAlign: 'left', padding: '6px 8px', fontFamily: 'var(--font-mono)', fontSize: 9, color: 'var(--muted)', letterSpacing: '.08em', borderBottom: '1px solid var(--border)', whiteSpace: 'nowrap' }}>PLAYER</th>
               <Th title="Kills">K</Th>
               <Th title="Deaths">D</Th>
               <Th title="Assists">A</Th>

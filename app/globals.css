@@ -212,6 +212,61 @@ tbody tr:last-child td { border-bottom: none; }
 tbody tr:hover td { background: rgba(255, 255, 255, 0.02); }
 tbody tr.clickable { cursor: pointer; }
 
+/* Sticky columns for StatTable & PlayerTable */
+.sticky-col-rank {
+  position: sticky !important;
+  left: 0;
+  z-index: 1;
+  background-color: var(--surface2) !important; /* for th */
+  width: 48px;
+  min-width: 48px;
+  max-width: 48px;
+  box-sizing: border-box;
+}
+thead th.sticky-col-rank {
+  z-index: 3 !important; /* above standard sticky headers and scrolling columns */
+}
+tbody td.sticky-col-rank {
+  background-color: var(--bg) !important;
+}
+
+.sticky-col-entity {
+  position: sticky !important;
+  left: 48px; /* sits right after rank column */
+  z-index: 1;
+  background-color: var(--surface2) !important; /* for th */
+  border-right: 2px solid var(--border-strong) !important;
+  box-sizing: border-box;
+}
+thead th.sticky-col-entity {
+  z-index: 3 !important; /* above standard sticky headers */
+}
+tbody td.sticky-col-entity {
+  background-color: var(--bg) !important;
+}
+
+.sticky-col-player {
+  position: sticky !important;
+  left: 0;
+  z-index: 1;
+  background-color: var(--surface2) !important; /* for th */
+  border-right: 2px solid var(--border-strong) !important;
+  box-sizing: border-box;
+}
+thead th.sticky-col-player {
+  z-index: 3 !important; /* above standard sticky headers */
+}
+tbody td.sticky-col-player {
+  background-color: var(--bg) !important;
+}
+
+/* Hover support for sticky cells */
+tbody tr:hover td.sticky-col-rank,
+tbody tr:hover td.sticky-col-entity,
+tbody tr:hover td.sticky-col-player {
+  background-color: var(--surface) !important;
+}
+
 .rank { color: var(--muted2); font-family: var(--font-mono); }
 .name { font-weight: 600; }
 .name a:hover { color: var(--accent); }

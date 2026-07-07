@@ -93,7 +93,7 @@ function fmtNum(col, v) {
   return int(Math.round(val));
 }
 
-function LastUsedCell({ col, row }) {
+function LastUsedCell({ col, row, stickyClass = '' }) {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [details, setDetails] = useState(null);
@@ -131,7 +131,7 @@ function LastUsedCell({ col, row }) {
   }
 
   return (
-    <td className="l" style={{ position: 'relative', overflow: 'visible' }}>
+    <td className={`l ${stickyClass}`.trim()} style={{ position: 'relative', overflow: 'visible' }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
         <span style={{ color: 'var(--muted)' }}>{dateStr}</span>
         {row.last_used && (
@@ -245,18 +245,18 @@ function LastUsedCell({ col, row }) {
   );
 }
 
-function Cell({ col, row, rankIndex }) {
+function Cell({ col, row, rankIndex, stickyClass = '' }) {
   switch (col.type) {
     case 'rank':
-      return <td className="l rank">{rankIndex}</td>;
+      return <td className={`l rank ${stickyClass}`.trim()}>{rankIndex}</td>;
 
     case 'last_used':
-      return <LastUsedCell col={col} row={row} />;
+      return <LastUsedCell col={col} row={row} stickyClass={stickyClass} />;
 
     case 'role': {
       const role = row[col.key];
       return (
-        <td className="center" style={{ textAlign: 'center' }}>
+        <td className={`center ${stickyClass}`.trim()} style={{ textAlign: 'center' }}>
           {role && role !== '—' ? (
             <span title={role} aria-label={role} style={{ display: 'inline-flex', verticalAlign: 'middle' }}>
               <RoleImg role={role} size={16} />
@@ -290,7 +290,7 @@ function Cell({ col, row, rankIndex }) {
       const sub = col.subKey ? (row[col.subKey] || row[col.subFallbackKey] || '') : '';
       
       return (
-        <td className="l">
+        <td className={`l ${stickyClass}`.trim()}>
           <Link href={href} onClick={(e) => e.stopPropagation()}>
             <span className="idcell">
               <PlayerPhoto photoUrl={photo} name={eraName} size={30} style={{ objectPosition: 'top' }} />
@@ -321,7 +321,7 @@ function Cell({ col, row, rankIndex }) {
       const flag = col.flagKey ? row[col.flagKey] : null;
       const fallbackLogo = img.team(code);
       return (
-        <td className="l">
+        <td className={`l ${stickyClass}`.trim()}>
           <Link href={href} onClick={(e) => e.stopPropagation()}>
             <span className="idcell">
               {flag ? <span style={{ fontSize: 13, display: 'inline-block', verticalAlign: 'middle' }}>{flag}</span> : null}
@@ -337,7 +337,7 @@ function Cell({ col, row, rankIndex }) {
     case 'hero': {
       const portrait = img.hero(row[col.idKey]);
       return (
-        <td className="l">
+        <td className={`l ${stickyClass}`.trim()}>
           <span className="idcell">
             {portrait ? <img className="avatar" src={portrait} alt="" /> : null}
             <span className="name">{row[col.nameKey] || '—'}</span>
@@ -348,7 +348,7 @@ function Cell({ col, row, rankIndex }) {
 
     case 'country':
       return (
-        <td className="l">
+        <td className={`l ${stickyClass}`.trim()}>
           <span className="idcell">
             <span className="flag">{row[col.flagKey] || '🏳️'}</span>
             <span className="name">{row[col.nameKey] || row[col.codeKey]}</span>
@@ -357,7 +357,7 @@ function Cell({ col, row, rankIndex }) {
       );
 
     case 'text':
-      return <td className={`l ${col.cls || 'sub'}`}>{row[col.key] || '—'}</td>;
+      return <td className={`l ${col.cls || 'sub'} ${stickyClass}`.trim()}>{row[col.key] || '—'}</td>;
 
     default: {
       const raw = row[col.key];
@@ -374,7 +374,7 @@ function Cell({ col, row, rankIndex }) {
           glyph = <span className="wr-glyph" aria-hidden="true">{good ? '▲' : '▼'}</span>;
         }
       }
-      return <td className={cls}>{glyph}{fmtNum(col, raw)}</td>;
+      return <td className={`${cls} ${stickyClass}`.trim()}>{glyph}{fmtNum(col, raw)}</td>;
     }
   }
 }
@@ -459,14 +459,19 @@ export default function StatTable({ columns, rows, rowHref, rowKey, initialSort,
       <table>
         <thead>
           <tr>
-            {visibleColumns.map((col) => {
+            {visibleColumns.map((col, colIdx) => {
               const left = !isNumeric(col);
               const sortable = col.type !== 'rank' && col.sortable !== false;
               const active = sort && sort.key === col.key;
+              
+              let stickyClass = '';
+              if (colIdx === 0) stickyClass = 'sticky-col-rank';
+              else if (colIdx === 1) stickyClass = 'sticky-col-entity';
+
               return (
                 <th
                   key={col.key}
-                  className={`${left ? 'l ' : ''}${sortable ? 'sortable ' : ''}${active ? 'sorted' : ''}`.trim()}
+                  className={`${left ? 'l ' : ''}${sortable ? 'sortable ' : ''}${active ? 'sorted' : ''} ${stickyClass}`.trim()}
                   aria-sort={sortable ? (active ? (sort.dir === 'asc' ? 'ascending' : 'descending') : 'none') : undefined}
                 >
                   {sortable ? (
@@ -497,9 +502,14 @@ export default function StatTable({ columns, rows, rowHref, rowKey, initialSort,
                 className={href ? 'clickable' : ''}
                 onClick={href ? () => router.push(href) : undefined}
               >
-                {visibleColumns.map((col) => (
-                  <Cell key={col.key} col={col} row={row} rankIndex={i + 1} />
-                ))}
+                {visibleColumns.map((col, colIdx) => {
+                  let stickyClass = '';
+                  if (colIdx === 0) stickyClass = 'sticky-col-rank';
+                  else if (colIdx === 1) stickyClass = 'sticky-col-entity';
+                  return (
+                    <Cell key={col.key} col={col} row={row} rankIndex={i + 1} stickyClass={stickyClass} />
+                  );
+                })}
               </tr>
             );
           })}
