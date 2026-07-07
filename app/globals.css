@@ -1200,3 +1200,209 @@ table.h2h td .sub { font-size: 11px; }
   animation: spin .7s linear infinite;
 }
 @keyframes spin { to { transform: rotate(360deg); } }
+
+/* ─── Hero Card Grid ─────────────────────────────────────────────── */
+.hero-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(115px, 1fr));
+  gap: 10px;
+}
+
+.hero-card {
+  position: relative;
+  overflow: hidden;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  cursor: pointer;
+  transition: border-color .2s;
+  display: flex;
+  flex-direction: column;
+}
+
+.hero-card:hover {
+  border-color: var(--accent);
+  z-index: 2;
+}
+
+.hero-card-portrait {
+  position: relative;
+  width: 100%;
+  padding-top: 100%;
+  overflow: hidden;
+  background: var(--surface);
+}
+
+.hero-card-portrait img {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 80%;
+  height: 80%;
+  object-fit: contain;
+  transition: transform .3s;
+  filter: drop-shadow(0 4px 16px rgba(0, 0, 0, 0.7));
+}
+
+.hero-card:hover .hero-card-portrait img {
+  transform: translate(-50%, -50%);
+}
+
+.hero-card-portrait::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 45%;
+  background: linear-gradient(transparent, var(--surface2));
+  pointer-events: none;
+}
+
+.hero-card-role-badge {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px;
+  background: rgba(15, 15, 26, 0.82);
+  border: 1px solid var(--border2);
+  border-radius: 4px;
+  z-index: 2;
+}
+
+.hero-card-rank-badge {
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  font-family: var(--font-display);
+  font-size: 12px;
+  color: rgba(255, 215, 0, 0.5);
+  line-height: 1;
+  z-index: 2;
+}
+
+.hero-card-info {
+  padding: 6px 8px;
+  flex: 1;
+}
+
+.hero-card-name {
+  font-family: var(--font-display);
+  font-size: 11px;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-bottom: 2px;
+}
+
+.hero-card-meta {
+  display: flex;
+  justify-content: space-between;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  color: var(--muted2);
+  margin-bottom: 0;
+}
+
+/* ─── View Toggle ────────────────────────────────────────────────── */
+.view-toggle {
+  display: inline-flex;
+  background: var(--surface2);
+  border: 1px solid var(--border2);
+  padding: 3px;
+  gap: 2px;
+}
+
+.view-toggle-btn {
+  padding: 5px 12px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: .05em;
+  text-transform: uppercase;
+  color: var(--muted2);
+  transition: all .15s;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.view-toggle-btn:hover {
+  color: var(--muted);
+}
+
+.view-toggle-btn.active {
+  background: rgba(255, 215, 0, 0.22);
+  color: var(--accent);
+  border: 1px solid rgba(255, 215, 0, 0.4);
+}
+
+/* ─── Table Sorting ──────────────────────────────────────────────── */
+.tbl th:hover {
+  color: var(--muted);
+}
+
+.tbl th::after {
+  content: ' ↕';
+  color: var(--muted2);
+  opacity: 0.35;
+  margin-left: 4px;
+}
+
+.tbl.no-sort th {
+  cursor: default;
+}
+.tbl.no-sort th::after {
+  content: none !important;
+}
+
+.tbl th.sort-asc::after {
+  content: ' ↑';
+  color: var(--accent);
+  opacity: 1;
+}
+
+.tbl th.sort-desc::after {
+  content: ' ↓';
+  color: var(--accent);
+  opacity: 1;
+}
+
+/* ─── Tier Labels ────────────────────────────────────────────────── */
+.tier-s {
+  color: var(--accent);
+  font-weight: 700;
+  font-family: var(--font-display);
+}
+
+.tier-a {
+  color: #2BD49B;
+  font-weight: 700;
+  font-family: var(--font-display);
+}
+
+.tier-b {
+  color: #4da6ff;
+  font-weight: 700;
+  font-family: var(--font-display);
+}
+
+.tier-c {
+  color: var(--muted);
+  font-weight: 700;
+  font-family: var(--font-display);
+}
+
+.tier-d {
+  color: var(--loss);
+  font-weight: 700;
+  font-family: var(--font-display);
+}

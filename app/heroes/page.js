@@ -1,10 +1,10 @@
 import { resolveCurrent } from '../../lib/featured';
-import HeroStatsView from '../../components/views/HeroStatsView';
+import CurrentHeroStatsView from '../../components/views/CurrentHeroStatsView';
 
 export const metadata = { title: 'Heroes' };
 
 export default async function HeroesPage({ searchParams }) {
   const sp = await searchParams;
   const sel = await resolveCurrent(sp);
-  return <HeroStatsView {...sel} />;
+  return <CurrentHeroStatsView {...sel} />;
 }
