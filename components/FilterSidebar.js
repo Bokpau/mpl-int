@@ -1,6 +1,8 @@
 'use client';
 import { useState } from 'react';
 import { RoleImg, TeamImg } from './Images';
+import TeamLogo from './TeamLogo';
+import { img } from '../lib/images';
 
 const ROLES = ['EXP LANE', 'JUNGLE', 'MID LANE', 'ROAM', 'GOLD LANE'];
 const WEEKS = [1, 2, 3, 4, 5, 6, 7, 8, 9];
@@ -61,7 +63,7 @@ export default function FilterSidebar({
   // Role (omit to hide)
   roleFilter, setRoleFilter,
   // Team (omit teams array to hide)
-  teamFilter, setTeamFilter, teams,
+  teamFilter, setTeamFilter, teams, teamLogoMap = {},
   // Arbitrary page-specific controls at the bottom
   extras,
   // Page-specific extras reset: `extrasActive` keeps the reset button visible
@@ -400,7 +402,7 @@ export default function FilterSidebar({
                   flex: '0 0 auto'
                 }}
                 onClick={() => setTeamFilter(code)}>
-                <TeamImg code={code} size={16} />
+                <TeamLogo src={teamLogoMap[code]} fallbackSrc={img.team(code)} style={{ width: 16, height: 16, objectFit: 'contain' }} />
               </button>
             ))}
           </div>

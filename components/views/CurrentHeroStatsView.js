@@ -130,11 +130,28 @@ export default function CurrentHeroStatsView({ featured, eff, label }) {
   const [filterLoading, setFilterLoading] = useState(false);
   const [modalData, setModalData] = useState(null); // { title: string, heroes: Array }
 
-  // Fetch available patches
+  const [teamLogoMap, setTeamLogoMap] = useState({});
+
+  // Fetch available patches and team logos
   useEffect(() => {
     fetch(`/api/intl/patches?scope=${scope}&season=${season}`)
       .then(r => r.json())
       .then(d => setPatches(Array.isArray(d) ? d : []))
+      .catch(() => { });
+
+    fetch(`/api/intl/era-teams?scope=${scope}&season=${season}`)
+      .then(r => r.json())
+      .then(d => {
+        if (Array.isArray(d)) {
+          const map = {};
+          d.forEach(t => {
+            if (t.era_code && t.team_logo_dark) {
+              map[t.era_code] = t.team_logo_dark;
+            }
+          });
+          setTeamLogoMap(map);
+        }
+      })
       .catch(() => { });
   }, [scope, season]);
 
@@ -373,6 +390,7 @@ export default function CurrentHeroStatsView({ featured, eff, label }) {
           patch={patch} setPatch={setPatch} patches={patches}
           roleFilter={roleFilter} setRoleFilter={setRoleFilter}
           teamFilter={teamFilter} setTeamFilter={setTeamFilter} teams={teams}
+          teamLogoMap={teamLogoMap}
         />
 
         {/* ── Main content ── */}
