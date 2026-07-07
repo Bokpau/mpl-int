@@ -23,6 +23,7 @@ export default function HeroCard({ hero, rank, onClick }) {
   const role   = hero.primary_role || '';
   const wrColor   = getWrColor(winPct);
   const tier      = getTier(winPct, games);
+  const heroid    = hero.heroid || hero.hero_id;
 
   const handleKeyDown = (e) => {
     if (e.key === 'Enter' || e.key === ' ') {
@@ -42,9 +43,9 @@ export default function HeroCard({ hero, rank, onClick }) {
     >
       {/* Portrait */}
       <div className="hero-card-portrait">
-        {hero.heroid && (
+        {heroid && (
           <img
-            src={img.hero(hero.heroid)}
+            src={img.hero(heroid)}
             alt={hero.hero_name || ''}
             onError={e => { e.target.style.opacity = '0'; e.target.onerror = null; }}
           />
