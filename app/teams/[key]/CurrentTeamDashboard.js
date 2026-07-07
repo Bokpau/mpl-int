@@ -98,8 +98,8 @@ export default function CurrentTeamDashboard({ teamKey, scope, season, initial }
   const [draftMu, setDraftMu] = useState(null);
   const [draftFL, setDraftFL] = useState(false);
 
-  // Team Data Analysis panels (collapsed by default; opened on demand)
-  const [analysisPanels, setAnalysisPanels] = useState(() => new Set());
+  // Team Data Analysis panels (collapsed by default; timeline opened by default)
+  const [analysisPanels, setAnalysisPanels] = useState(() => new Set(['timeline']));
   const toggleAnalysis = (key) => setAnalysisPanels(prev => {
     const next = new Set(prev);
     next.has(key) ? next.delete(key) : next.add(key);
@@ -484,545 +484,7 @@ export default function CurrentTeamDashboard({ teamKey, scope, season, initial }
             })}
           </div>
 
-          {/* ── 3. MATCH RESULTS ── */}
-          <div className="section-title">Match Results</div>
-          <div className="table-wrap" style={{ marginBottom: 32 }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-              <thead>
-                <tr style={{ borderBottom: '1px solid var(--border)' }}>
-                  <th style={{ textAlign: 'left', padding: '8px 10px', fontFamily: 'var(--font-mono)', fontSize: 11, color: 'rgba(255,255,255,.6)', width: 110 }}>Opponent</th>
-                  <th style={{ textAlign: 'left', padding: '8px 10px', fontFamily: 'var(--font-mono)', fontSize: 11, color: 'rgba(255,255,255,.6)' }}>Series</th>
-                </tr>
-              </thead>
-              <tbody>
-                {Object.entries(oppMatchesMap).map(([opp, oppSeries]) => (
-                  <tr key={opp} style={{ borderBottom: '1px solid var(--border)', verticalAlign: 'middle' }}>
-                    <td style={{ padding: '12px 10px', whiteSpace: 'nowrap' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                        <TeamLogo src={img.team(opp)} fallbackSrc="" alt="" className="avatar sq" style={{ width: 24, height: 24, objectFit: 'contain' }} />
-                        <span style={{ fontWeight: 700, fontSize: 14, color: 'var(--text)' }}>{opp}</span>
-                      </div>
-                    </td>
-                    <td style={{ padding: '10px' }}>
-                      <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'center' }}>
-                        {oppSeries.map(s => {
-                          const won = s.wins > s.losses;
-                          const lost = s.losses > s.wins;
-                          const clr = won ? 'var(--win)' : lost ? 'var(--loss)' : 'rgba(255,255,255,.4)';
-                          return (
-                            <div key={s.match_code} style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'var(--surface)', border: '1px solid var(--border)', borderLeft: `3px solid ${clr}`, padding: '6px 10px' }}>
-                              <span style={{ fontFamily: 'var(--font-mono)', fontSize: 11, fontWeight: 700, color: 'rgba(255,255,255,.5)' }}>W{s.week || '?'}</span>
-                              <span style={{ fontFamily: 'var(--font-mono)', fontSize: 12, fontWeight: 800, color: clr }}>{won ? 'WIN' : lost ? 'LOSS' : 'DRAW'}</span>
-                              <span style={{ fontFamily: 'var(--font-display)', fontSize: 14, fontWeight: 800 }}>{s.wins}–{s.losses}</span>
-                              <div style={{ display: 'flex', gap: 4 }}>
-                                {s.games.map((g, gi) => (
-                                  <Link key={gi} href={`/matches/${g.battle_id}`} style={{
-                                    fontFamily: 'var(--font-mono)', fontSize: 10, fontWeight: 600,
-                                    color: g.team_won ? 'var(--win)' : 'var(--loss)',
-                                    background: g.team_won ? 'rgba(0,230,118,.1)' : 'rgba(255,60,90,.1)',
-                                    border: `1px solid ${g.team_won ? 'rgba(0,230,118,.3)' : 'rgba(255,60,90,.3)'}`,
-                                    padding: '1px 6px', textDecoration: 'none', whiteSpace: 'nowrap',
-                                  }}>
-                                    G{g.game_number || gi + 1}
-                                  </Link>
-                                ))}
-                              </div>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-                {Object.keys(oppMatchesMap).length === 0 && (
-                  <tr>
-                    <td colSpan="2" style={{ padding: 12, textAlign: 'center', color: 'var(--muted)' }}>No matches recorded under the current filters.</td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
-
-          {/* ── 4. SIDE SPLITS ── */}
-          <div className="section-title">Side Splits</div>
-          {draftLoading ? <div className="loading" /> : (() => {
-            const summary = draftData.summary;
-            if (!summary) return <div style={{ fontFamily: 'var(--font-mono)', fontSize: 12, color: 'rgba(255,255,255,.5)', marginBottom: 32 }}>// No side splits data</div>;
-            const mo2 = { fontFamily: 'var(--font-mono)' };
-
-            const sides = [
-              {
-                label: 'BLUE SIDE',
-                color: '#42a5f5',
-                games: parseInt(summary.blue_games) || 0,
-                wins: parseInt(summary.blue_wins) || 0,
-                wr: summary.blue_win_pct,
-                prioGames: parseInt(summary.blue_prio_games) || 0,
-                prioWins: parseInt(summary.blue_prio_wins) || 0,
-                prioWr: summary.blue_prio_win_pct,
-              },
-              {
-                label: 'RED SIDE',
-                color: '#ef5350',
-                games: parseInt(summary.red_games) || 0,
-                wins: parseInt(summary.red_wins) || 0,
-                wr: summary.red_win_pct,
-                prioGames: parseInt(summary.red_prio_games) || 0,
-                prioWins: parseInt(summary.red_prio_wins) || 0,
-                prioWr: summary.red_prio_win_pct,
-              },
-            ];
-
-            return (
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 16, marginBottom: 32 }}>
-                {sides.map(s => {
-                  const losses = s.games - s.wins;
-                  const prioLosses = s.prioGames - s.prioWins;
-                  const wrColor = (s.wr ?? 0) >= 50 ? 'var(--win)' : 'var(--loss)';
-                  const prioWrColor = (s.prioWr ?? 0) >= 50 ? 'var(--win)' : 'var(--loss)';
-                  const barPct = s.games > 0 ? Math.round((s.wins / s.games) * 100) : 0;
-                  const prioBarPct = s.prioGames > 0 ? Math.round((s.prioWins / s.prioGames) * 100) : 0;
-                  return (
-                    <div key={s.label} className="card" style={{ borderTop: `3px solid ${s.color}`, padding: '16px 20px' }}>
-                      <div style={{ ...mo2, fontSize: 11, fontWeight: 700, color: s.color, letterSpacing: '.08em', marginBottom: 16 }}>
-                        {s.label}
-                      </div>
-
-                      {/* Overall side stats */}
-                      <div style={{ marginBottom: 16 }}>
-                        <div style={{ ...mo2, fontSize: 9, color: 'rgba(255,255,255,.4)', letterSpacing: '.07em', marginBottom: 8 }}>OVERALL</div>
-                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 6, marginBottom: 8 }}>
-                          {[
-                            { lbl: 'GP', val: s.games, clr: s.color },
-                            { lbl: 'W', val: s.wins, clr: 'var(--win)' },
-                            { lbl: 'L', val: losses, clr: 'var(--loss)' },
-                            { lbl: 'WR', val: s.wr != null ? s.wr + '%' : '—', clr: wrColor },
-                          ].map(stat => (
-                            <div key={stat.lbl} style={{ textAlign: 'center' }}>
-                              <div style={{ fontFamily: 'var(--font-display)', fontSize: 18, fontWeight: 800, color: stat.clr, lineHeight: 1 }}>{stat.val}</div>
-                              <div style={{ ...mo2, fontSize: 8, color: 'rgba(255,255,255,.4)', letterSpacing: '.05em', marginTop: 3 }}>{stat.lbl}</div>
-                            </div>
-                          ))}
-                        </div>
-                        <div style={{ height: 4, background: 'rgba(255,255,255,.08)', borderRadius: 2, overflow: 'hidden' }}>
-                          <div style={{ height: '100%', width: barPct + '%', background: s.color, borderRadius: 2 }} />
-                        </div>
-                      </div>
-
-                      {/* Prio pick side stats */}
-                      <div style={{ borderTop: '1px solid rgba(255,255,255,.07)', paddingTop: 14 }}>
-                        <div style={{ ...mo2, fontSize: 9, color: 'var(--muted)', letterSpacing: '.07em', marginBottom: 8 }}>PRIO PICK</div>
-                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 6, marginBottom: 8 }}>
-                          {[
-                            { lbl: 'GP', val: s.prioGames, clr: s.color },
-                            { lbl: 'W', val: s.prioWins, clr: 'var(--win)' },
-                            { lbl: 'L', val: prioLosses, clr: 'var(--loss)' },
-                            { lbl: 'WR', val: s.prioWr != null ? s.prioWr + '%' : '—', clr: prioWrColor },
-                          ].map(stat => (
-                            <div key={stat.lbl} style={{ textAlign: 'center' }}>
-                              <div style={{ fontFamily: 'var(--font-display)', fontSize: 18, fontWeight: 800, color: stat.clr, lineHeight: 1 }}>{stat.val}</div>
-                              <div style={{ ...mo2, fontSize: 8, color: 'rgba(255,255,255,.4)', letterSpacing: '.05em', marginTop: 3 }}>{stat.lbl}</div>
-                            </div>
-                          ))}
-                        </div>
-                        <div style={{ height: 4, background: 'rgba(255,255,255,.08)', borderRadius: 2, overflow: 'hidden' }}>
-                          <div style={{ height: '100%', width: prioBarPct + '%', background: 'rgba(255, 215, 0, 0.6)', borderRadius: 2 }} />
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            );
-          })()}
-
-          {/* ── 5. DRAFT STATS ── */}
-          <div className="section-title">Draft Stats</div>
-          {draftLoading ? <div className="loading" /> : (() => {
-            const heroes = draftData.heroes || [];
-            const mo = { fontFamily: 'var(--font-mono)' };
-
-            const gs = (h, field) => {
-              if (side === 'blue') return h[`b_${field}`] ?? 0;
-              if (side === 'red') return h[`r_${field}`] ?? 0;
-              return h[field] ?? 0;
-            };
-
-            const filteredHeroes = [...heroes]
-              .filter(h => gs(h, 'picks') > 0 || gs(h, 'bans') > 0)
-              .sort((a, b) => gs(b, 'presence') - gs(a, 'presence'));
-
-            if (!filteredHeroes.length) return <div style={{ ...mo, fontSize: 12, color: 'rgba(255,255,255,.5)', marginBottom: 32 }}>// No draft data matching active filters</div>;
-
-            const totalPicks = filteredHeroes.reduce((sum, h) => sum + gs(h, 'picks'), 0);
-            const totalWins = filteredHeroes.reduce((sum, h) => sum + gs(h, 'wins'), 0);
-            const pickWR = totalPicks > 0 ? Math.round((totalWins / totalPicks) * 100) : 0;
-
-            return (
-              <div style={{ marginBottom: 32 }}>
-                <p style={{ ...mo, fontSize: 11, color: 'rgba(255,255,255,.5)', marginBottom: 12 }}>
-                  // {t.team_code} draft pool — click a hero for synergy & matchup details
-                </p>
-
-                {/* Summary cards */}
-                <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginBottom: 24 }}>
-                  {[
-                    { label: 'Unique Heroes Picked', value: filteredHeroes.filter(h => gs(h, 'picks') > 0).length, color: 'var(--accent)' },
-                    { label: 'Total Picks', value: totalPicks, color: 'var(--text)' },
-                    { label: 'Pick Win Rate', value: pickWR + '%', color: pickWR >= 50 ? 'var(--win)' : 'var(--loss)' },
-                  ].map(s => (
-                    <div key={s.label} className="card" style={{ borderLeft: `3px solid ${s.color}`, padding: '12px 16px', flex: '1 1 130px' }}>
-                      <div style={{ ...mo, fontSize: 9, color: 'rgba(255,255,255,.5)', letterSpacing: '.08em', marginBottom: 4 }}>{s.label.toUpperCase()}</div>
-                      <div style={{ fontFamily: 'var(--font-display)', fontSize: 22, fontWeight: 800, color: s.color, lineHeight: 1 }}>{s.value}</div>
-                    </div>
-                  ))}
-                </div>
-
-                {/* Hero pool table */}
-                <div className="table-wrap" style={{ overflowX: 'auto', marginBottom: 32 }}>
-                  <table style={{ borderCollapse: 'collapse', fontSize: 12, width: '100%' }}>
-                    <thead>
-                      <tr style={{ borderBottom: '1px solid var(--border)' }}>
-                        <th style={{ textAlign: 'left', padding: '8px 12px', ...mo, fontSize: 10, color: 'rgba(255,255,255,.5)' }}>Hero</th>
-                        {['Picks', 'W', 'L', 'Win%', 'Prio Picks', 'Adj Picks', '1st Pick', '2 Picks', 'Prio Bans', 'Adj Bans', 'Bans'].map(c => (
-                          <th key={c} style={{ textAlign: 'center', padding: '8px 10px', ...mo, fontSize: 10, color: 'rgba(255,255,255,.5)' }}>{c}</th>
-                        ))}
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {filteredHeroes.map(h => {
-                        const picks = gs(h, 'picks');
-                        const wins = gs(h, 'wins');
-                        const losses = gs(h, 'losses');
-                        const wr = picks > 0 ? Math.round((wins / picks) * 100) : 0;
-                        const isSelected = draftHero?.heroid === h.heroid;
-                        return (
-                          <tr key={h.heroid}
-                            onClick={() => setDraftHero(prev => (prev?.heroid === h.heroid ? null : h))}
-                            style={{ cursor: 'pointer', borderBottom: '1px solid var(--border)', background: isSelected ? 'rgba(255,215,0,0.05)' : 'transparent' }}>
-                            <td style={{ padding: '8px 12px' }}>
-                              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                                <HeroImg heroid={h.heroid} size={30} />
-                                <div>
-                                  <div style={{ fontWeight: 700, fontSize: 13 }}>{h.hero_name}</div>
-                                  {isSelected && <div style={{ ...mo, fontSize: 9, color: 'var(--accent)' }}>selected ▼</div>}
-                                </div>
-                              </div>
-                            </td>
-                            <td style={{ textAlign: 'center', fontWeight: 700, color: 'var(--blue)' }}>{picks || '—'}</td>
-                            <td style={{ textAlign: 'center', color: 'var(--win)' }}>{wins || '—'}</td>
-                            <td style={{ textAlign: 'center', color: 'var(--loss)' }}>{losses || '—'}</td>
-                            <td style={{ textAlign: 'center', fontWeight: 700, color: wr >= 50 ? 'var(--win)' : 'var(--loss)' }}>{picks > 0 ? wr + '%' : '—'}</td>
-                            <td style={{ textAlign: 'center', color: 'rgba(100,210,120,.9)' }}>{gs(h, 'priority_pick') || '—'}</td>
-                            <td style={{ textAlign: 'center', color: 'rgba(100,190,120,.7)' }}>{gs(h, 'adjusted_pick') || '—'}</td>
-                            <td style={{ textAlign: 'center', color: 'rgba(160,230,255,.9)' }}>{gs(h, 'first_pick') || '—'}</td>
-                            <td style={{ textAlign: 'center', color: 'rgba(110,185,255,.8)' }}>{gs(h, 'two_pick') || '—'}</td>
-                            <td style={{ textAlign: 'center', color: 'rgba(255,200,0,.9)' }}>{gs(h, 'priority_ban') || '—'}</td>
-                            <td style={{ textAlign: 'center', color: 'rgba(255,175,0,.7)' }}>{gs(h, 'adjusted_ban') || '—'}</td>
-                            <td style={{ textAlign: 'center', color: 'rgba(255,200,0,.55)' }}>{gs(h, 'bans') || '—'}</td>
-                          </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
-                </div>
-
-                {/* ── Interactive Synergy Panels ── */}
-                {draftHero && (
-                  <div className="card" style={{ padding: 20, marginBottom: 32, border: '1px solid var(--accent)' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 20 }}>
-                      <HeroImg heroid={draftHero.heroid} size={40} />
-                      <span style={{ fontFamily: 'var(--font-display)', fontSize: 20, fontWeight: 800 }}>{draftHero.hero_name} Details</span>
-                      <button onClick={() => setDraftHero(null)}
-                        style={{ ...mo, fontSize: 10, color: 'rgba(255,255,255,.5)', border: '1px solid var(--border)', padding: '2px 8px', cursor: 'pointer', background: 'transparent', marginLeft: 'auto' }}>
-                        ✕ Close
-                      </button>
-                    </div>
-
-                    {draftFL ? <div className="loading" /> : (
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: 28 }}>
-                        {draftPat.length > 0 && (
-                          <div>
-                            <div style={{ ...mo, fontSize: 10, color: 'var(--accent)', fontWeight: 700, letterSpacing: '.1em', marginBottom: 12 }}>PATCH DISTRIBUTION</div>
-                            <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
-                              {draftPat.map(p => (
-                                <div key={p.patch} className="card" style={{ padding: '10px 14px', minWidth: 110, flex: '1 1 110px' }}>
-                                  <div style={{ ...mo, fontSize: 10, color: 'rgba(255,255,255,.5)', marginBottom: 6 }}>Patch {p.patch}</div>
-                                  <div style={{ display: 'flex', gap: 12 }}>
-                                    <div>
-                                      <div style={{ fontFamily: 'var(--font-display)', fontSize: 18, fontWeight: 800, color: 'var(--blue)' }}>{p.picks}</div>
-                                      <div style={{ ...mo, fontSize: 8, color: 'rgba(255,255,255,.4)' }}>PICKS</div>
-                                    </div>
-                                    <div>
-                                      <div style={{ fontFamily: 'var(--font-display)', fontSize: 18, fontWeight: 800, color: 'rgba(255,200,0,.8)' }}>{p.bans}</div>
-                                      <div style={{ ...mo, fontSize: 8, color: 'rgba(255,255,255,.4)' }}>BANS</div>
-                                    </div>
-                                    {p.win_rate !== null && (
-                                      <div>
-                                        <div style={{ fontFamily: 'var(--font-display)', fontSize: 18, fontWeight: 800, color: p.win_rate >= 50 ? 'var(--win)' : 'var(--loss)' }}>{p.win_rate}%</div>
-                                        <div style={{ ...mo, fontSize: 8, color: 'rgba(255,255,255,.4)' }}>WIN%</div>
-                                      </div>
-                                    )}
-                                  </div>
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-                        )}
-
-                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 20 }}>
-                          <div>
-                            <div style={{ ...mo, fontSize: 10, color: 'var(--win)', fontWeight: 700, letterSpacing: '.08em', marginBottom: 8 }}>
-                              PLAYED WITH ({draftSyn?.played_with?.length || 0} heroes)
-                            </div>
-                            <SynTable rows={draftSyn?.played_with} caption="Synergy: Win rates when drafted together" />
-                          </div>
-                          <div>
-                            <div style={{ ...mo, fontSize: 10, color: 'var(--loss)', fontWeight: 700, letterSpacing: '.08em', marginBottom: 8 }}>
-                              PLAYED AGAINST ({draftSyn?.played_against?.length || 0} heroes)
-                            </div>
-                            <SynTable rows={draftSyn?.played_against} caption="Matchup: Win rates when drafted against" />
-                          </div>
-                          <div>
-                            <div style={{ ...mo, fontSize: 10, color: 'var(--accent)', fontWeight: 700, letterSpacing: '.08em', marginBottom: 4 }}>
-                              ROLE VS ROLE {draftMu?.role ? '(' + draftMu.role + ')' : ''}
-                            </div>
-                            {draftMu && <p style={{ ...mo, fontSize: 9, color: 'rgba(255,255,255,.4)', marginBottom: 8 }}>// Win% = {draftHero.hero_name} team wins</p>}
-                            <SynTable rows={draftMu?.matchups} caption="Role-specific matchup statistics" />
-                          </div>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                )}
-              </div>
-            );
-          })()}
-
-          {/* ── 6. PICK SLOT ROLE DISTRIBUTION ── */}
-          {pickSlots && (() => {
-            const slots = pickSlots[side === 'red' ? 'red' : side === 'blue' ? 'blue' : 'overall'] || {};
-            const slotLabel = (i) => {
-              if (side === 'blue') return ['P1 B', 'P2 B', 'P3 B', 'P4 B', 'P5 B'][i];
-              if (side === 'red') return ['P1 R', 'P2 R', 'P3 R', 'P4 R', 'P5 R'][i];
-              return `Pick ${i + 1}`;
-            };
-            const mo = { fontFamily: 'var(--font-mono)' };
-
-            return (
-              <div style={{ marginBottom: 32 }}>
-                <div className="section-title">Pick Slot Role Distribution</div>
-                <p style={{ ...mo, fontSize: 10, color: 'rgba(255,255,255,.4)', marginBottom: 14, letterSpacing: '.06em' }}>
-                  // role assigned per pick slot — team's 1st through 5th pick each game
-                </p>
-
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 10 }}>
-                  {[1, 2, 3, 4, 5].map((slot, i) => {
-                    const data = slots[slot] || { total: 0 };
-                    const total = data.total || 0;
-                    const sorted = ROLE_ORDER
-                      .map(r => ({ role: r, cnt: data[r] || 0 }))
-                      .filter(r => r.cnt > 0)
-                      .sort((a, b) => b.cnt - a.cnt);
-
-                    return (
-                      <div key={slot} className="card" style={{ padding: '12px 10px', borderTop: '3px solid var(--border2)' }}>
-                        <div style={{ ...mo, fontSize: 10, fontWeight: 700, color: 'rgba(255,255,255,.5)', letterSpacing: '.08em', marginBottom: 12, textAlign: 'center' }}>
-                          {slotLabel(i)}
-                          <span style={{ display: 'block', ...mo, fontSize: 9, color: 'rgba(255,255,255,.3)', marginTop: 2, fontWeight: 400 }}>
-                            {total} games
-                          </span>
-                        </div>
-
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
-                          {sorted.map(({ role, cnt }) => {
-                            const pctVal = total > 0 ? Math.round((cnt / total) * 100) : 0;
-                            return (
-                              <div key={role}>
-                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 3 }}>
-                                  <span title={role} aria-label={role} style={{ display: 'inline-flex' }}>
-                                    <RoleImg role={role} size={12} />
-                                  </span>
-                                  <span style={{ ...mo, fontSize: 9, color: 'rgba(255,255,255,.55)', fontWeight: 700 }}>{pctVal}%</span>
-                                </div>
-                                <div style={{ height: 5, background: 'rgba(255,255,255,.08)', borderRadius: 2 }}>
-                                  <div style={{ height: '100%', width: pctVal + '%', background: 'var(--neutral2)', borderRadius: 2 }} />
-                                </div>
-                              </div>
-                            );
-                          })}
-                          {sorted.length === 0 && (
-                            <div style={{ ...mo, fontSize: 10, color: 'rgba(255,255,255,.3)', textAlign: 'center' }}>—</div>
-                          )}
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            );
-          })()}
-
-          {/* ── 7. DRAFT HISTORY TIMELINE ── */}
-          <div className="section-title">Draft History</div>
-          {draftLoading ? <div className="loading" /> : draftHistory.length === 0 ? (
-            <div style={{ fontFamily: 'var(--font-mono)', fontSize: 12, color: 'rgba(255,255,255,.5)', marginBottom: 32 }}>// No draft history matching active filters</div>
-          ) : (() => {
-            const mo = { fontFamily: 'var(--font-mono)' };
-
-            // Group games by week & match code
-            const matchesList = [];
-            draftHistory.forEach(g => {
-              const key = g.match_code || g.battle_id;
-              let match = matchesList.find(m => m.match_code === key);
-              if (!match) {
-                match = {
-                  match_code: key,
-                  week: g.week_number,
-                  phase: g.phase,
-                  opp: g.opp_code,
-                  games: [],
-                };
-                matchesList.push(match);
-              }
-              match.games.push(g);
-            });
-
-            return (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 24, marginBottom: 32 }}>
-                {matchesList.map(match => (
-                  <div key={match.match_code}>
-                    {/* Match header */}
-                    <div style={{ ...mo, fontSize: 10, color: 'rgba(255,255,255,.4)', letterSpacing: '.1em', fontWeight: 700, marginBottom: 10 }}>
-                      W{match.week} · {match.phase?.toUpperCase()} · vs {match.opp}
-                    </div>
-
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                      {match.games.map(game => {
-                        const teamSide = game.team_campid === 1 ? 'BLUE' : 'RED';
-                        const sideClr = game.team_campid === 1 ? '#42a5f5' : '#ef5350';
-                        const won = game.team_won;
-
-                        const teamDraft = game.draft.filter(d => d.team_code === t.team_code);
-                        const oppDraft = game.draft.filter(d => d.team_code !== t.team_code);
-
-                        const teamBans = teamDraft.filter(d => d.action === 'ban').sort((a, b) => a.order_num - b.order_num);
-                        const teamPicks = teamDraft.filter(d => d.action === 'pick').sort((a, b) => a.order_num - b.order_num);
-                        const oppBans = oppDraft.filter(d => d.action === 'ban').sort((a, b) => a.order_num - b.order_num);
-                        const oppPicks = oppDraft.filter(d => d.action === 'pick').sort((a, b) => a.order_num - b.order_num);
-
-                        const timeline = [...game.draft].sort((a, b) => a.order_num - b.order_num);
-
-                        return (
-                          <div key={game.battle_id} className="card" style={{ borderLeft: `3px solid ${won ? 'var(--win)' : 'var(--loss)'}`, padding: '14px 16px' }}>
-                            {/* Game header */}
-                            <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 14, flexWrap: 'wrap' }}>
-                              <span style={{ ...mo, fontSize: 11, fontWeight: 700, color: 'rgba(255,255,255,.5)' }}>G{game.game_number}</span>
-                              <span style={{ ...mo, fontSize: 12, fontWeight: 800, color: won ? 'var(--win)' : 'var(--loss)' }}>{won ? 'WIN' : 'LOSS'}</span>
-                              <span style={{ ...mo, fontSize: 11, fontWeight: 700, color: sideClr }}>{teamSide} SIDE</span>
-                              <span style={{ ...mo, fontSize: 11, color: 'rgba(255,255,255,.35)' }}>vs {game.opp_code}</span>
-                            </div>
-
-                            {/* Draft Grid */}
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                              {/* Bans */}
-                              <div style={{ display: 'grid', gridTemplateColumns: '60px 1fr 1fr', gap: 8, alignItems: 'start' }}>
-                                <span style={{ ...mo, fontSize: 9, color: 'rgba(255,200,0,.7)', fontWeight: 700, letterSpacing: '.08em', paddingTop: 4 }}>BANS</span>
-                                <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
-                                  {teamBans.map((d, index) => (
-                                    <div key={index} title={`#${d.order_num} ${d.hero_name}`} style={{ position: 'relative', opacity: 0.7, filter: 'grayscale(60%)' }}>
-                                      <HeroImg heroid={d.heroid} size={30} />
-                                      <span style={{ position: 'absolute', bottom: 0, right: 0, ...mo, fontSize: 7, fontWeight: 700, background: 'rgba(255,200,0,.85)', color: '#000', padding: '0 2px', lineHeight: '12px' }}>
-                                        {d.order_num}
-                                      </span>
-                                    </div>
-                                  ))}
-                                </div>
-                                <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
-                                  {oppBans.map((d, index) => (
-                                    <div key={index} title={`#${d.order_num} ${d.hero_name}`} style={{ position: 'relative', opacity: 0.5, filter: 'grayscale(80%)' }}>
-                                      <HeroImg heroid={d.heroid} size={30} />
-                                      <span style={{ position: 'absolute', bottom: 0, right: 0, ...mo, fontSize: 7, fontWeight: 700, background: 'rgba(255,200,0,.85)', color: '#000', padding: '0 2px', lineHeight: '12px' }}>
-                                        {d.order_num}
-                                      </span>
-                                    </div>
-                                  ))}
-                                </div>
-                              </div>
-
-                              {/* Picks */}
-                              <div style={{ display: 'grid', gridTemplateColumns: '60px 1fr 1fr', gap: 8, alignItems: 'start' }}>
-                                <span style={{ ...mo, fontSize: 9, color: sideClr, fontWeight: 700, letterSpacing: '.08em', paddingTop: 4 }}>PICKS</span>
-                                <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
-                                  {teamPicks.map((d, index) => (
-                                    <div key={index} title={`#${d.order_num} ${d.hero_name}`} style={{ position: 'relative' }}>
-                                      <div style={{ borderRadius: 2, overflow: 'hidden', boxShadow: `0 0 0 2px ${sideClr}` }}>
-                                        <HeroImg heroid={d.heroid} size={36} />
-                                      </div>
-                                      <span style={{ position: 'absolute', bottom: 0, right: 0, ...mo, fontSize: 7, fontWeight: 700, background: sideClr, color: '#000', padding: '0 2px', lineHeight: '12px' }}>
-                                        {d.order_num}
-                                      </span>
-                                    </div>
-                                  ))}
-                                </div>
-                                <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
-                                  {oppPicks.map((d, index) => (
-                                    <div key={index} title={`#${d.order_num} ${d.hero_name}`} style={{ position: 'relative' }}>
-                                      <div style={{ borderRadius: 2, overflow: 'hidden', boxShadow: `0 0 0 2px rgba(255,255,255,.3)` }}>
-                                        <HeroImg heroid={d.heroid} size={36} />
-                                      </div>
-                                      <span style={{ position: 'absolute', bottom: 0, right: 0, ...mo, fontSize: 7, fontWeight: 700, background: 'rgba(255,255,255,.7)', color: '#000', padding: '0 2px', lineHeight: '12px' }}>
-                                        {d.order_num}
-                                      </span>
-                                    </div>
-                                  ))}
-                                </div>
-                              </div>
-
-                              {/* Timeline strip */}
-                              <div style={{ display: 'flex', gap: 2, marginTop: 4, flexWrap: 'wrap' }}>
-                                {timeline.map(d => {
-                                  const isTeam = d.team_code === t.team_code;
-                                  const isBan = d.action === 'ban';
-                                  const bg = isBan
-                                    ? 'rgba(255,200,0,.12)'
-                                    : isTeam ? `${sideClr}22` : 'rgba(255,255,255,.06)';
-                                  const border = isBan
-                                    ? 'rgba(255,200,0,.3)'
-                                    : isTeam ? sideClr : 'rgba(255,255,255,.18)';
-                                  return (
-                                    <div key={d.order_num} title={`#${d.order_num} ${isBan ? 'BAN' : 'PICK'} · ${d.team_code} · ${d.hero_name}`}
-                                      style={{
-                                        display: 'flex',
-                                        flexDirection: 'column',
-                                        alignItems: 'center',
-                                        gap: 2,
-                                        background: bg,
-                                        border: `1px solid ${border}`,
-                                        padding: '3px 4px',
-                                        minWidth: 30
-                                      }}>
-                                      <span style={{ ...mo, fontSize: 7, color: 'rgba(255,255,255,.35)', lineHeight: 1 }}>{d.order_num}</span>
-                                      <HeroImg heroid={d.heroid} size={20} />
-                                      <span style={{ ...mo, fontSize: 7, color: isBan ? 'rgba(255,200,0,.7)' : isTeam ? sideClr : 'rgba(255,255,255,.45)', lineHeight: 1 }}>
-                                        {isBan ? 'B' : 'P'}
-                                      </span>
-                                    </div>
-                                  );
-                                })}
-                              </div>
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            );
-          })()}
-
-          {/* ── TEAM DATA ANALYSIS ── */}
+          {/* ── 3. TEAM DATA ANALYSIS ── */}
           <div className="section-title">Team Data Analysis</div>
           <div style={{ fontFamily: 'var(--font-mono)', fontSize: 10, color: 'var(--muted)', marginBottom: 12 }}>
             // rich (MSC 2026) match data · toggle panels below
@@ -1223,6 +685,546 @@ export default function CurrentTeamDashboard({ teamKey, scope, season, initial }
               <TeamKdaDistribution teamKey={teamKey} buildQ={buildQ} />
             </div>
           )}
+
+          {/* ── 4. MATCH RESULTS ── */}
+          <div className="section-title">Match Results</div>
+          <div className="table-wrap" style={{ marginBottom: 32 }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+              <thead>
+                <tr style={{ borderBottom: '1px solid var(--border)' }}>
+                  <th style={{ textAlign: 'left', padding: '8px 10px', fontFamily: 'var(--font-mono)', fontSize: 11, color: 'rgba(255,255,255,.6)', width: 110 }}>Opponent</th>
+                  <th style={{ textAlign: 'left', padding: '8px 10px', fontFamily: 'var(--font-mono)', fontSize: 11, color: 'rgba(255,255,255,.6)' }}>Series</th>
+                </tr>
+              </thead>
+              <tbody>
+                {Object.entries(oppMatchesMap).map(([opp, oppSeries]) => (
+                  <tr key={opp} style={{ borderBottom: '1px solid var(--border)', verticalAlign: 'middle' }}>
+                    <td style={{ padding: '12px 10px', whiteSpace: 'nowrap' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                        <TeamLogo src={img.team(opp)} fallbackSrc="" alt="" className="avatar sq" style={{ width: 24, height: 24, objectFit: 'contain' }} />
+                        <span style={{ fontWeight: 700, fontSize: 14, color: 'var(--text)' }}>{opp}</span>
+                      </div>
+                    </td>
+                    <td style={{ padding: '10px' }}>
+                      <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'center' }}>
+                        {oppSeries.map(s => {
+                          const won = s.wins > s.losses;
+                          const lost = s.losses > s.wins;
+                          const clr = won ? 'var(--win)' : lost ? 'var(--loss)' : 'rgba(255,255,255,.4)';
+                          return (
+                            <div key={s.match_code} style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'var(--surface)', border: '1px solid var(--border)', borderLeft: `3px solid ${clr}`, padding: '6px 10px' }}>
+                              <span style={{ fontFamily: 'var(--font-mono)', fontSize: 11, fontWeight: 700, color: 'rgba(255,255,255,.5)' }}>W{s.week || '?'}</span>
+                              <span style={{ fontFamily: 'var(--font-mono)', fontSize: 12, fontWeight: 800, color: clr }}>{won ? 'WIN' : lost ? 'LOSS' : 'DRAW'}</span>
+                              <span style={{ fontFamily: 'var(--font-display)', fontSize: 14, fontWeight: 800 }}>{s.wins}–{s.losses}</span>
+                              <div style={{ display: 'flex', gap: 4 }}>
+                                {s.games.map((g, gi) => (
+                                  <Link key={gi} href={`/matches/${g.battle_id}`} style={{
+                                    fontFamily: 'var(--font-mono)', fontSize: 10, fontWeight: 600,
+                                    color: g.team_won ? 'var(--win)' : 'var(--loss)',
+                                    background: g.team_won ? 'rgba(0,230,118,.1)' : 'rgba(255,60,90,.1)',
+                                    border: `1px solid ${g.team_won ? 'rgba(0,230,118,.3)' : 'rgba(255,60,90,.3)'}`,
+                                    padding: '1px 6px', textDecoration: 'none', whiteSpace: 'nowrap',
+                                  }}>
+                                    G{g.game_number || gi + 1}
+                                  </Link>
+                                ))}
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+                {Object.keys(oppMatchesMap).length === 0 && (
+                  <tr>
+                    <td colSpan="2" style={{ padding: 12, textAlign: 'center', color: 'var(--muted)' }}>No matches recorded under the current filters.</td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+
+          {/* ── 5. SIDE SPLITS ── */}
+          <div className="section-title">Side Splits</div>
+          {draftLoading ? <div className="loading" /> : (() => {
+            const summary = draftData.summary;
+            if (!summary) return <div style={{ fontFamily: 'var(--font-mono)', fontSize: 12, color: 'rgba(255,255,255,.5)', marginBottom: 32 }}>// No side splits data</div>;
+            const mo2 = { fontFamily: 'var(--font-mono)' };
+
+            const sides = [
+              {
+                label: 'BLUE SIDE',
+                color: '#42a5f5',
+                games: parseInt(summary.blue_games) || 0,
+                wins: parseInt(summary.blue_wins) || 0,
+                wr: summary.blue_win_pct,
+                prioGames: parseInt(summary.blue_prio_games) || 0,
+                prioWins: parseInt(summary.blue_prio_wins) || 0,
+                prioWr: summary.blue_prio_win_pct,
+              },
+              {
+                label: 'RED SIDE',
+                color: '#ef5350',
+                games: parseInt(summary.red_games) || 0,
+                wins: parseInt(summary.red_wins) || 0,
+                wr: summary.red_win_pct,
+                prioGames: parseInt(summary.red_prio_games) || 0,
+                prioWins: parseInt(summary.red_prio_wins) || 0,
+                prioWr: summary.red_prio_win_pct,
+              },
+            ];
+
+            return (
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 16, marginBottom: 32 }}>
+                {sides.map(s => {
+                  const losses = s.games - s.wins;
+                  const prioLosses = s.prioGames - s.prioWins;
+                  const wrColor = (s.wr ?? 0) >= 50 ? 'var(--win)' : 'var(--loss)';
+                  const prioWrColor = (s.prioWr ?? 0) >= 50 ? 'var(--win)' : 'var(--loss)';
+                  const barPct = s.games > 0 ? Math.round((s.wins / s.games) * 100) : 0;
+                  const prioBarPct = s.prioGames > 0 ? Math.round((s.prioWins / s.prioGames) * 100) : 0;
+                  return (
+                    <div key={s.label} className="card" style={{ borderTop: `3px solid ${s.color}`, padding: '16px 20px' }}>
+                      <div style={{ ...mo2, fontSize: 11, fontWeight: 700, color: s.color, letterSpacing: '.08em', marginBottom: 16 }}>
+                        {s.label}
+                      </div>
+
+                      {/* Overall side stats */}
+                      <div style={{ marginBottom: 16 }}>
+                        <div style={{ ...mo2, fontSize: 9, color: 'rgba(255,255,255,.4)', letterSpacing: '.07em', marginBottom: 8 }}>OVERALL</div>
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 6, marginBottom: 8 }}>
+                          {[
+                            { lbl: 'GP', val: s.games, clr: s.color },
+                            { lbl: 'W', val: s.wins, clr: 'var(--win)' },
+                            { lbl: 'L', val: losses, clr: 'var(--loss)' },
+                            { lbl: 'WR', val: s.wr != null ? s.wr + '%' : '—', clr: wrColor },
+                          ].map(stat => (
+                            <div key={stat.lbl} style={{ textAlign: 'center' }}>
+                              <div style={{ fontFamily: 'var(--font-display)', fontSize: 18, fontWeight: 800, color: stat.clr, lineHeight: 1 }}>{stat.val}</div>
+                              <div style={{ ...mo2, fontSize: 8, color: 'rgba(255,255,255,.4)', letterSpacing: '.05em', marginTop: 3 }}>{stat.lbl}</div>
+                            </div>
+                          ))}
+                        </div>
+                        <div style={{ height: 4, background: 'rgba(255,255,255,.08)', borderRadius: 2, overflow: 'hidden' }}>
+                          <div style={{ height: '100%', width: barPct + '%', background: s.color, borderRadius: 2 }} />
+                        </div>
+                      </div>
+
+                      {/* Prio pick side stats */}
+                      <div style={{ borderTop: '1px solid rgba(255,255,255,.07)', paddingTop: 14 }}>
+                        <div style={{ ...mo2, fontSize: 9, color: 'var(--muted)', letterSpacing: '.07em', marginBottom: 8 }}>PRIO PICK</div>
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 6, marginBottom: 8 }}>
+                          {[
+                            { lbl: 'GP', val: s.prioGames, clr: s.color },
+                            { lbl: 'W', val: s.prioWins, clr: 'var(--win)' },
+                            { lbl: 'L', val: prioLosses, clr: 'var(--loss)' },
+                            { lbl: 'WR', val: s.prioWr != null ? s.prioWr + '%' : '—', clr: prioWrColor },
+                          ].map(stat => (
+                            <div key={stat.lbl} style={{ textAlign: 'center' }}>
+                              <div style={{ fontFamily: 'var(--font-display)', fontSize: 18, fontWeight: 800, color: stat.clr, lineHeight: 1 }}>{stat.val}</div>
+                              <div style={{ ...mo2, fontSize: 8, color: 'rgba(255,255,255,.4)', letterSpacing: '.05em', marginTop: 3 }}>{stat.lbl}</div>
+                            </div>
+                          ))}
+                        </div>
+                        <div style={{ height: 4, background: 'rgba(255,255,255,.08)', borderRadius: 2, overflow: 'hidden' }}>
+                          <div style={{ height: '100%', width: prioBarPct + '%', background: 'rgba(255, 215, 0, 0.6)', borderRadius: 2 }} />
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            );
+          })()}
+
+          {/* ── 6. DRAFT STATS ── */}
+          <div className="section-title">Draft Stats</div>
+          {draftLoading ? <div className="loading" /> : (() => {
+            const heroes = draftData.heroes || [];
+            const mo = { fontFamily: 'var(--font-mono)' };
+
+            const gs = (h, field) => {
+              if (side === 'blue') return h[`b_${field}`] ?? 0;
+              if (side === 'red') return h[`r_${field}`] ?? 0;
+              return h[field] ?? 0;
+            };
+
+            const filteredHeroes = [...heroes]
+              .filter(h => gs(h, 'picks') > 0 || gs(h, 'bans') > 0)
+              .sort((a, b) => gs(b, 'presence') - gs(a, 'presence'));
+
+            if (!filteredHeroes.length) return <div style={{ ...mo, fontSize: 12, color: 'rgba(255,255,255,.5)', marginBottom: 32 }}>// No draft data matching active filters</div>;
+
+            const totalPicks = filteredHeroes.reduce((sum, h) => sum + gs(h, 'picks'), 0);
+            const totalWins = filteredHeroes.reduce((sum, h) => sum + gs(h, 'wins'), 0);
+            const pickWR = totalPicks > 0 ? Math.round((totalWins / totalPicks) * 100) : 0;
+
+            return (
+              <div style={{ marginBottom: 32 }}>
+                <p style={{ ...mo, fontSize: 11, color: 'rgba(255,255,255,.5)', marginBottom: 12 }}>
+                  // {t.team_code} draft pool — click a hero for synergy & matchup details
+                </p>
+
+                {/* Summary cards */}
+                <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginBottom: 24 }}>
+                  {[
+                    { label: 'Unique Heroes Picked', value: filteredHeroes.filter(h => gs(h, 'picks') > 0).length, color: 'var(--accent)' },
+                    { label: 'Total Picks', value: totalPicks, color: 'var(--text)' },
+                    { label: 'Pick Win Rate', value: pickWR + '%', color: pickWR >= 50 ? 'var(--win)' : 'var(--loss)' },
+                  ].map(s => (
+                    <div key={s.label} className="card" style={{ borderLeft: `3px solid ${s.color}`, padding: '12px 16px', flex: '1 1 130px' }}>
+                      <div style={{ ...mo, fontSize: 9, color: 'rgba(255,255,255,.5)', letterSpacing: '.08em', marginBottom: 4 }}>{s.label.toUpperCase()}</div>
+                      <div style={{ fontFamily: 'var(--font-display)', fontSize: 22, fontWeight: 800, color: s.color, lineHeight: 1 }}>{s.value}</div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Hero pool table */}
+                <div className="table-wrap" style={{ overflowX: 'auto', marginBottom: 32 }}>
+                  <table style={{ borderCollapse: 'collapse', fontSize: 12, width: '100%' }}>
+                    <thead>
+                      <tr style={{ borderBottom: '1px solid var(--border)' }}>
+                        <th style={{ textAlign: 'left', padding: '8px 12px', ...mo, fontSize: 10, color: 'rgba(255,255,255,.5)' }}>Hero</th>
+                        {['Picks', 'W', 'L', 'Win%', 'Prio Picks', 'Adj Picks', '1st Pick', '2 Picks', 'Prio Bans', 'Adj Bans', 'Bans'].map(c => (
+                          <th key={c} style={{ textAlign: 'center', padding: '8px 10px', ...mo, fontSize: 10, color: 'rgba(255,255,255,.5)' }}>{c}</th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {filteredHeroes.map(h => {
+                        const picks = gs(h, 'picks');
+                        const wins = gs(h, 'wins');
+                        const losses = gs(h, 'losses');
+                        const wr = picks > 0 ? Math.round((wins / picks) * 100) : 0;
+                        const isSelected = draftHero?.heroid === h.heroid;
+                        return (
+                          <tr key={h.heroid}
+                            onClick={() => setDraftHero(prev => (prev?.heroid === h.heroid ? null : h))}
+                            style={{ cursor: 'pointer', borderBottom: '1px solid var(--border)', background: isSelected ? 'rgba(255,215,0,0.05)' : 'transparent' }}>
+                            <td style={{ padding: '8px 12px' }}>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                                <HeroImg heroid={h.heroid} size={30} />
+                                <div>
+                                  <div style={{ fontWeight: 700, fontSize: 13 }}>{h.hero_name}</div>
+                                  {isSelected && <div style={{ ...mo, fontSize: 9, color: 'var(--accent)' }}>selected ▼</div>}
+                                </div>
+                              </div>
+                            </td>
+                            <td style={{ textAlign: 'center', fontWeight: 700, color: 'var(--blue)' }}>{picks || '—'}</td>
+                            <td style={{ textAlign: 'center', color: 'var(--win)' }}>{wins || '—'}</td>
+                            <td style={{ textAlign: 'center', color: 'var(--loss)' }}>{losses || '—'}</td>
+                            <td style={{ textAlign: 'center', fontWeight: 700, color: wr >= 50 ? 'var(--win)' : 'var(--loss)' }}>{picks > 0 ? wr + '%' : '—'}</td>
+                            <td style={{ textAlign: 'center', color: 'rgba(100,210,120,.9)' }}>{gs(h, 'priority_pick') || '—'}</td>
+                            <td style={{ textAlign: 'center', color: 'rgba(100,190,120,.7)' }}>{gs(h, 'adjusted_pick') || '—'}</td>
+                            <td style={{ textAlign: 'center', color: 'rgba(160,230,255,.9)' }}>{gs(h, 'first_pick') || '—'}</td>
+                            <td style={{ textAlign: 'center', color: 'rgba(110,185,255,.8)' }}>{gs(h, 'two_pick') || '—'}</td>
+                            <td style={{ textAlign: 'center', color: 'rgba(255,200,0,.9)' }}>{gs(h, 'priority_ban') || '—'}</td>
+                            <td style={{ textAlign: 'center', color: 'rgba(255,175,0,.7)' }}>{gs(h, 'adjusted_ban') || '—'}</td>
+                            <td style={{ textAlign: 'center', color: 'rgba(255,200,0,.55)' }}>{gs(h, 'bans') || '—'}</td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+
+                {/* ── Interactive Synergy Panels ── */}
+                {draftHero && (
+                  <div className="card" style={{ padding: 20, marginBottom: 32, border: '1px solid var(--accent)' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 20 }}>
+                      <HeroImg heroid={draftHero.heroid} size={40} />
+                      <span style={{ fontFamily: 'var(--font-display)', fontSize: 20, fontWeight: 800 }}>{draftHero.hero_name} Details</span>
+                      <button onClick={() => setDraftHero(null)}
+                        style={{ ...mo, fontSize: 10, color: 'rgba(255,255,255,.5)', border: '1px solid var(--border)', padding: '2px 8px', cursor: 'pointer', background: 'transparent', marginLeft: 'auto' }}>
+                        ✕ Close
+                      </button>
+                    </div>
+
+                    {draftFL ? <div className="loading" /> : (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 28 }}>
+                        {draftPat.length > 0 && (
+                          <div>
+                            <div style={{ ...mo, fontSize: 10, color: 'var(--accent)', fontWeight: 700, letterSpacing: '.1em', marginBottom: 12 }}>PATCH DISTRIBUTION</div>
+                            <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+                              {draftPat.map(p => (
+                                <div key={p.patch} className="card" style={{ padding: '10px 14px', minWidth: 110, flex: '1 1 110px' }}>
+                                  <div style={{ ...mo, fontSize: 10, color: 'rgba(255,255,255,.5)', marginBottom: 6 }}>Patch {p.patch}</div>
+                                  <div style={{ display: 'flex', gap: 12 }}>
+                                    <div>
+                                      <div style={{ fontFamily: 'var(--font-display)', fontSize: 18, fontWeight: 800, color: 'var(--blue)' }}>{p.picks}</div>
+                                      <div style={{ ...mo, fontSize: 8, color: 'rgba(255,255,255,.4)' }}>PICKS</div>
+                                    </div>
+                                    <div>
+                                      <div style={{ fontFamily: 'var(--font-display)', fontSize: 18, fontWeight: 800, color: 'rgba(255,200,0,.8)' }}>{p.bans}</div>
+                                      <div style={{ ...mo, fontSize: 8, color: 'rgba(255,255,255,.4)' }}>BANS</div>
+                                    </div>
+                                    {p.win_rate !== null && (
+                                      <div>
+                                        <div style={{ fontFamily: 'var(--font-display)', fontSize: 18, fontWeight: 800, color: p.win_rate >= 50 ? 'var(--win)' : 'var(--loss)' }}>{p.win_rate}%</div>
+                                        <div style={{ ...mo, fontSize: 8, color: 'rgba(255,255,255,.4)' }}>WIN%</div>
+                                      </div>
+                                    )}
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 20 }}>
+                          <div>
+                            <div style={{ ...mo, fontSize: 10, color: 'var(--win)', fontWeight: 700, letterSpacing: '.08em', marginBottom: 8 }}>
+                              PLAYED WITH ({draftSyn?.played_with?.length || 0} heroes)
+                            </div>
+                            <SynTable rows={draftSyn?.played_with} caption="Synergy: Win rates when drafted together" />
+                          </div>
+                          <div>
+                            <div style={{ ...mo, fontSize: 10, color: 'var(--loss)', fontWeight: 700, letterSpacing: '.08em', marginBottom: 8 }}>
+                              PLAYED AGAINST ({draftSyn?.played_against?.length || 0} heroes)
+                            </div>
+                            <SynTable rows={draftSyn?.played_against} caption="Matchup: Win rates when drafted against" />
+                          </div>
+                          <div>
+                            <div style={{ ...mo, fontSize: 10, color: 'var(--accent)', fontWeight: 700, letterSpacing: '.08em', marginBottom: 4 }}>
+                              ROLE VS ROLE {draftMu?.role ? '(' + draftMu.role + ')' : ''}
+                            </div>
+                            {draftMu && <p style={{ ...mo, fontSize: 9, color: 'rgba(255,255,255,.4)', marginBottom: 8 }}>// Win% = {draftHero.hero_name} team wins</p>}
+                            <SynTable rows={draftMu?.matchups} caption="Role-specific matchup statistics" />
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            );
+          })()}
+
+          {/* ── 7. PICK SLOT ROLE DISTRIBUTION ── */}
+          {pickSlots && (() => {
+            const slots = pickSlots[side === 'red' ? 'red' : side === 'blue' ? 'blue' : 'overall'] || {};
+            const slotLabel = (i) => {
+              if (side === 'blue') return ['P1 B', 'P2 B', 'P3 B', 'P4 B', 'P5 B'][i];
+              if (side === 'red') return ['P1 R', 'P2 R', 'P3 R', 'P4 R', 'P5 R'][i];
+              return `Pick ${i + 1}`;
+            };
+            const mo = { fontFamily: 'var(--font-mono)' };
+
+            return (
+              <div style={{ marginBottom: 32 }}>
+                <div className="section-title">Pick Slot Role Distribution</div>
+                <p style={{ ...mo, fontSize: 10, color: 'rgba(255,255,255,.4)', marginBottom: 14, letterSpacing: '.06em' }}>
+                  // role assigned per pick slot — team's 1st through 5th pick each game
+                </p>
+
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 10 }}>
+                  {[1, 2, 3, 4, 5].map((slot, i) => {
+                    const data = slots[slot] || { total: 0 };
+                    const total = data.total || 0;
+                    const sorted = ROLE_ORDER
+                      .map(r => ({ role: r, cnt: data[r] || 0 }))
+                      .filter(r => r.cnt > 0)
+                      .sort((a, b) => b.cnt - a.cnt);
+
+                    return (
+                      <div key={slot} className="card" style={{ padding: '12px 10px', borderTop: '3px solid var(--border2)' }}>
+                        <div style={{ ...mo, fontSize: 10, fontWeight: 700, color: 'rgba(255,255,255,.5)', letterSpacing: '.08em', marginBottom: 12, textAlign: 'center' }}>
+                          {slotLabel(i)}
+                          <span style={{ display: 'block', ...mo, fontSize: 9, color: 'rgba(255,255,255,.3)', marginTop: 2, fontWeight: 400 }}>
+                            {total} games
+                          </span>
+                        </div>
+
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
+                          {sorted.map(({ role, cnt }) => {
+                            const pctVal = total > 0 ? Math.round((cnt / total) * 100) : 0;
+                            return (
+                              <div key={role}>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 3 }}>
+                                  <span title={role} aria-label={role} style={{ display: 'inline-flex' }}>
+                                    <RoleImg role={role} size={12} />
+                                  </span>
+                                  <span style={{ ...mo, fontSize: 9, color: 'rgba(255,255,255,.55)', fontWeight: 700 }}>{pctVal}%</span>
+                                </div>
+                                <div style={{ height: 5, background: 'rgba(255,255,255,.08)', borderRadius: 2 }}>
+                                  <div style={{ height: '100%', width: pctVal + '%', background: 'var(--neutral2)', borderRadius: 2 }} />
+                                </div>
+                              </div>
+                            );
+                          })}
+                          {sorted.length === 0 && (
+                            <div style={{ ...mo, fontSize: 10, color: 'rgba(255,255,255,.3)', textAlign: 'center' }}>—</div>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            );
+          })()}
+
+          {/* ── 8. DRAFT HISTORY TIMELINE ── */}
+          <div className="section-title">Draft History</div>
+          {draftLoading ? <div className="loading" /> : draftHistory.length === 0 ? (
+            <div style={{ fontFamily: 'var(--font-mono)', fontSize: 12, color: 'rgba(255,255,255,.5)', marginBottom: 32 }}>// No draft history matching active filters</div>
+          ) : (() => {
+            const mo = { fontFamily: 'var(--font-mono)' };
+
+            // Group games by week & match code
+            const matchesList = [];
+            draftHistory.forEach(g => {
+              const key = g.match_code || g.battle_id;
+              let match = matchesList.find(m => m.match_code === key);
+              if (!match) {
+                match = {
+                  match_code: key,
+                  week: g.week_number,
+                  phase: g.phase,
+                  opp: g.opp_code,
+                  games: [],
+                };
+                matchesList.push(match);
+              }
+              match.games.push(g);
+            });
+
+            return (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 24, marginBottom: 32 }}>
+                {matchesList.map(match => (
+                  <div key={match.match_code}>
+                    {/* Match header */}
+                    <div style={{ ...mo, fontSize: 10, color: 'rgba(255,255,255,.4)', letterSpacing: '.1em', fontWeight: 700, marginBottom: 10 }}>
+                      W{match.week} · {match.phase?.toUpperCase()} · vs {match.opp}
+                    </div>
+
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                      {match.games.map(game => {
+                        const teamSide = game.team_campid === 1 ? 'BLUE' : 'RED';
+                        const sideClr = game.team_campid === 1 ? '#42a5f5' : '#ef5350';
+                        const won = game.team_won;
+
+                        const teamDraft = game.draft.filter(d => d.team_code === t.team_code);
+                        const oppDraft = game.draft.filter(d => d.team_code !== t.team_code);
+
+                        const teamBans = teamDraft.filter(d => d.action === 'ban').sort((a, b) => a.order_num - b.order_num);
+                        const teamPicks = teamDraft.filter(d => d.action === 'pick').sort((a, b) => a.order_num - b.order_num);
+                        const oppBans = oppDraft.filter(d => d.action === 'ban').sort((a, b) => a.order_num - b.order_num);
+                        const oppPicks = oppDraft.filter(d => d.action === 'pick').sort((a, b) => a.order_num - b.order_num);
+
+                        const timeline = [...game.draft].sort((a, b) => a.order_num - b.order_num);
+
+                        return (
+                          <div key={game.battle_id} className="card" style={{ borderLeft: `3px solid ${won ? 'var(--win)' : 'var(--loss)'}`, padding: '14px 16px' }}>
+                            {/* Game header */}
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 14, flexWrap: 'wrap' }}>
+                              <span style={{ ...mo, fontSize: 11, fontWeight: 700, color: 'rgba(255,255,255,.5)' }}>G{game.game_number}</span>
+                              <span style={{ ...mo, fontSize: 12, fontWeight: 800, color: won ? 'var(--win)' : 'var(--loss)' }}>{won ? 'WIN' : 'LOSS'}</span>
+                              <span style={{ ...mo, fontSize: 11, fontWeight: 700, color: sideClr }}>{teamSide} SIDE</span>
+                              <span style={{ ...mo, fontSize: 11, color: 'rgba(255,255,255,.35)' }}>vs {game.opp_code}</span>
+                            </div>
+
+                            {/* Draft Grid */}
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                              {/* Bans */}
+                              <div style={{ display: 'grid', gridTemplateColumns: '60px 1fr 1fr', gap: 8, alignItems: 'start' }}>
+                                <span style={{ ...mo, fontSize: 9, color: 'rgba(255,200,0,.7)', fontWeight: 700, letterSpacing: '.08em', paddingTop: 4 }}>BANS</span>
+                                <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
+                                  {teamBans.map((d, index) => (
+                                    <div key={index} title={`#${d.order_num} ${d.hero_name}`} style={{ position: 'relative', opacity: 0.7, filter: 'grayscale(60%)' }}>
+                                      <HeroImg heroid={d.heroid} size={30} />
+                                      <span style={{ position: 'absolute', bottom: 0, right: 0, ...mo, fontSize: 7, fontWeight: 700, background: 'rgba(255,200,0,.85)', color: '#000', padding: '0 2px', lineHeight: '12px' }}>
+                                        {d.order_num}
+                                      </span>
+                                    </div>
+                                  ))}
+                                </div>
+                                <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+                                  {oppBans.map((d, index) => (
+                                    <div key={index} title={`#${d.order_num} ${d.hero_name}`} style={{ position: 'relative', opacity: 0.5, filter: 'grayscale(80%)' }}>
+                                      <HeroImg heroid={d.heroid} size={30} />
+                                      <span style={{ position: 'absolute', bottom: 0, right: 0, ...mo, fontSize: 7, fontWeight: 700, background: 'rgba(255,200,0,.85)', color: '#000', padding: '0 2px', lineHeight: '12px' }}>
+                                        {d.order_num}
+                                      </span>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+
+                              {/* Picks */}
+                              <div style={{ display: 'grid', gridTemplateColumns: '60px 1fr 1fr', gap: 8, alignItems: 'start' }}>
+                                <span style={{ ...mo, fontSize: 9, color: sideClr, fontWeight: 700, letterSpacing: '.08em', paddingTop: 4 }}>PICKS</span>
+                                <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
+                                  {teamPicks.map((d, index) => (
+                                    <div key={index} title={`#${d.order_num} ${d.hero_name}`} style={{ position: 'relative' }}>
+                                      <div style={{ borderRadius: 2, overflow: 'hidden', boxShadow: `0 0 0 2px ${sideClr}` }}>
+                                        <HeroImg heroid={d.heroid} size={36} />
+                                      </div>
+                                      <span style={{ position: 'absolute', bottom: 0, right: 0, ...mo, fontSize: 7, fontWeight: 700, background: sideClr, color: '#000', padding: '0 2px', lineHeight: '12px' }}>
+                                        {d.order_num}
+                                      </span>
+                                    </div>
+                                  ))}
+                                </div>
+                                <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+                                  {oppPicks.map((d, index) => (
+                                    <div key={index} title={`#${d.order_num} ${d.hero_name}`} style={{ position: 'relative' }}>
+                                      <div style={{ borderRadius: 2, overflow: 'hidden', boxShadow: `0 0 0 2px rgba(255,255,255,.3)` }}>
+                                        <HeroImg heroid={d.heroid} size={36} />
+                                      </div>
+                                      <span style={{ position: 'absolute', bottom: 0, right: 0, ...mo, fontSize: 7, fontWeight: 700, background: 'rgba(255,255,255,.7)', color: '#000', padding: '0 2px', lineHeight: '12px' }}>
+                                        {d.order_num}
+                                      </span>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+
+                              {/* Timeline strip */}
+                              <div style={{ display: 'flex', gap: 2, marginTop: 4, flexWrap: 'wrap' }}>
+                                {timeline.map(d => {
+                                  const isTeam = d.team_code === t.team_code;
+                                  const isBan = d.action === 'ban';
+                                  const bg = isBan
+                                    ? 'rgba(255,200,0,.12)'
+                                    : isTeam ? `${sideClr}22` : 'rgba(255,255,255,.06)';
+                                  const border = isBan
+                                    ? 'rgba(255,200,0,.3)'
+                                    : isTeam ? sideClr : 'rgba(255,255,255,.18)';
+                                  return (
+                                    <div key={d.order_num} title={`#${d.order_num} ${isBan ? 'BAN' : 'PICK'} · ${d.team_code} · ${d.hero_name}`}
+                                      style={{
+                                        display: 'flex',
+                                        flexDirection: 'column',
+                                        alignItems: 'center',
+                                        gap: 2,
+                                        background: bg,
+                                        border: `1px solid ${border}`,
+                                        padding: '3px 4px',
+                                        minWidth: 30
+                                      }}>
+                                      <span style={{ ...mo, fontSize: 7, color: 'rgba(255,255,255,.35)', lineHeight: 1 }}>{d.order_num}</span>
+                                      <HeroImg heroid={d.heroid} size={20} />
+                                      <span style={{ ...mo, fontSize: 7, color: isBan ? 'rgba(255,200,0,.7)' : isTeam ? sideClr : 'rgba(255,255,255,.45)', lineHeight: 1 }}>
+                                        {isBan ? 'B' : 'P'}
+                                      </span>
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            );
+          })()}
+
+
         </>
       )}
     </div>
