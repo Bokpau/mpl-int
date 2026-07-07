@@ -8,6 +8,9 @@ import { int, dec, pct, wrClass } from '../../../lib/format';
 import { HeroImg, TeamImg, RoleImg, PlayerPhoto } from '../../../components/Images';
 import TeamLogo from '../../../components/TeamLogo';
 import ErrorBox from '../../../components/ErrorBox';
+import { TeamStatsTimeline } from '../../../components/TeamStatsTimeline';
+import { ObjectiveTimingChart } from '../../../components/ObjectiveTimingChart';
+import { TeamKdaDistribution } from '../../../components/TeamKdaDistribution';
 
 const ROLE_ORDER = ['EXP LANE', 'JUNGLE', 'MID LANE', 'ROAM', 'GOLD LANE'];
 
@@ -95,6 +98,20 @@ export default function CurrentTeamDashboard({ teamKey, scope, season, initial }
   const [draftMu, setDraftMu] = useState(null);
   const [draftFL, setDraftFL] = useState(false);
 
+  // Team Data Analysis panels (collapsed by default; opened on demand)
+  const [analysisPanels, setAnalysisPanels] = useState(() => new Set());
+  const toggleAnalysis = (key) => setAnalysisPanels(prev => {
+    const next = new Set(prev);
+    next.has(key) ? next.delete(key) : next.add(key);
+    return next;
+  });
+  const [subjectStats, setSubjectStats] = useState(null);
+  const [teamsList, setTeamsList] = useState([]);
+  const [cmpTeam, setCmpTeam] = useState(null);   // comparison team_key
+  const [cmpData, setCmpData] = useState(null);
+  const [vsOpps, setVsOpps] = useState([]);
+  const [vsLoading, setVsLoading] = useState(false);
+
   // Fetch available patches for this tournament scope + season on mount
   useEffect(() => {
     fetch(`/api/intl/patches?scope=${scope}&season=${season}`)
@@ -176,6 +193,29 @@ export default function CurrentTeamDashboard({ teamKey, scope, season, initial }
       setDraftFL(false);
     });
   }, [draftHero, teamKey, stage, side, result, patch, buildQ]);
+
+  // Comparison panel: subject-team rich stats + the pickable team list.
+  useEffect(() => {
+    if (!analysisPanels.has('comparison')) return;
+    const q = buildQ();
+    api.teamAnalyticsStats(teamKey, q).then(setSubjectStats).catch(() => setSubjectStats(null));
+    api.teams(q).then(d => setTeamsList(Array.isArray(d) ? d : [])).catch(() => setTeamsList([]));
+  }, [analysisPanels, teamKey, buildQ]);
+
+  // Comparison target's rich stats.
+  useEffect(() => {
+    if (!cmpTeam) { setCmpData(null); return; }
+    api.teamAnalyticsStats(cmpTeam, buildQ()).then(setCmpData).catch(() => setCmpData(null));
+  }, [cmpTeam, buildQ]);
+
+  // vs-Opponents panel.
+  useEffect(() => {
+    if (!analysisPanels.has('vs_opponents')) return;
+    setVsLoading(true);
+    api.teamVsOpponents(teamKey, buildQ())
+      .then(d => { setVsOpps(Array.isArray(d) ? d : []); setVsLoading(false); })
+      .catch(() => { setVsOpps([]); setVsLoading(false); });
+  }, [analysisPanels, teamKey, buildQ]);
 
   const isFiltered = stage !== '' || side !== '' || result !== '' || patch !== 'all';
   const resetFilters = () => {
@@ -981,6 +1021,208 @@ export default function CurrentTeamDashboard({ teamKey, scope, season, initial }
               </div>
             );
           })()}
+
+          {/* ── TEAM DATA ANALYSIS ── */}
+          <div className="section-title">Team Data Analysis</div>
+          <div style={{ fontFamily: 'var(--font-mono)', fontSize: 10, color: 'var(--muted)', marginBottom: 12 }}>
+            // rich (MSC 2026) match data · toggle panels below
+          </div>
+          <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 20 }} role="group" aria-label="Analysis panels toggle">
+            {[
+              { key: 'timeline',     label: 'Per-Minute Stats Timeline' },
+              { key: 'objectives',   label: 'Objective Timing Impact' },
+              { key: 'comparison',   label: 'Team vs Team Comparison' },
+              { key: 'vs_opponents', label: `${t.team_code || 'Team'} vs Opponents` },
+              { key: 'kda_map',      label: 'K/D/A Map Distribution' },
+            ].map(p => (
+              <button key={p.key} onClick={() => toggleAnalysis(p.key)}
+                className={`filter-btn${analysisPanels.has(p.key) ? ' active' : ''}`}
+                aria-pressed={analysisPanels.has(p.key)}
+                style={{ borderRadius: 2 }}>
+                {p.label}
+              </button>
+            ))}
+          </div>
+
+          {analysisPanels.has('timeline') && (
+            <div style={{ marginBottom: 32 }}>
+              <div style={{ fontFamily: 'var(--font-mono)', fontSize: 10, fontWeight: 700, color: 'var(--muted)', letterSpacing: '.08em', marginBottom: 12 }}>PER-MINUTE STATS TIMELINE</div>
+              <TeamStatsTimeline teamKey={teamKey} teamCode={t.team_code} buildQ={buildQ} />
+            </div>
+          )}
+
+          {analysisPanels.has('objectives') && (
+            <div style={{ marginBottom: 32 }}>
+              <div style={{ fontFamily: 'var(--font-mono)', fontSize: 10, fontWeight: 700, color: 'var(--muted)', letterSpacing: '.08em', marginBottom: 12 }}>OBJECTIVE TIMING IMPACT</div>
+              <ObjectiveTimingChart teamKey={teamKey} teamCode={t.team_code} buildQ={buildQ} totalGames={parseInt(t.games) || 0} />
+            </div>
+          )}
+
+          {analysisPanels.has('comparison') && (() => {
+            const fmt = (v, kind) => {
+              if (v == null || v === '') return '—';
+              const n = Number(v);
+              if (Number.isNaN(n)) return '—';
+              if (kind === 'int') return Math.round(n).toLocaleString();
+              if (kind === 'd1') return n.toFixed(1);
+              return n.toFixed(2);
+            };
+            const CMP_STATS = [
+              { key: 'wins', label: 'Wins', hi: true, kind: 'int' },
+              { key: 'avg_kills', label: 'Avg Kills', hi: true, kind: 'd2' },
+              { key: 'avg_deaths', label: 'Avg Deaths', hi: false, kind: 'd2' },
+              { key: 'avg_kda', label: 'Avg KDA', hi: true, kind: 'd2' },
+              { key: 'avg_gpm', label: 'Avg GPM', hi: true, kind: 'int' },
+              { key: 'avg_dpm', label: 'Avg DPM', hi: true, kind: 'int' },
+              { key: 'avg_lords', label: 'Avg Lords', hi: true, kind: 'd2' },
+              { key: 'avg_turtles', label: 'Avg Turtles', hi: true, kind: 'd2' },
+              { key: 'avg_turrets', label: 'Avg Turrets', hi: true, kind: 'd2' },
+              { key: 'avg_turtle_pct', label: 'Turtle Ctrl%', hi: true, kind: 'd1' },
+              { key: 'avg_lord_pct', label: 'Lord Ctrl%', hi: true, kind: 'd1' },
+              { key: 'avg_game_min', label: 'Avg Game (min)', hi: false, kind: 'd1' },
+            ];
+            const others = teamsList.filter(x => x.team_key !== teamKey);
+            const cmpCode = teamsList.find(x => x.team_key === cmpTeam)?.team_code_era || cmpData?.team_code || '';
+            return (
+              <div style={{ marginBottom: 32 }}>
+                <div style={{ fontFamily: 'var(--font-mono)', fontSize: 10, fontWeight: 700, color: 'var(--muted)', letterSpacing: '.08em', marginBottom: 12 }}>TEAM VS TEAM COMPARISON</div>
+                <div style={{ display: 'flex', gap: 8, marginBottom: 20, flexWrap: 'wrap', alignItems: 'center' }}>
+                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: 12, color: 'rgba(255,255,255,.6)' }}>Compare {t.team_code} vs:</span>
+                  {others.length === 0 && <span style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--muted)' }}>// no other teams</span>}
+                  {others.map(x => (
+                    <button key={x.team_key} onClick={() => setCmpTeam(prev => prev === x.team_key ? null : x.team_key)}
+                      className={`filter-btn${cmpTeam === x.team_key ? ' active' : ''}`}
+                      aria-pressed={cmpTeam === x.team_key}
+                      style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '5px 12px', borderRadius: 2 }}>
+                      <TeamLogo src={x.team_logo_dark} fallbackSrc={img.team(x.team_code_era)} alt="" className="avatar sq" style={{ width: 18, height: 18, objectFit: 'contain' }} />
+                      <span style={{ fontFamily: 'var(--font-mono)', fontSize: 12, fontWeight: 600 }}>{x.team_code_era}</span>
+                    </button>
+                  ))}
+                </div>
+
+                {!cmpTeam ? (
+                  <div style={{ fontFamily: 'var(--font-mono)', fontSize: 12, color: 'var(--muted)' }}>// pick a team to compare</div>
+                ) : !cmpData || cmpData.games === 0 ? (
+                  <div style={{ fontFamily: 'var(--font-mono)', fontSize: 12, color: 'var(--muted)' }}>// no comparison data</div>
+                ) : (
+                  <div>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 150px 1fr', gap: 8, marginBottom: 16, alignItems: 'center' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                        <TeamLogo src={t.team_logo_dark} fallbackSrc={img.team(t.team_code)} alt="" className="avatar sq" style={{ width: 32, height: 32, objectFit: 'contain' }} />
+                        <span style={{ fontFamily: 'var(--font-display)', fontSize: 20, fontWeight: 800 }}>{t.team_code}</span>
+                      </div>
+                      <div style={{ textAlign: 'center', fontFamily: 'var(--font-mono)', fontSize: 12, color: 'rgba(255,255,255,.5)', fontWeight: 700 }}>vs</div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 10, justifyContent: 'flex-end' }}>
+                        <span style={{ fontFamily: 'var(--font-display)', fontSize: 20, fontWeight: 800 }}>{cmpCode}</span>
+                        <TeamLogo src={teamsList.find(x => x.team_key === cmpTeam)?.team_logo_dark} fallbackSrc={img.team(cmpCode)} alt="" className="avatar sq" style={{ width: 32, height: 32, objectFit: 'contain' }} />
+                      </div>
+                    </div>
+                    {CMP_STATS.map(s => {
+                      const a = subjectStats ? Number(subjectStats[s.key]) : NaN;
+                      const b = cmpData ? Number(cmpData[s.key]) : NaN;
+                      const aValid = !Number.isNaN(a), bValid = !Number.isNaN(b);
+                      const aBetter = aValid && bValid && a !== b && (s.hi ? a > b : a < b);
+                      const bBetter = aValid && bValid && a !== b && (s.hi ? b > a : b < a);
+                      const max = Math.max(aValid ? a : 0, bValid ? b : 0, 0.0001);
+                      const mo = { fontFamily: 'var(--font-mono)' };
+                      return (
+                        <div key={s.key} style={{ display: 'grid', gridTemplateColumns: '1fr 150px 1fr', gap: 8, alignItems: 'center', padding: '5px 0', borderBottom: '1px solid rgba(255,255,255,.05)' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 8, justifyContent: 'flex-end' }}>
+                            <span style={{ ...mo, fontSize: 13, fontWeight: aBetter ? 800 : 600, color: aBetter ? 'var(--accent)' : 'var(--text)' }}>{fmt(a, s.kind)}</span>
+                            <div style={{ width: 90, height: 5, background: 'rgba(255,255,255,.06)', borderRadius: 2, overflow: 'hidden' }}>
+                              <div style={{ height: '100%', width: `${aValid ? (a / max) * 100 : 0}%`, marginLeft: 'auto', background: aBetter ? 'var(--accent)' : 'rgba(255,255,255,.3)', float: 'right' }} />
+                            </div>
+                          </div>
+                          <div style={{ ...mo, textAlign: 'center', fontSize: 10, color: 'var(--muted)', letterSpacing: '.05em' }}>{s.label}</div>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                            <div style={{ width: 90, height: 5, background: 'rgba(255,255,255,.06)', borderRadius: 2, overflow: 'hidden' }}>
+                              <div style={{ height: '100%', width: `${bValid ? (b / max) * 100 : 0}%`, background: bBetter ? 'var(--accent)' : 'rgba(255,255,255,.3)' }} />
+                            </div>
+                            <span style={{ ...mo, fontSize: 13, fontWeight: bBetter ? 800 : 600, color: bBetter ? 'var(--accent)' : 'var(--text)' }}>{fmt(b, s.kind)}</span>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            );
+          })()}
+
+          {analysisPanels.has('vs_opponents') && (() => {
+            const fmt = (v, kind) => {
+              if (v == null || v === '') return '—';
+              const n = Number(v);
+              if (Number.isNaN(n)) return '—';
+              if (kind === 'int') return Math.round(n).toLocaleString();
+              if (kind === 'd1') return n.toFixed(1);
+              return n.toFixed(2);
+            };
+            const VS_COLS = [
+              { key: 'avg_kills', label: 'K', kind: 'd2' },
+              { key: 'avg_deaths', label: 'D', kind: 'd2' },
+              { key: 'avg_assists', label: 'A', kind: 'd2' },
+              { key: 'avg_kda', label: 'KDA', kind: 'd2' },
+              { key: 'avg_gpm', label: 'GPM', kind: 'int' },
+              { key: 'avg_dpm', label: 'DPM', kind: 'int' },
+              { key: 'avg_lords', label: 'Lords', kind: 'd2' },
+              { key: 'avg_turtles', label: 'Turtles', kind: 'd2' },
+              { key: 'avg_turrets', label: 'Turrets', kind: 'd2' },
+              { key: 'first_blood_pct', label: 'FB%', kind: 'd1' },
+            ];
+            const mo = { fontFamily: 'var(--font-mono)' };
+            return (
+              <div style={{ marginBottom: 32 }}>
+                <div style={{ fontFamily: 'var(--font-mono)', fontSize: 10, fontWeight: 700, color: 'var(--muted)', letterSpacing: '.08em', marginBottom: 12 }}>{t.team_code} VS OPPONENTS</div>
+                {vsLoading ? <div className="loading" /> : vsOpps.length === 0 ? (
+                  <div style={{ ...mo, fontSize: 12, color: 'var(--muted)' }}>// No data</div>
+                ) : (
+                  <div className="table-wrap" style={{ overflowX: 'auto' }}>
+                    <table style={{ borderCollapse: 'collapse', fontSize: 12, width: '100%' }}>
+                      <thead>
+                        <tr style={{ borderBottom: '1px solid var(--border)' }}>
+                          <th style={{ ...mo, textAlign: 'left', padding: '8px 10px', fontSize: 11, color: 'var(--muted)', whiteSpace: 'nowrap' }}>Opponent</th>
+                          <th style={{ ...mo, textAlign: 'center', padding: '8px 8px', fontSize: 11, color: 'var(--muted)' }}>W–L</th>
+                          {VS_COLS.map(c => (
+                            <th key={c.key} style={{ ...mo, textAlign: 'right', padding: '8px 8px', fontSize: 11, color: 'var(--muted)', whiteSpace: 'nowrap' }}>{c.label}</th>
+                          ))}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {vsOpps.map(r => {
+                          const wins = parseInt(r.wins) || 0;
+                          const losses = (parseInt(r.games) || 0) - wins;
+                          return (
+                            <tr key={r.opp_code} style={{ borderBottom: '1px solid rgba(255,255,255,.05)' }}>
+                              <td style={{ padding: '8px 10px', whiteSpace: 'nowrap' }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                                  <TeamLogo src={img.team(r.opp_code)} fallbackSrc="" alt="" className="avatar sq" style={{ width: 22, height: 22, objectFit: 'contain' }} />
+                                  <span style={{ fontWeight: 700, fontSize: 13 }}>{r.opp_code}</span>
+                                </div>
+                              </td>
+                              <td style={{ ...mo, textAlign: 'center', padding: '8px 8px', whiteSpace: 'nowrap' }}>
+                                <span style={{ color: 'var(--win)' }}>{wins}</span>–<span style={{ color: 'var(--loss)' }}>{losses}</span>
+                              </td>
+                              {VS_COLS.map(c => (
+                                <td key={c.key} style={{ ...mo, textAlign: 'right', padding: '8px 8px', whiteSpace: 'nowrap' }}>{fmt(r[c.key], c.kind)}</td>
+                              ))}
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </div>
+            );
+          })()}
+
+          {analysisPanels.has('kda_map') && (
+            <div style={{ marginBottom: 32 }}>
+              <div style={{ fontFamily: 'var(--font-mono)', fontSize: 10, fontWeight: 700, color: 'var(--muted)', letterSpacing: '.08em', marginBottom: 12 }}>K/D/A MAP DISTRIBUTION</div>
+              <TeamKdaDistribution teamKey={teamKey} buildQ={buildQ} />
+            </div>
+          )}
         </>
       )}
     </div>
