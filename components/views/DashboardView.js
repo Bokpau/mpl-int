@@ -325,7 +325,7 @@ export default async function DashboardView({ q, label, eff, editions = [], feat
       </div>
 
       {/* Standings */}
-      {eff.stage ? (
+      {(eff.stage || (context === 'history' && eff.season)) ? (
         <div className="db-section-large">
           <SectionHeader>{isWildCard ? 'Wild Card Standings' : isMainStage ? 'Main Group Stage' : 'Standings'}</SectionHeader>
           {isMainStage ? (
