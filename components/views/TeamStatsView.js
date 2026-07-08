@@ -5,14 +5,17 @@ import StatTable from '../StatTable';
 import StatLegend from '../StatLegend';
 import { TEAM_COLUMNS as COLUMNS, STAT_GROUPS } from '../../lib/columns';
 import { teamFieldKeys, identityMode } from '../../lib/identity';
-import standingsData from '../../lib/data/international_standings.json';
 
 // Team leaderboard for one selection. Selection-agnostic — the caller resolves `q`/`label`.
 export default async function TeamStatsView({ q, label, eff, context = 'current' }) {
   let rows = null;
+  let standings = null;
   let error = null;
   try {
-    rows = await api.teams(q);
+    [rows, standings] = await Promise.all([
+      api.teams(q),
+      api.standings(q).catch(() => [])
+    ]);
   } catch (e) {
     error = e.message;
   }
@@ -24,21 +27,21 @@ export default async function TeamStatsView({ q, label, eff, context = 'current'
   );
 
   if (rows && rows.length && eff.season) {
-    const currentStandings = standingsData.find(e => e.leagueCode === eff.season)?.standings || [];
+    const currentStandings = standings || [];
     const findStanding = (team) => {
       if (!currentStandings.length) return null;
       if (team.team_key) {
-        const match = currentStandings.find(s => s.teamKey === team.team_key);
+        const match = currentStandings.find(s => s.team_key === team.team_key);
         if (match) return match;
       }
       const codes = [team.team_code, team.team_code_era].filter(Boolean);
       for (const c of codes) {
-        const match = currentStandings.find(s => s.teamCode?.toUpperCase() === c.toUpperCase());
+        const match = currentStandings.find(s => s.team_code?.toUpperCase() === c.toUpperCase());
         if (match) return match;
       }
       const names = [team.team_name, team.team_name_era].filter(Boolean);
       for (const n of names) {
-        const match = currentStandings.find(s => s.teamName?.toUpperCase() === n.toUpperCase());
+        const match = currentStandings.find(s => s.team_name?.toUpperCase() === n.toUpperCase());
         if (match) return match;
       }
       return null;
@@ -48,7 +51,7 @@ export default async function TeamStatsView({ q, label, eff, context = 'current'
       const standing = findStanding(t);
       return {
         ...t,
-        rank: standing ? Number(standing.rank) : 999,
+        rank: standing ? Number(standing.rank_num) : 999,
         placement: standing ? standing.placement : null,
       };
     }).sort((a, b) => {

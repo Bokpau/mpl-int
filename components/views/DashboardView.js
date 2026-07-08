@@ -11,7 +11,6 @@ import { resolveTeam, identityMode } from '../../lib/identity';
 import { PlayerPhoto } from '../Images';
 import DashboardStatsTabs from '../DashboardStatsTabs';
 import DashboardMainTabs from '../DashboardMainTabs';
-import standingsData from '../../lib/data/international_standings.json';
 
 // WILD_CARD_GROUPS, DECIDER, GAUNTLET_SERIES and buildSeries now live in
 // lib/msc2026Bracket.js (shared with the Matches page Grid view) — imported above.
@@ -60,9 +59,9 @@ function SectionHeader({ children }) {
 // `featured` come from a selection resolver (resolveSelection for history,
 // resolveCurrent for the live edition) — the view itself is selection-agnostic.
 export default async function DashboardView({ q, label, eff, editions = [], featured = null, context = 'current' }) {
-  let matches = [], schedule = [], players = [], teams = [], heroes = [], bans = [], byRole = [], eraTeams = [], error = null;
+  let matches = [], schedule = [], players = [], teams = [], heroes = [], bans = [], byRole = [], eraTeams = [], standings = [], error = null;
   try {
-    [matches, schedule, players, teams, heroes, bans, byRole, eraTeams] = await Promise.all([
+    [matches, schedule, players, teams, heroes, bans, byRole, eraTeams, standings] = await Promise.all([
       api.matches(`${q}${q ? '&' : '?'}limit=2000`).catch(() => []),
       api.schedule(q).catch(() => []),
       api.leaderboard(q).catch(() => []),
@@ -71,6 +70,7 @@ export default async function DashboardView({ q, label, eff, editions = [], feat
       api.heroBansSummary(q).catch(() => []),
       api.heroesByRole(q).catch(() => []),
       api.eraTeams(q).catch(() => []),
+      api.standings(q).catch(() => []),
     ]);
   } catch (e) {
     error = e.message;
@@ -236,21 +236,21 @@ export default async function DashboardView({ q, label, eff, editions = [], feat
   // ── Standings Team Placement Resolution ─────────────────────────────────────
   let standingsTeams = [];
   if (eff.season) {
-    const currentStandings = standingsData.find(e => e.leagueCode === eff.season)?.standings || [];
+    const currentStandings = standings || [];
     const findStanding = (team) => {
       if (!currentStandings.length) return null;
       if (team.team_key) {
-        const match = currentStandings.find(s => s.teamKey === team.team_key);
+        const match = currentStandings.find(s => s.team_key === team.team_key);
         if (match) return match;
       }
       const codes = [team.team_code, team.team_code_era].filter(Boolean);
       for (const c of codes) {
-        const match = currentStandings.find(s => s.teamCode?.toUpperCase() === c.toUpperCase());
+        const match = currentStandings.find(s => s.team_code?.toUpperCase() === c.toUpperCase());
         if (match) return match;
       }
       const names = [team.team_name, team.team_name_era].filter(Boolean);
       for (const n of names) {
-        const match = currentStandings.find(s => s.teamName?.toUpperCase() === n.toUpperCase());
+        const match = currentStandings.find(s => s.team_name?.toUpperCase() === n.toUpperCase());
         if (match) return match;
       }
       return null;
@@ -260,7 +260,7 @@ export default async function DashboardView({ q, label, eff, editions = [], feat
       const standing = findStanding(t);
       return {
         ...t,
-        rank: standing ? Number(standing.rank) : 999,
+        rank: standing ? Number(standing.rank_num) : 999,
         placement: standing ? standing.placement : null,
       };
     }).sort((a, b) => {
