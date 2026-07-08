@@ -11,6 +11,7 @@ import { resolveTeam, identityMode } from '../../lib/identity';
 import { PlayerPhoto } from '../Images';
 import DashboardStatsTabs from '../DashboardStatsTabs';
 import DashboardMainTabs from '../DashboardMainTabs';
+import standingsData from '../../lib/data/international_standings.json';
 
 // WILD_CARD_GROUPS, DECIDER, GAUNTLET_SERIES and buildSeries now live in
 // lib/msc2026Bracket.js (shared with the Matches page Grid view) — imported above.
@@ -232,7 +233,45 @@ export default async function DashboardView({ q, label, eff, editions = [], feat
   const mainA = isMainStage ? resolveMainGroup('A', allSeries) : null;
   const mainB = isMainStage ? resolveMainGroup('B', allSeries) : null;
 
-  const standingsTeams = [...teamsEra].sort((a, b) => (num(b.win_rate) - num(a.win_rate)) || (num(b.wins) - num(a.wins)));
+  // ── Standings Team Placement Resolution ─────────────────────────────────────
+  let standingsTeams = [];
+  if (eff.season) {
+    const currentStandings = standingsData.find(e => e.leagueCode === eff.season)?.standings || [];
+    const findStanding = (team) => {
+      if (!currentStandings.length) return null;
+      if (team.team_key) {
+        const match = currentStandings.find(s => s.teamKey === team.team_key);
+        if (match) return match;
+      }
+      const codes = [team.team_code, team.team_code_era].filter(Boolean);
+      for (const c of codes) {
+        const match = currentStandings.find(s => s.teamCode?.toUpperCase() === c.toUpperCase());
+        if (match) return match;
+      }
+      const names = [team.team_name, team.team_name_era].filter(Boolean);
+      for (const n of names) {
+        const match = currentStandings.find(s => s.teamName?.toUpperCase() === n.toUpperCase());
+        if (match) return match;
+      }
+      return null;
+    };
+
+    standingsTeams = [...teamsEra].map(t => {
+      const standing = findStanding(t);
+      return {
+        ...t,
+        rank: standing ? Number(standing.rank) : 999,
+        placement: standing ? standing.placement : null,
+      };
+    }).sort((a, b) => {
+      if (a.rank !== 999 || b.rank !== 999) {
+        return a.rank - b.rank;
+      }
+      return (num(b.win_rate) - num(a.win_rate)) || (num(b.wins) - num(a.wins));
+    });
+  } else {
+    standingsTeams = [...teamsEra].sort((a, b) => (num(b.win_rate) - num(a.win_rate)) || (num(b.wins) - num(a.wins)));
+  }
 
   // ── Player rankings ────────────────────────────────────────────────────
   const pKda = [...playersEra].sort((a, b) => num(b.kda) - num(a.kda)).slice(0, 5);
@@ -557,13 +596,15 @@ function GroupTable({ title, rows, teamMeta }) {
 
 // Full team standings table for the non-Wild-Card (Total / Main) view.
 function StandingsTable({ rows }) {
+  const hasPlacement = rows.some(t => t.placement);
+
   return (
     <div style={{ border: '1px solid var(--border)', background: 'var(--surface)' }}>
       <div className="table-wrap">
         <table style={{ marginBottom: 0 }}>
           <thead>
             <tr>
-              <th className="l" style={{ width: 32 }}>#</th>
+              <th className="l" style={{ width: hasPlacement ? 85 : 32 }}>{hasPlacement ? 'Place' : '#'}</th>
               <th className="l">Team</th>
               <th>GP</th>
               <th>W-L</th>
@@ -571,21 +612,38 @@ function StandingsTable({ rows }) {
             </tr>
           </thead>
           <tbody>
-            {rows.length ? rows.map((t, i) => (
-              <tr key={t.team_key}>
-                <td className="l">#{i + 1}</td>
-                <td className="l">
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
-                    <TeamLogo src={t.team_logo_dark} fallbackSrc={img.team(t.team_code)} alt="" style={{ width: 18, height: 18, objectFit: 'contain' }} />
-                    <Flag emoji={t.country_flag} />
-                    <span>{t.team_code}</span>
-                  </div>
-                </td>
-                <td>{int(t.games)}</td>
-                <td style={{ color: 'var(--muted)' }}>{int(t.wins)}–{int(t.losses)}</td>
-                <td style={{ color: 'var(--win)', fontWeight: 600 }}>{fmtPct(t.win_rate)}</td>
-              </tr>
-            )) : <tr><td colSpan={5} className="l" style={{ color: 'var(--muted2)' }}>No data.</td></tr>}
+            {rows.length ? rows.map((t, i) => {
+              let placeContent = `#${i + 1}`;
+              if (t.placement) {
+                if (t.placement === '1st') {
+                  placeContent = <span className="badge badge-gold" style={{ display: 'inline-block', textAlign: 'center', minWidth: '46px' }}>1st</span>;
+                } else if (t.placement === '2nd') {
+                  placeContent = <span className="badge badge-featured" style={{ display: 'inline-block', textAlign: 'center', minWidth: '46px' }}>2nd</span>;
+                } else if (t.placement === '3rd') {
+                  placeContent = <span className="badge" style={{ display: 'inline-block', color: 'var(--text)', borderColor: 'var(--border)', textAlign: 'center', minWidth: '46px' }}>3rd</span>;
+                } else if (t.placement === '3rd-4th') {
+                  placeContent = <span className="badge" style={{ display: 'inline-block', color: 'var(--muted)', borderColor: 'var(--border-strong)', textAlign: 'center', minWidth: '65px', fontSize: '9px', padding: '2px 4px' }}>3rd-4th</span>;
+                } else {
+                  placeContent = <span style={{ color: 'var(--muted2)', fontSize: '11px', fontFamily: 'var(--font-mono)', fontWeight: 600, paddingLeft: '8px' }}>{t.placement}</span>;
+                }
+              }
+
+              return (
+                <tr key={t.team_key}>
+                  <td className="l" style={{ verticalAlign: 'middle' }}>{placeContent}</td>
+                  <td className="l">
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
+                      <TeamLogo src={t.team_logo_dark} fallbackSrc={img.team(t.team_code)} alt="" style={{ width: 18, height: 18, objectFit: 'contain' }} />
+                      <Flag emoji={t.country_flag} />
+                      <span>{t.team_code}</span>
+                    </div>
+                  </td>
+                  <td>{int(t.games)}</td>
+                  <td style={{ color: 'var(--muted)' }}>{int(t.wins)}–{int(t.losses)}</td>
+                  <td style={{ color: 'var(--win)', fontWeight: 600 }}>{fmtPct(t.win_rate)}</td>
+                </tr>
+              );
+            }) : <tr><td colSpan={5} className="l" style={{ color: 'var(--muted2)' }}>No data.</td></tr>}
           </tbody>
         </table>
       </div>
