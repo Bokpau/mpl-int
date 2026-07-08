@@ -64,15 +64,17 @@ export default async function HistoryOverview() {
   let overview = null;
   let standings = [];
   let teams = [];
+  let eraTeams = [];
   let players = [];
   let error = null;
   try {
-    [editions, accolades, overview, standings, teams, players] = await Promise.all([
+    [editions, accolades, overview, standings, teams, eraTeams, players] = await Promise.all([
       api.editions(),
       api.accolades(),
       api.overview(),
       api.standings(),
       api.teams(),
+      api.eraTeams(),
       api.leaderboard()
     ]);
   } catch (e) {
@@ -225,6 +227,7 @@ export default async function HistoryOverview() {
         accolades={accolades}
         standings={standings}
         teams={teams}
+        eraTeams={eraTeams}
         players={players}
       />
 

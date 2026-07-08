@@ -75,6 +75,7 @@ export default function HistoryDashboardClient({
   accolades = [],
   standings = [],
   teams     = [],
+  eraTeams  = [],
   players   = [],
 }) {
   const [activeTab,          setActiveTab]          = useState('tournaments');
@@ -131,16 +132,56 @@ export default function HistoryDashboardClient({
     return [...list].sort((a, b) => (Number(b.season_id) || 0) - (Number(a.season_id) || 0));
   }, [editions, accolades, standings]);
 
-  // ── 2. Filter teams / players ────────────────────────────────────────────
+  // Live season label (for badge highlighting)
+  const liveSeason = useMemo(() => {
+    const live = editions.find(e => String(e.status).toLowerCase() === 'live');
+    return live ? live.season : null;
+  }, [editions]);
+
+  // Merge stats teams + era teams (e.g. MSC 2026 pre-games teams)
+  const mergedTeams = useMemo(() => {
+    const byKey = new Map();
+    // Stats teams first (have full stats + seasons array)
+    teams.forEach(t => { if (t.team_key) byKey.set(t.team_key, t); });
+
+    // Add era teams not already in the map; find their season label from editions
+    eraTeams.forEach(et => {
+      if (!et.team_key || byKey.has(et.team_key)) return;
+      // Find which season this era team belongs to via team_era_name.season lookup
+      // eraTeams rows don't expose their season label directly — but we can infer
+      // from the live edition and cross-reference with editions
+      const liveEdition = editions.find(e => String(e.status).toLowerCase() === 'live');
+      const seasonLabel = liveEdition ? liveEdition.season : null;
+      byKey.set(et.team_key, {
+        team_key:       et.team_key,
+        team_code:      et.era_code,
+        team_name:      et.era_name,
+        team_logo_dark: et.team_logo_dark,
+        team_logo_light:et.team_logo_light,
+        country:        et.country,
+        country_flag:   et.country_flag,
+        seasons:        seasonLabel ? [seasonLabel] : [],
+      });
+    });
+
+    // Sort by most appearances (seasons array length) desc, then alphabetically
+    return [...byKey.values()].sort((a, b) => {
+      const aLen = Array.isArray(a.seasons) ? a.seasons.length : 0;
+      const bLen = Array.isArray(b.seasons) ? b.seasons.length : 0;
+      if (bLen !== aLen) return bLen - aLen;
+      return (a.team_name || '').localeCompare(b.team_name || '');
+    });
+  }, [teams, eraTeams, editions]);
+
   const filteredTeams = useMemo(() => {
     const term = teamsSearch.toLowerCase().trim();
-    if (!term) return teams;
-    return teams.filter(t =>
+    if (!term) return mergedTeams;
+    return mergedTeams.filter(t =>
       (t.team_name  || '').toLowerCase().includes(term) ||
       (t.team_code  || '').toLowerCase().includes(term) ||
       (t.country    || '').toLowerCase().includes(term)
     );
-  }, [teams, teamsSearch]);
+  }, [mergedTeams, teamsSearch]);
 
   const filteredPlayers = useMemo(() => {
     const term = playersSearch.toLowerCase().trim();
@@ -312,6 +353,7 @@ export default function HistoryDashboardClient({
                     <tr>
                       <th className="l">Team</th>
                       <th className="l">Country</th>
+                      <th className="r" style={{ width: '80px' }}>App.</th>
                       <th className="l">Tournaments Played</th>
                     </tr>
                   </thead>
@@ -333,14 +375,21 @@ export default function HistoryDashboardClient({
                             <span>{t.country || '—'}</span>
                           </span>
                         </td>
+                        <td className="r" style={{ fontWeight: 700, color: 'var(--accent)', fontFamily: 'var(--font-mono)', fontSize: '13px' }}>
+                          {Array.isArray(t.seasons) ? t.seasons.length : '—'}
+                        </td>
                         <td className="l">
                           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
                             {Array.isArray(t.seasons)
-                              ? t.seasons.map(s => (
-                                  <Link key={s} href={getEditionUrlFromLabel(s)} className="mini-badge">
-                                    {getCleanSeasonLabel(s)}
-                                  </Link>
-                                ))
+                              ? t.seasons.map(s => {
+                                  const isLive = s === liveSeason;
+                                  return (
+                                    <Link key={s} href={getEditionUrlFromLabel(s)}
+                                      className={isLive ? 'mini-badge mini-badge--live' : 'mini-badge'}>
+                                      {getCleanSeasonLabel(s)}
+                                    </Link>
+                                  );
+                                })
                               : <span style={{ color: 'var(--muted2)' }}>—</span>
                             }
                           </div>
@@ -464,6 +513,13 @@ export default function HistoryDashboardClient({
           transition: border-color var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease);
         }
         .mini-badge:hover { border-color: var(--accent); color: var(--accent); }
+        .mini-badge--live {
+          border-color: var(--accent);
+          color: var(--accent);
+          background: rgba(255, 215, 0, 0.08);
+          font-weight: 700;
+        }
+        .mini-badge--live:hover { opacity: 0.85; }
         .clickable-link { transition: opacity var(--dur-fast) var(--ease); }
         .clickable-link:hover { opacity: 0.8; }
         .show-more-btn {
