@@ -11,8 +11,8 @@ import { img } from '../lib/images';
 // no collector-code string matching. Map-picker and PRIO chips are PH regular-season
 // mechanics with no international equivalent, so they are intentionally absent.
 
-const BLUE_CLR = '#40B8FF'; // camp 1 / blue side
-const RED_CLR = '#FF3C5A';  // camp 2 / red side
+const BLUE_CLR = 'var(--blue-side)'; // camp 1 / blue side
+const RED_CLR = 'var(--red-side)';  // camp 2 / red side
 
 function fmtSec(s) {
   if (!s) return '--';

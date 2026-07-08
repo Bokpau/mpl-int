@@ -561,7 +561,7 @@ export default function CurrentHeroStatsView({ featured, eff, label }) {
                       <caption className="sr-only">Hero statistics — {filterLabel()}</caption>
                       <thead>
                         <tr>
-                          <th style={{ position: 'sticky', left: 0, zIndex: 3, background: 'var(--surface)', boxShadow: '2px 0 8px rgba(0,0,0,.5)', textAlign: 'left', cursor: 'default' }}>Hero</th>
+                          <th className="sticky-col-player" style={{ textAlign: 'left', cursor: 'default' }}>Hero</th>
                           <th style={{ textAlign: 'left' }}>Role</th>
                           <th className="center" style={{ color: 'var(--accent)', fontSize: 10 }}>O.#</th>
                           <th className="center" style={{ color: 'var(--accent)', fontSize: 10 }}>{roleFilter !== 'ALL' ? `${roleFilter} #` : 'Role #'}</th>
@@ -588,7 +588,7 @@ export default function CurrentHeroStatsView({ featured, eff, label }) {
                           <Th col="total_mvps" label="MVPs" title="MVPs" />
                           <Th col="total_savages" label="Savages" title="Savages" />
                           <Th col="players_played" label="Players" title="Unique players" />
-                          <th style={{ position: 'sticky', right: 0, zIndex: 3, background: 'var(--surface)', boxShadow: '-2px 0 8px rgba(0,0,0,.5)', textAlign: 'center', cursor: 'default' }} />
+                          <th className="sticky-col-right" style={{ cursor: 'default' }} />
                         </tr>
                       </thead>
                       <tbody>
@@ -596,7 +596,7 @@ export default function CurrentHeroStatsView({ featured, eff, label }) {
                           const wp = h.win_pct ?? 0;
                           return (
                             <tr key={h.hero_id} className="clickable" onClick={() => router.push(`/heroes/${h.hero_id}`)}>
-                              <td style={{ position: 'sticky', left: 0, zIndex: 2, background: 'var(--surface)', boxShadow: '2px 0 8px rgba(0,0,0,.4)' }}>
+                              <td className="sticky-col-player">
                                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 150 }}>
                                   <HeroImg heroid={h.hero_id} size={26} />
                                   <span style={{ fontWeight: 600, fontSize: 13 }}>{h.hero_name}</span>
@@ -628,13 +628,13 @@ export default function CurrentHeroStatsView({ featured, eff, label }) {
                               <td className="num center">{h.total_mvps || '—'}</td>
                               <td className="num center">{h.total_savages || '—'}</td>
                               <td className="num center">{h.players_played || '—'}</td>
-                              <td style={{ position: 'sticky', right: 0, zIndex: 2, background: 'var(--surface)', boxShadow: '-2px 0 8px rgba(0,0,0,.4)', textAlign: 'center', padding: '0 12px' }}>
+                              <td className="sticky-col-right" style={{ textAlign: 'center', padding: '0 12px' }}>
                                 <button onClick={(e) => { e.stopPropagation(); router.push(`/heroes/${h.hero_id}`); }} style={{ background: 'none', border: 'none', fontFamily: 'var(--font-mono)', fontSize: 10, color: 'var(--accent)', letterSpacing: '.08em', whiteSpace: 'nowrap', cursor: 'pointer' }}>DETAIL →</button>
                               </td>
                             </tr>
                           );
                         })}
-                        {tableWithRanks.length === 0 && <tr><td colSpan={28} className="empty">// No heroes for this filter</td></tr>}
+                        {tableWithRanks.length === 0 && <tr><td colSpan={28} className="empty">No heroes for this filter</td></tr>}
                       </tbody>
                     </table>
                   </div>

@@ -10,6 +10,7 @@ import TeamLogo from '../TeamLogo';
 import { resolveTeam, identityMode } from '../../lib/identity';
 import { PlayerPhoto } from '../Images';
 import DashboardStatsTabs from '../DashboardStatsTabs';
+import DashboardMainTabs from '../DashboardMainTabs';
 
 // WILD_CARD_GROUPS, DECIDER, GAUNTLET_SERIES and buildSeries now live in
 // lib/msc2026Bracket.js (shared with the Matches page Grid view) — imported above.
@@ -260,10 +261,8 @@ export default async function DashboardView({ q, label, eff, editions = [], feat
     list: byRole.filter((r) => r.role_lane === role).sort((a, b) => num(b.games) - num(a.games)).slice(0, 3),
   }));
 
-  return (
-    <div className="container">
-      {head}
-
+  const arenaContent = (
+    <div className="db-flex-col-gap-10">
       {/* Schedule */}
       <div className="db-section">
         <SectionHeader>Schedule</SectionHeader>
@@ -284,34 +283,6 @@ export default async function DashboardView({ q, label, eff, editions = [], feat
         <Link href={context === 'current' ? "/matches" : "/history/matches"} className="db-view-more">
           View Full Schedule &amp; Matches →
         </Link>
-      </div>
-
-      {/* Tournament Summary */}
-      <div className="db-section">
-        <SectionHeader>Tournament Summary</SectionHeader>
-        <div className="cards">
-          <div className="card"><div className="k">Matches Played</div><div className="v">{int(matchesPlayed)}</div></div>
-          <div className="card"><div className="k">Games Played</div><div className="v">{int(gamesPlayed)}</div></div>
-          <div className="card">
-            <div className="k">Side Win Rate</div>
-            <div className="db-flex-space" style={{ fontFamily: 'var(--font-mono)', fontSize: 12, fontWeight: 700, marginTop: 4 }}>
-              <span className="db-blue-side-text">B {blueWinRate.toFixed(0)}%</span>
-              <span className="db-red-side-text">{redWinRate.toFixed(0)}% R</span>
-            </div>
-          </div>
-          <div className="card"><div className="k">Total Game Time</div><div className="v" style={{ fontSize: 18 }}>{fmtHms(totalGameSec)}</div></div>
-          <div className="card"><div className="k">Avg Game Time</div><div className="v">{fmtSec(avgGameTime)}</div></div>
-          <div className="card"><div className="k">Heroes Picked</div><div className="v">{int(heroesPicked)}</div></div>
-          <div className="card">
-            <div className="k">Heroes Banned</div>
-            <div className="v">{bans.length || byRole.length ? int(heroesBannedCount) : '—'}</div>
-          </div>
-        </div>
-        {!bans.length ? (
-          <div style={{ fontSize: 11, color: 'var(--muted2)', fontFamily: 'var(--font-mono)' }}>
-            Ban data is only tracked for rich-collected games (MSC 2026 onward) — shows once enough games are fetched.
-          </div>
-        ) : null}
       </div>
 
       {/* Standings */}
@@ -383,6 +354,38 @@ export default async function DashboardView({ q, label, eff, editions = [], feat
           )}
         </div>
       ) : null}
+    </div>
+  );
+
+  const statsContent = (
+    <div className="db-flex-col-gap-10">
+      {/* Tournament Summary */}
+      <div className="db-section">
+        <SectionHeader>Tournament Summary</SectionHeader>
+        <div className="cards">
+          <div className="card"><div className="k">Matches Played</div><div className="v">{int(matchesPlayed)}</div></div>
+          <div className="card"><div className="k">Games Played</div><div className="v">{int(gamesPlayed)}</div></div>
+          <div className="card">
+            <div className="k">Side Win Rate</div>
+            <div className="db-flex-space" style={{ fontFamily: 'var(--font-mono)', fontSize: 12, fontWeight: 700, marginTop: 4 }}>
+              <span className="db-blue-side-text">B {blueWinRate.toFixed(0)}%</span>
+              <span className="db-red-side-text">{redWinRate.toFixed(0)}% R</span>
+            </div>
+          </div>
+          <div className="card"><div className="k">Total Game Time</div><div className="v" style={{ fontSize: 18 }}>{fmtHms(totalGameSec)}</div></div>
+          <div className="card"><div className="k">Avg Game Time</div><div className="v">{fmtSec(avgGameTime)}</div></div>
+          <div className="card"><div className="k">Heroes Picked</div><div className="v">{int(heroesPicked)}</div></div>
+          <div className="card">
+            <div className="k">Heroes Banned</div>
+            <div className="v">{bans.length || byRole.length ? int(heroesBannedCount) : '—'}</div>
+          </div>
+        </div>
+        {!bans.length ? (
+          <div style={{ fontSize: 11, color: 'var(--muted2)', fontFamily: 'var(--font-mono)' }}>
+            Ban data is only tracked for rich-collected games (MSC 2026 onward) — shows once enough games are fetched.
+          </div>
+        ) : null}
+      </div>
 
       {/* Tabbed rankings & statistics */}
       <DashboardStatsTabs
@@ -459,6 +462,13 @@ export default async function DashboardView({ q, label, eff, editions = [], feat
           </div>
         }
       />
+    </div>
+  );
+
+  return (
+    <div className="container">
+      {head}
+      <DashboardMainTabs arenaContent={arenaContent} statsContent={statsContent} />
     </div>
   );
 }

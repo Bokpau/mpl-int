@@ -269,6 +269,62 @@ tbody tr:hover td.sticky-col-player {
   background-color: var(--surface) !important;
 }
 
+/* Right-sticky column (e.g. actions/details) */
+.sticky-col-right {
+  position: sticky !important;
+  right: 0;
+  z-index: 1;
+  background-color: var(--surface2) !important;
+  border-left: 2px solid var(--border-strong) !important;
+  box-sizing: border-box;
+}
+thead th.sticky-col-right {
+  z-index: 3 !important;
+}
+tbody td.sticky-col-right {
+  background-color: var(--bg) !important;
+}
+tbody tr:hover td.sticky-col-right {
+  background-color: var(--surface) !important;
+}
+
+/* Match-log sticky Match column (left: 0) */
+.sticky-col-match {
+  position: sticky !important;
+  left: 0;
+  z-index: 1;
+  background-color: var(--surface2) !important;
+  box-sizing: border-box;
+}
+thead th.sticky-col-match {
+  z-index: 3 !important;
+}
+tbody td.sticky-col-match {
+  background-color: var(--bg) !important;
+}
+tbody tr:hover td.sticky-col-match {
+  background-color: var(--surface) !important;
+}
+
+/* Match-log sticky Hero column (left: 120px) */
+.sticky-col-hero {
+  position: sticky !important;
+  left: 120px;
+  z-index: 1;
+  background-color: var(--surface2) !important;
+  border-right: 2px solid var(--border-strong) !important;
+  box-sizing: border-box;
+}
+thead th.sticky-col-hero {
+  z-index: 3 !important;
+}
+tbody td.sticky-col-hero {
+  background-color: var(--bg) !important;
+}
+tbody tr:hover td.sticky-col-hero {
+  background-color: var(--surface) !important;
+}
+
 .rank { color: var(--muted2); font-family: var(--font-mono); }
 .name { font-weight: 600; }
 .name a:hover { color: var(--accent); }

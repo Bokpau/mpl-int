@@ -652,8 +652,8 @@ export default function CurrentPlayerDashboard({ playerKey, scope, season, initi
                   <table className="tbl">
                     <thead>
                       <tr>
-                        <th style={{ position: 'sticky', top: 0, left: 0, zIndex: 3, background: 'var(--surface)', boxShadow: '2px 0 8px rgba(0,0,0,.5)' }}>Match</th>
-                        <th style={{ position: 'sticky', top: 0, left: 120, zIndex: 3, background: 'var(--surface)', boxShadow: '2px 0 8px rgba(0,0,0,.4)' }}>Hero</th>
+                        <th className="sticky-col-match" style={{ top: 0 }}>Match</th>
+                        <th className="sticky-col-hero" style={{ top: 0 }}>Hero</th>
                         <th className="center" style={{ whiteSpace: 'nowrap', minWidth: 120 }}>Skill · Emblem</th>
                         <th className="center" style={{ minWidth: 220 }}>Items</th>
                         <th className="center">Side</th>
@@ -717,7 +717,7 @@ export default function CurrentPlayerDashboard({ playerKey, scope, season, initi
                         const oppTeamCode = seriesParts.find(p => p.trim() !== player.team_code)?.trim();
                         return (
                           <tr key={g.battle_id} style={{ background: rowBg, borderLeft: `3px solid ${rowAccent}` }}>
-                            <td style={{ position: 'sticky', left: 0, zIndex: 2, background: stickyBg, boxShadow: '2px 0 8px rgba(0,0,0,.5)' }}>
+                            <td className="sticky-col-match" style={{ background: stickyBg }}>
                               <Link href={`/matches/${g.battle_id}`} style={{ color: 'var(--text)', textDecoration: 'none', display: 'flex', flexDirection: 'column', gap: 4 }}>
                                 {g.opp_team_code && (
                                   <TeamLogo
@@ -731,7 +731,7 @@ export default function CurrentPlayerDashboard({ playerKey, scope, season, initi
                                 <div style={{ fontFamily: 'var(--font-mono)', fontSize: 10, color: 'var(--muted2)' }}>{g.week_number ? `W${g.week_number}` : ''} {g.game_number ? `G${g.game_number}` : ''}</div>
                               </Link>
                             </td>
-                            <td style={{ position: 'sticky', left: 120, zIndex: 2, background: stickyBg, boxShadow: '2px 0 8px rgba(0,0,0,.4)' }}>
+                            <td className="sticky-col-hero" style={{ background: stickyBg }}>
                               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3 }}>
                                 <HeroImg heroid={g.heroid} size={32} />
                                 <span style={{ fontSize: 10, fontWeight: 600, whiteSpace: 'nowrap' }}>{g.hero_name}</span>

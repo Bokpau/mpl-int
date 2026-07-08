@@ -176,11 +176,10 @@ export default function DraftStatsView({ featured, eff, label }) {
     return (
       <th
         aria-sort={sortOrder}
-        className={`${left ? 'l ' : ''}${sortableClass(col)} ${isSorted ? 'sorted' : ''}`}
+        className={`${left ? 'l ' : ''}${sortableClass(col)} ${isSorted ? 'sorted' : ''} ${sticky ? 'sticky-col-player' : ''}`.trim()}
         style={{
           whiteSpace: 'nowrap',
           padding: 0,
-          ...(sticky ? { position: 'sticky', left: 0, zIndex: 10, background: 'var(--surface2)', boxShadow: '2px 0 8px rgba(0,0,0,.4)' } : {})
         }}
       >
         <button
@@ -362,7 +361,7 @@ export default function DraftStatsView({ featured, eff, label }) {
                         </div>
                       );
                     })}
-                    {top.length === 0 && <span style={{ color: 'var(--muted2)', fontSize: 11 }}>// none</span>}
+                    {top.length === 0 && <span style={{ color: 'var(--muted2)', fontSize: 11 }}>none</span>}
                   </div>
                 </div>
               );
@@ -416,7 +415,7 @@ export default function DraftStatsView({ featured, eff, label }) {
                   const rd = heroRoles[h.heroid];
                   return (
                     <tr key={h.heroid} style={{ borderBottom: '1px solid var(--border)' }}>
-                      <td style={{ position: 'sticky', left: 0, zIndex: 5, background: 'var(--surface)', boxShadow: '2px 0 8px rgba(0,0,0,.4)' }}>
+                      <td className="sticky-col-player">
                         <div style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 150 }}>
                           <HeroImg heroid={h.heroid} size={32} />
                           <span style={{ fontWeight: 600 }}>{h.hero_name}</span>

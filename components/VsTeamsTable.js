@@ -70,7 +70,7 @@ export function VsTeamsTable({ vsTeams, vsLoading }) {
             <caption className="sr-only">Stats vs each opponent team</caption>
             <thead>
               <tr>
-                <th style={{ position: 'sticky', top: 0, left: 0, zIndex: 3, background: 'var(--surface)', boxShadow: '2px 0 8px rgba(0,0,0,.5)', whiteSpace: 'nowrap' }}>Opponent</th>
+                <th className="sticky-col-player" style={{ top: 0, whiteSpace: 'nowrap' }}>Opponent</th>
                 
                 {/* CORE (RECORD) */}
                 <th className="center" style={{ borderLeft: '1px solid rgba(255,255,255,.08)' }}>GP</th>
@@ -151,7 +151,7 @@ export function VsTeamsTable({ vsTeams, vsLoading }) {
                 const p1 = v => v != null ? v + '%' : '--';
                 return (
                   <tr key={t.opp_team}>
-                    <td style={{ position: 'sticky', left: 0, zIndex: 2, background: 'var(--surface)', boxShadow: '2px 0 8px rgba(0,0,0,.5)', whiteSpace: 'nowrap' }}>
+                    <td className="sticky-col-player" style={{ whiteSpace: 'nowrap' }}>
                       <Link href={`/teams/${t.opp_team}`} style={{ display: 'flex', alignItems: 'center', gap: 8, color: 'var(--text)', textDecoration: 'none' }}>
                         <TeamLogo src={t.opp_team_logo_dark} fallbackSrc={img.team(t.opp_team)} alt={t.opp_team} style={{ width: 28, height: 28, objectFit: 'contain' }} />
                         <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 700, fontSize: 12 }}>{t.opp_team}</span>
@@ -235,7 +235,7 @@ export function VsTeamsTable({ vsTeams, vsLoading }) {
               {vsTeams.length === 0 && (
                 <tr>
                   <td colSpan={activeColCount} className="empty" style={{ textAlign: 'center', padding: '24px 0', color: 'var(--muted)', fontFamily: 'var(--font-mono)' }}>
-                    // No games for this filter
+                    No games for this filter
                   </td>
                 </tr>
               )}
