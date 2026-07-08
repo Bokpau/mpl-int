@@ -7,10 +7,13 @@ import { PlayerPhoto } from '../../../components/Images';
 import { img, getTournamentLogo } from '../../../lib/images';
 
 // ── Date helpers ─────────────────────────────────────────────────────────────
-// Parse date string as local (not UTC) so '2024-07-10' renders 'Jul 10' not 'Jul 9'.
+// Parse date string as local date (handles both 'YYYY-MM-DD' and ISO timestamp strings).
 function parseLocal(str) {
-  if (!str) return null;
-  const [y, m, d] = str.split('-').map(Number);
+  if (!str || typeof str !== 'string') return null;
+  // Take only the first 10 chars (YYYY-MM-DD) to handle ISO timestamps from PG
+  const parts = str.substring(0, 10).split('-').map(Number);
+  if (parts.length < 3 || parts.some(isNaN)) return null;
+  const [y, m, d] = parts;
   return new Date(y, m - 1, d);
 }
 
@@ -190,24 +193,15 @@ export default function HistoryDashboardClient({
           {/* ══ TAB 1: TOURNAMENTS ══════════════════════════════════════════ */}
           {activeTab === 'tournaments' && (
             <div className="table-wrap">
-              <table style={{ tableLayout: 'fixed', width: '100%' }}>
-                <colgroup>
-                  {/* Tournament  Date  Location  Champion  Runner-up  Finals MVP */}
-                  <col style={{ width: '22%' }} />
-                  <col style={{ width: '14%' }} />
-                  <col style={{ width: '14%' }} />
-                  <col style={{ width: '17%' }} />
-                  <col style={{ width: '17%' }} />
-                  <col style={{ width: '16%' }} />
-                </colgroup>
+              <table style={{ width: '100%' }}>
                 <thead>
                   <tr>
-                    <th className="l">Tournament</th>
-                    <th className="l">Date</th>
-                    <th className="l">Location</th>
-                    <th className="l">Champion</th>
-                    <th className="l">Runner-up</th>
-                    <th className="l">Finals MVP</th>
+                    <th className="l" style={{ width: '24%', minWidth: '160px' }}>Tournament</th>
+                    <th className="l" style={{ width: '13%', minWidth: '110px' }}>Date</th>
+                    <th className="l" style={{ width: '13%', minWidth: '100px' }}>Location</th>
+                    <th className="l" style={{ width: '17%', minWidth: '130px' }}>Champion</th>
+                    <th className="l" style={{ width: '17%', minWidth: '130px' }}>Runner-up</th>
+                    <th className="l" style={{ width: '16%', minWidth: '110px' }}>Finals MVP</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -229,21 +223,19 @@ export default function HistoryDashboardClient({
                                   fontSize: '8px', fontWeight: 'bold', flexShrink: 0,
                                 }}>{e.tournament_code}</span>
                             }
-                            <span style={{ fontWeight: 600, color: 'var(--accent)', fontSize: '13px',
-                              overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                            <span style={{ fontWeight: 600, color: 'var(--accent)', fontSize: '13px' }}>
                               {displayName}
                             </span>
                           </Link>
                         </td>
 
                         {/* Date */}
-                        <td className="l" style={{ fontSize: '12px', color: 'var(--muted2)', whiteSpace: 'nowrap' }}>
+                        <td className="l" style={{ fontSize: '12px', color: 'var(--muted2)' }}>
                           {formatDateRange(e.start_date, e.end_date)}
                         </td>
 
                         {/* Location */}
-                        <td className="l" style={{ fontSize: '12px', color: 'var(--muted2)',
-                          overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        <td className="l" style={{ fontSize: '12px', color: 'var(--muted2)' }}>
                           {e.location || '—'}
                         </td>
 
@@ -275,21 +267,12 @@ export default function HistoryDashboardClient({
                           }
                         </td>
 
-                        {/* Finals MVP */}
+                        {/* Finals MVP — player name only (no team logo to save width) */}
                         <td className="l">
                           {e.finalsMvp ? (
-                            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
-                              {(e.finalsMvp.logo_dark || e.finalsMvp.logo_light) && (
-                                <TeamLogo
-                                  src={e.finalsMvp.logo_dark || e.finalsMvp.logo_light}
-                                  fallbackSrc={img.team(e.finalsMvp.team_code || e.finalsMvp.recipient_team)}
-                                  alt=""
-                                  style={{ width: '16px', height: '16px', objectFit: 'contain', flexShrink: 0 }}
-                                />
-                              )}
+                            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', flexWrap: 'wrap' }}>
                               {e.finalsMvp.flag_emoji && <span style={{ fontSize: '12px' }}>{e.finalsMvp.flag_emoji}</span>}
-                              <span style={{ fontSize: '13px', fontWeight: 600,
-                                overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                              <span style={{ fontSize: '13px', fontWeight: 600 }}>
                                 {e.finalsMvp.recipient}
                               </span>
                             </span>
