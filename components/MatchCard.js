@@ -151,13 +151,7 @@ export default function MatchCard({ info, games, match_mvp, teamByKey = {} }) {
   const hasMaps = sorted.some(g => g.map_name);
 
   return (
-    <div style={{
-      background: 'var(--surface)',
-      border: '1px solid var(--border)',
-      borderLeft: `3px solid ${winColor}`,
-      overflow: 'hidden',
-      width: '100%',
-    }}>
+    <div className="match-card">
       {/* ── Meta strip ─────────────────────────────────────── */}
       <div style={{
         padding: '8px 14px',

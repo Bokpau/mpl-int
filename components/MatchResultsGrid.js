@@ -78,7 +78,8 @@ export default function MatchResultsGrid({
       >
         <div
           onClick={(e) => e.stopPropagation()}
-          style={{ width: 'min(680px, 100%)', maxHeight: '90vh', overflowY: 'auto', background: '#0b0b14', border: '1px solid var(--accent)', borderRadius: 4, boxShadow: '0 16px 36px rgba(0,0,0,0.85)' }}
+          className="modal-box"
+          style={{ width: 'min(680px, 100%)' }}
         >
           <div className="match-popover-header">
             <span className="match-popover-title">// MATCH DETAILS</span>

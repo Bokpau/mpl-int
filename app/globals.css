@@ -700,6 +700,7 @@ table.h2h td .sub { font-size: 11px; }
   text-transform: uppercase;
   padding: 5px 12px;
   border: 1px solid var(--border2);
+  border-radius: var(--radius-sm);
   color: var(--muted2);
   background: rgba(26, 26, 46, 0.6);
   transition: all .15s;
@@ -718,6 +719,7 @@ table.h2h td .sub { font-size: 11px; }
   display: inline-flex;
   background: var(--surface2);
   border: 1px solid var(--border2);
+  border-radius: var(--radius-sm);
   padding: 3px;
   gap: 2px;
 }
@@ -728,6 +730,7 @@ table.h2h td .sub { font-size: 11px; }
   letter-spacing: .05em;
   text-transform: uppercase;
   color: var(--muted2);
+  border-radius: calc(var(--radius-sm) - 2px);
   transition: all .15s;
   display: flex;
   align-items: center;
@@ -1673,4 +1676,36 @@ table.h2h td .sub { font-size: 11px; }
 .match-popover-value {
   font-weight: 700;
   font-size: 11px;
+}
+
+/* Standardized Modal Dialog Box */
+.modal-box {
+  max-height: 90vh;
+  overflow-y: auto;
+  background: var(--surface) !important;
+  border: 1px solid var(--border-strong) !important;
+  border-radius: var(--radius-lg) !important;
+  box-shadow: var(--shadow-2) !important;
+}
+
+/* Matches page stats bar */
+.matches-stats-bar {
+  margin-bottom: 24px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 16px 20px;
+}
+
+/* Reusable MatchCard container style (removes inline borders/shadows/side-stripes) */
+.match-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  width: 100%;
+  transition: border-color var(--dur-fast) var(--ease);
+}
+.match-card:hover {
+  border-color: var(--border-strong);
 }

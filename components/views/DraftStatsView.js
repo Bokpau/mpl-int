@@ -666,11 +666,12 @@ export default function DraftStatsView({ featured, eff, label }) {
         >
           <div
             onClick={(e) => e.stopPropagation()}
-            style={{ width: 'min(480px, 100%)', maxHeight: '90vh', overflowY: 'auto', background: '#0b0b14', border: '1px solid var(--accent)', borderRadius: 4, boxShadow: '0 16px 36px rgba(0,0,0,0.85)' }}
+            className="modal-box"
+            style={{ width: 'min(480px, 100%)' }}
           >
             <div className="match-popover-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--border)', padding: '12px 16px' }}>
               <span className="match-popover-title" style={{ fontFamily: 'var(--font-mono)', fontSize: 12, fontWeight: 700, color: 'var(--accent)', letterSpacing: '.06em' }}>
-                // {modalData.title}
+                {modalData.title}
               </span>
               <button
                 className="match-popover-close"

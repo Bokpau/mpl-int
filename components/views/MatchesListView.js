@@ -16,7 +16,7 @@ function MatchSkeleton() {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
       {Array.from({ length: 5 }).map((_, i) => (
-        <div key={i} style={{ border: '1px solid var(--border)', borderLeft: '3px solid var(--border2)', background: 'var(--surface)' }}>
+        <div key={i} className="match-card">
           <div style={{ padding: '10px 14px', borderBottom: '1px solid var(--border)', display: 'flex', gap: 12 }}>
             <div className="skeleton" style={{ height: 14, width: 120, borderRadius: 2 }} />
             <div className="skeleton" style={{ height: 14, width: 80, borderRadius: 2 }} />
@@ -165,11 +165,7 @@ export default function MatchesListView({ q = '', label = '' }) {
       </PageHead>
 
       {/* ── Stats bar ─────────────────────────────────────────────── */}
-      <div style={{
-        display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16,
-        marginBottom: 24, background: 'var(--surface)', border: '1px solid var(--border)',
-        borderRadius: '4px', padding: '16px 20px',
-      }}>
+      <div className="matches-stats-bar" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16 }}>
         {[
           { v: stats.matchesPlayed, l: 'Matches Played', c: 'var(--accent)', b: true },
           { v: stats.gamesPlayed, l: 'Games Played', c: 'var(--text)', b: true },
