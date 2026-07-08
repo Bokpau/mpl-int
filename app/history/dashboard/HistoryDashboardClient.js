@@ -40,10 +40,11 @@ function formatDateRange(startStr, endStr) {
 }
 
 // ── Runner-up fallback table for early editions without DB standings ───────
+// Uses null logo_dark so TeamLogo falls back to img.team() CDN lookup.
 const EARLY_RUNNER_UPS = {
-  'MSC 2017': { team_key: null, team_code: 'Salty Salad',   team_name: 'Salty Salad',              logo_dark: null, country_flag: '🇵🇭' },
-  'MSC 2018': { team_key: null, team_code: 'DD PRO',        team_name: 'Digital Devils Pro Gaming', logo_dark: null, country_flag: '🇮🇩' },
-  'MSC 2019': { team_key: null, team_code: 'Louvre Esports',team_name: 'Louvre Esports',            logo_dark: null, country_flag: '🇮🇩' },
+  'MSC 2017': { team_key: null, team_code: 'Salty Salad',    team_name: 'Salty Salad',              logo_dark: null, country_flag: '🇵🇭' },
+  'MSC 2018': { team_key: null, team_code: 'Digital Devils',  team_name: 'Digital Devils Pro Gaming', logo_dark: null, country_flag: '🇮🇩' },
+  'MSC 2019': { team_key: null, team_code: 'Louvre Esports',  team_name: 'Louvre Esports',            logo_dark: null, country_flag: '🇮🇩' },
 };
 
 // ── Inline entity display ─────────────────────────────────────────────────────
