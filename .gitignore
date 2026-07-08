@@ -21,6 +21,9 @@ out/
 
 # Other coding-assistant workspace files (tool-specific, not part of the app)
 .agents/
+.claude/
+.codex/
+.impeccable/
 
 # Logs
 *.log

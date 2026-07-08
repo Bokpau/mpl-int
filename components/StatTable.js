@@ -146,37 +146,10 @@ function LastUsedCell({ col, row, stickyClass = '' }) {
         {open && (
           <div
             className="match-popover"
-            style={{
-              width: '320px',
-              textAlign: 'left',
-              zIndex: 100,
-              top: '100%',
-              left: '50%',
-              transform: 'translateX(-50%)',
-              marginTop: '8px',
-            }}
             onClick={(e) => e.stopPropagation()}
           >
-            <div
-              className="match-popover-header"
-              style={{
-                padding: '8px 12px',
-                background: '#141424',
-                borderBottom: '1px solid var(--border)',
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-              }}
-            >
-              <span
-                className="match-popover-title"
-                style={{
-                  color: 'var(--accent)',
-                  fontFamily: 'var(--font-mono)',
-                  fontSize: 10,
-                  fontWeight: 700,
-                }}
-              >
+            <div className="match-popover-header">
+              <span className="match-popover-title">
                 {(row.hero_name || '').toUpperCase()} LAST USED
               </span>
               <button
@@ -187,13 +160,13 @@ function LastUsedCell({ col, row, stickyClass = '' }) {
                 &times;
               </button>
             </div>
-            <div className="match-popover-body" style={{ padding: '12px' }}>
+            <div className="match-popover-body">
               {loading && <p style={{ color: 'var(--muted2)', margin: 0 }}>Loading details…</p>}
               {!loading && details && details.error && (
                 <p style={{ color: 'var(--loss)', margin: 0 }}>{details.error}</p>
               )}
               {!loading && details && !details.error && (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                <div className="db-flex-col-gap-8">
                   {[
                     { label: 'Date', value: details.date || '—' },
                     { label: 'Season', value: details.season || '—' },
@@ -205,31 +178,14 @@ function LastUsedCell({ col, row, stickyClass = '' }) {
                   ].map((item, idx) => (
                     <div
                       key={idx}
-                      style={{
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                        alignItems: 'center',
-                        padding: '4px 0',
-                        borderBottom: idx === 6 ? 'none' : '1px solid var(--border)',
-                      }}
+                      className={`match-popover-row ${idx === 6 ? 'last' : ''}`}
                     >
-                      <span
-                        style={{
-                          color: 'var(--muted2)',
-                          fontSize: 10,
-                          fontFamily: 'var(--font-mono)',
-                          textTransform: 'uppercase',
-                        }}
-                      >
+                      <span className="match-popover-label">
                         {item.label}
                       </span>
                       <span
-                        style={{
-                          fontWeight: 700,
-                          fontSize: 11,
-                          color:
-                            item.color || 'var(--text)',
-                        }}
+                        className="match-popover-value"
+                        style={{ color: item.color || 'var(--text)' }}
                       >
                         {item.value}
                       </span>

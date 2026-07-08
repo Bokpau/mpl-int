@@ -19,10 +19,10 @@ const CSP = [
   // Next.js injects inline hydration scripts and inline styles (no nonce setup),
   // so 'unsafe-inline' is required. 'unsafe-eval'/ws: are dev-only (React refresh
   // + HMR) and never shipped to production.
-  `script-src 'self' 'unsafe-inline'${isDev ? " 'unsafe-eval'" : ''}`,
+  `script-src 'self' 'unsafe-inline'${isDev ? " 'unsafe-eval' http://localhost:8400" : ''}`,
   "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://api.fontshare.com",
   "font-src 'self' data: https://fonts.gstatic.com https://api.fontshare.com https://cdn.fontshare.com",
-  `connect-src 'self'${isDev ? ' ws:' : ''}`,
+  `connect-src 'self'${isDev ? ' ws: http://localhost:8400' : ''}`,
   'upgrade-insecure-requests',
 ].join('; ');
 

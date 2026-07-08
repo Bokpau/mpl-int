@@ -9,6 +9,7 @@ import PageHead from '../PageHead';
 import TeamLogo from '../TeamLogo';
 import { resolveTeam, identityMode } from '../../lib/identity';
 import { PlayerPhoto } from '../Images';
+import DashboardStatsTabs from '../DashboardStatsTabs';
 
 // WILD_CARD_GROUPS, DECIDER, GAUNTLET_SERIES and buildSeries now live in
 // lib/msc2026Bracket.js (shared with the Matches page Grid view) — imported above.
@@ -52,10 +53,6 @@ function ratePct(count, total, d = 1) {
 function SectionHeader({ children }) {
   return <div className="section-title">{children}</div>;
 }
-
-const card = { border: '1px solid var(--border)', background: 'var(--surface)', padding: '10px 0' };
-const listHead = { padding: '0 14px 8px 14px', borderBottom: '1px solid var(--border)', fontSize: 11, fontWeight: 700, fontFamily: 'var(--font-mono)', color: 'var(--accent)' };
-const listRow = (last) => ({ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '7px 14px', borderBottom: last ? 'none' : '1px solid rgba(30,30,58,0.3)', gap: 8 });
 
 // Full international dashboard for one selection. `q`/`label`/`eff`/`editions`/
 // `featured` come from a selection resolver (resolveSelection for history,
@@ -268,9 +265,9 @@ export default async function DashboardView({ q, label, eff, editions = [], feat
       {head}
 
       {/* Schedule */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 14, marginBottom: 28 }}>
+      <div className="db-section">
         <SectionHeader>Schedule</SectionHeader>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: 16 }}>
+        <div className="db-grid-240">
           {recentSeries.map((s) => (
             <ScheduleCard key={s.match_code} status="FINAL" accent teamMeta={mergedMeta}
               detail={scheduleLabel(s.match_code, s.stage)}
@@ -284,22 +281,22 @@ export default async function DashboardView({ q, label, eff, editions = [], feat
           ))}
           {!recentSeries.length && !upcoming.length ? <div className="empty">No schedule data for this selection.</div> : null}
         </div>
-        <Link href={context === 'current' ? "/matches" : "/history/matches"} style={{ display: 'block', textAlign: 'center', padding: '8px 12px', border: '1px solid var(--border2)', background: 'var(--surface2)', fontFamily: 'var(--font-mono)', fontSize: 10, color: 'var(--text)' }}>
+        <Link href={context === 'current' ? "/matches" : "/history/matches"} className="db-view-more">
           View Full Schedule &amp; Matches →
         </Link>
       </div>
 
       {/* Tournament Summary */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 14, marginBottom: 28 }}>
+      <div className="db-section">
         <SectionHeader>Tournament Summary</SectionHeader>
         <div className="cards">
           <div className="card"><div className="k">Matches Played</div><div className="v">{int(matchesPlayed)}</div></div>
           <div className="card"><div className="k">Games Played</div><div className="v">{int(gamesPlayed)}</div></div>
           <div className="card">
             <div className="k">Side Win Rate</div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', fontFamily: 'var(--font-mono)', fontSize: 12, fontWeight: 700, marginTop: 4 }}>
-              <span style={{ color: '#40B8FF' }}>B {blueWinRate.toFixed(0)}%</span>
-              <span style={{ color: '#F0506E' }}>{redWinRate.toFixed(0)}% R</span>
+            <div className="db-flex-space" style={{ fontFamily: 'var(--font-mono)', fontSize: 12, fontWeight: 700, marginTop: 4 }}>
+              <span className="db-blue-side-text">B {blueWinRate.toFixed(0)}%</span>
+              <span className="db-red-side-text">{redWinRate.toFixed(0)}% R</span>
             </div>
           </div>
           <div className="card"><div className="k">Total Game Time</div><div className="v" style={{ fontSize: 18 }}>{fmtHms(totalGameSec)}</div></div>
@@ -319,7 +316,7 @@ export default async function DashboardView({ q, label, eff, editions = [], feat
 
       {/* Standings */}
       {eff.stage ? (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 20, marginBottom: 28 }}>
+        <div className="db-section-large">
           <SectionHeader>{isWildCard ? 'Wild Card Standings' : isMainStage ? 'Main Group Stage' : 'Standings'}</SectionHeader>
           {isMainStage ? (
             <>
@@ -332,19 +329,19 @@ export default async function DashboardView({ q, label, eff, editions = [], feat
           ) : isWildCard ? (
             <>
               {/* Group Stage */}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+              <div className="db-flex-col-gap-10">
                 <SubHead>Group Stage</SubHead>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 16 }}>
+                <div className="db-grid-300">
                   <GroupTable title="Group A" rows={groupA} teamMeta={mergedMeta} />
                   <GroupTable title="Group B" rows={groupB} teamMeta={mergedMeta} />
                 </div>
               </div>
 
               {/* Cross-Group Gauntlet */}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+              <div className="db-flex-col-gap-10">
                 <SubHead>Cross-Group Gauntlet</SubHead>
                 {gauntletSeries.length ? (
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 16, alignItems: 'start' }}>
+                  <div className="db-grid-220">
                     <BracketCol title="Round 1" series={gauntletR1} teamMeta={mergedMeta} />
                     <BracketCol title="Round 2" series={gauntletR2} teamMeta={mergedMeta} />
                     <QualifiedCol codes={qualified} teamMeta={mergedMeta} />
@@ -355,10 +352,10 @@ export default async function DashboardView({ q, label, eff, editions = [], feat
               </div>
 
               {/* Decider — semifinals → grand final → Main Stage qualifier */}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              <div className="db-flex-col-gap-8">
                 <SubHead>Decider</SubHead>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 12, alignItems: 'center' }}>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                <div className="db-grid-200">
+                  <div className="db-flex-col-gap-8">
                     {deciderSemis.map((m) => (
                       m.series
                         ? <SeriesBox key={m.label} title={m.label} teamMeta={mergedMeta} compact
@@ -387,86 +384,81 @@ export default async function DashboardView({ q, label, eff, editions = [], feat
         </div>
       ) : null}
 
-      {/* Player Rankings */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 16, marginBottom: 28 }}>
-        <SectionHeader>Player Rankings</SectionHeader>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(210px, 1fr))', gap: 14 }}>
-          <RankList title="KDA" rows={pKda} teamMeta={mergedMeta} valueFn={(p) => dec(p.kda)} />
-          <RankList title="Avg Kills" rows={pKills} teamMeta={mergedMeta} valueFn={(p) => dec(p.avg_kills)} />
-          <RankList title="Avg Assists" rows={pAssists} teamMeta={mergedMeta} valueFn={(p) => dec(p.avg_assists)} />
-          <RankList title="Gold / Min" rows={pGpm} teamMeta={mergedMeta} valueFn={(p) => int(p.gpm)} />
-          <RankList title="Game MVPs" rows={pMvps} teamMeta={mergedMeta} valueFn={(p) => int(p.mvps)} />
-        </div>
-      </div>
-
-      {/* Team Rankings */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 16, marginBottom: 28 }}>
-        <SectionHeader>Team Rankings</SectionHeader>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(190px, 1fr))', gap: 14 }}>
-          <TeamRankList title="Avg Kills" rows={tKills} valueFn={(t) => dec(t.avg_kills)} />
-          <TeamRankList title="Avg Assists" rows={tAssists} valueFn={(t) => dec(t.avg_assists)} />
-          <TeamRankList title="Avg GPM" rows={tGpm} valueFn={(t) => int(t.gpm)} />
-          <TeamRankList title="Avg DPM" rows={tDpm} valueFn={(t) => int(t.dpm)} />
-          <TeamRankList title="Avg Win Time" rows={tWinTime} valueFn={(t) => fmtSec(t.avg_win_time_s)} />
-        </div>
-      </div>
-
-      {/* Hero Rankings */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 16, marginBottom: 28 }}>
-        <SectionHeader>Hero Rankings</SectionHeader>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 16 }}>
-          <div style={card}>
-            <div style={listHead}>MOST PICKED · PICK %</div>
-            {hPicked.length ? hPicked.map((h, i) => (
-              <HeroRow key={h.hero_id || i} rank={i + 1} last={i === hPicked.length - 1} id={h.hero_id} name={h.hero_name}
-                main={int(h.picks)} pct={ratePct(h.picks, totalGames)} />
-            )) : <Empty />}
+      {/* Tabbed rankings & statistics */}
+      <DashboardStatsTabs
+        playersList={
+          <div className="db-grid-210">
+            <RankList title="KDA" rows={pKda} teamMeta={mergedMeta} valueFn={(p) => dec(p.kda)} />
+            <RankList title="Avg Kills" rows={pKills} teamMeta={mergedMeta} valueFn={(p) => dec(p.avg_kills)} />
+            <RankList title="Avg Assists" rows={pAssists} teamMeta={mergedMeta} valueFn={(p) => dec(p.avg_assists)} />
+            <RankList title="Gold / Min" rows={pGpm} teamMeta={mergedMeta} valueFn={(p) => int(p.gpm)} />
+            <RankList title="Game MVPs" rows={pMvps} teamMeta={mergedMeta} valueFn={(p) => int(p.mvps)} />
           </div>
-          <div style={card}>
-            <div style={listHead}>MOST BANNED · BAN %</div>
-            {hBanned.length ? hBanned.map((h, i) => (
-              <HeroRow key={h.heroid} rank={i + 1} last={i === hBanned.length - 1} id={h.heroid} name={h.hero_name}
-                main={int(h.bans)} pct={ratePct(h.bans, totalGames)} />
-            )) : <div style={{ padding: 14, color: 'var(--muted2)', fontSize: 12 }}>No ban data yet (MSC 2026-forward only).</div>}
+        }
+        teamsList={
+          <div className="db-grid-190">
+            <TeamRankList title="Avg Kills" rows={tKills} valueFn={(t) => dec(t.avg_kills)} />
+            <TeamRankList title="Avg Assists" rows={tAssists} valueFn={(t) => dec(t.avg_assists)} />
+            <TeamRankList title="Avg GPM" rows={tGpm} valueFn={(t) => int(t.gpm)} />
+            <TeamRankList title="Avg DPM" rows={tDpm} valueFn={(t) => int(t.dpm)} />
+            <TeamRankList title="Avg Win Time" rows={tWinTime} valueFn={(t) => fmtSec(t.avg_win_time_s)} />
           </div>
-          <div style={card}>
-            <div style={listHead}>MOST CONTESTED · BAN+PICK %</div>
-            {hContested.length ? hContested.map((h, i) => (
-              <HeroRow key={h.hero_id || i} rank={i + 1} last={i === hContested.length - 1} id={h.hero_id} name={h.hero_name}
-                main={int(h.contest)} pct={ratePct(h.contest, totalGames)} />
-            )) : <Empty />}
+        }
+        heroesList={
+          <div className="db-grid-260">
+            <div className="rank-card">
+              <div className="rank-list-head">MOST PICKED · PICK %</div>
+              {hPicked.length ? hPicked.map((h, i) => (
+                <HeroRow key={h.hero_id || i} rank={i + 1} last={i === hPicked.length - 1} id={h.hero_id} name={h.hero_name}
+                  main={int(h.picks)} pct={ratePct(h.picks, totalGames)} />
+              )) : <Empty />}
+            </div>
+            <div className="rank-card">
+              <div className="rank-list-head">MOST BANNED · BAN %</div>
+              {hBanned.length ? hBanned.map((h, i) => (
+                <HeroRow key={h.heroid} rank={i + 1} last={i === hBanned.length - 1} id={h.heroid} name={h.hero_name}
+                  main={int(h.bans)} pct={ratePct(h.bans, totalGames)} />
+              )) : <div style={{ padding: 14, color: 'var(--muted2)', fontSize: 12 }}>No ban data yet (MSC 2026-forward only).</div>}
+            </div>
+            <div className="rank-card">
+              <div className="rank-list-head">MOST CONTESTED · BAN+PICK %</div>
+              {hContested.length ? hContested.map((h, i) => (
+                <HeroRow key={h.hero_id || i} rank={i + 1} last={i === hContested.length - 1} id={h.hero_id} name={h.hero_name}
+                  main={int(h.contest)} pct={ratePct(h.contest, totalGames)} />
+              )) : <Empty />}
+            </div>
           </div>
-        </div>
-      </div>
-
-      {/* Top Hero Picks by Role */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-        <SectionHeader>Top Hero Picks by Role</SectionHeader>
-        {byRole.length ? (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(210px, 1fr))', gap: 14 }}>
-            {byRoleGrouped.map(({ role, list }) => (
-              <div key={role} style={{ ...card, padding: '12px 14px', display: 'flex', flexDirection: 'column', gap: 8 }}>
-                <div style={{ fontSize: 10, fontFamily: 'var(--font-mono)', color: 'var(--muted)', fontWeight: 700, textTransform: 'uppercase' }}>{role}</div>
-                {list.length ? list.map((h, i) => (
-                  <div key={h.heroid} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                    <span style={{ fontFamily: 'var(--font-mono)', fontSize: 10, color: 'var(--muted2)' }}>#{i + 1}</span>
-                    {img.hero(h.heroid) ? <img src={img.hero(h.heroid)} alt="" style={{ width: 20, height: 20, borderRadius: '50%' }} /> : null}
-                    <div style={{ display: 'flex', flexDirection: 'column', minWidth: 0 }}>
-                      <span style={{ fontSize: 12, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{h.hero_name}</span>
-                      <span style={{ fontSize: 9, fontFamily: 'var(--font-mono)', color: 'var(--muted2)' }}>
-                        {dec(h.pick_rate, 1)}% pick · {dec(h.win_rate, 1)}% win
-                      </span>
-                    </div>
-                    <span style={{ marginLeft: 'auto', fontSize: 11, color: 'var(--muted2)', fontFamily: 'var(--font-mono)' }}>{int(h.games)}g</span>
+        }
+        rolesList={
+          <div className="db-flex-col-gap-10">
+            <SectionHeader>Top Hero Picks by Role</SectionHeader>
+            {byRole.length ? (
+              <div className="db-grid-210">
+                {byRoleGrouped.map(({ role, list }) => (
+                  <div key={role} className="rank-card" style={{ padding: '12px 14px', display: 'flex', flexDirection: 'column', gap: 8 }}>
+                    <div style={{ fontSize: 10, fontFamily: 'var(--font-mono)', color: 'var(--muted)', fontWeight: 700, textTransform: 'uppercase' }}>{role}</div>
+                    {list.length ? list.map((h, i) => (
+                      <div key={h.heroid} className="db-flex-row-gap-8">
+                        <span style={{ fontFamily: 'var(--font-mono)', fontSize: 10, color: 'var(--muted2)' }}>#{i + 1}</span>
+                        {img.hero(h.heroid) ? <img src={img.hero(h.heroid)} alt="" style={{ width: 20, height: 20, borderRadius: '50%' }} /> : null}
+                        <div className="db-flex-col" style={{ minWidth: 0 }}>
+                          <span style={{ fontSize: 12, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{h.hero_name}</span>
+                          <span style={{ fontSize: 9, fontFamily: 'var(--font-mono)', color: 'var(--muted2)' }}>
+                            {dec(h.pick_rate, 1)}% pick · {dec(h.win_rate, 1)}% win
+                          </span>
+                        </div>
+                        <span style={{ marginLeft: 'auto', fontSize: 11, color: 'var(--muted2)', fontFamily: 'var(--font-mono)' }}>{int(h.games)}g</span>
+                      </div>
+                    )) : <span style={{ color: 'var(--muted2)', fontSize: 11 }}>—</span>}
                   </div>
-                )) : <span style={{ color: 'var(--muted2)', fontSize: 11 }}>—</span>}
+                ))}
               </div>
-            ))}
+            ) : (
+              <div className="empty">Role data is only tracked for rich-collected games (MSC 2026 onward) — shows once enough games are fetched.</div>
+            )}
           </div>
-        ) : (
-          <div className="empty">Role data is only tracked for rich-collected games (MSC 2026 onward) — shows once enough games are fetched.</div>
-        )}
-      </div>
+        }
+      />
     </div>
   );
 }
@@ -495,7 +487,7 @@ function ScheduleCard({ status, accent, phase, detail, a, b, aFlag, bFlag, aScor
     );
   };
   return (
-    <div style={{ ...card, borderLeft: accent ? '3px solid var(--win)' : undefined, padding: '12px 14px', display: 'flex', flexDirection: 'column', gap: 8 }}>
+    <div className="rank-card" style={{ borderLeft: accent ? '3px solid var(--win)' : undefined, padding: '12px 14px', display: 'flex', flexDirection: 'column', gap: 8 }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 9, fontFamily: 'var(--font-mono)', color: 'var(--muted2)', gap: 6 }}>
         <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{detail || phase}</span>
         <span style={{ color: accent ? 'var(--accent)' : 'var(--muted2)', fontWeight: 600, flexShrink: 0 }}>{status}</span>
@@ -514,7 +506,7 @@ function ScheduleCard({ status, accent, phase, detail, a, b, aFlag, bFlag, aScor
 function GroupTable({ title, rows, teamMeta }) {
   return (
     <div style={{ border: '1px solid var(--border)', background: 'var(--surface)' }}>
-      {title ? <div style={{ ...listHead, borderBottom: '1px solid var(--border)' }}>{title.toUpperCase()}</div> : null}
+      {title ? <div className="rank-list-head" style={{ borderBottom: '1px solid var(--border)' }}>{title.toUpperCase()}</div> : null}
       <div className="table-wrap">
         <table style={{ marginBottom: 0 }}>
           <thead>
@@ -540,7 +532,7 @@ function GroupTable({ title, rows, teamMeta }) {
                     </div>
                   </td>
                   <td style={{ color: 'var(--text)', fontWeight: 600 }}>{t.w}–{t.l}</td>
-                  <td style={{ color: diff > 0 ? 'var(--win)' : diff < 0 ? 'var(--loss, #F0506E)' : 'var(--muted)' }}>{diff > 0 ? `+${diff}` : diff}</td>
+                  <td style={{ color: diff > 0 ? 'var(--win)' : diff < 0 ? 'var(--loss)' : 'var(--muted)' }}>{diff > 0 ? `+${diff}` : diff}</td>
                 </tr>
               );
             }) : (
@@ -686,12 +678,12 @@ function MainGroupBracket({ title, group, teamMeta }) {
 
 function RankList({ title, rows, valueFn, teamMeta = {} }) {
   return (
-    <div style={card}>
-      <div style={listHead}>{title.toUpperCase()}</div>
+    <div className="rank-card">
+      <div className="rank-list-head">{title.toUpperCase()}</div>
       {rows.length ? rows.map((p, i) => {
         const photo = p.photo_url || PHOTO_FALLBACK[String(p.player || '').toUpperCase()];
         return (
-        <div key={p.player_key} style={listRow(i === rows.length - 1)}>
+        <div key={p.player_key} className={`rank-list-row ${i === rows.length - 1 ? 'last' : ''}`}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 0 }}>
             <span style={{ fontFamily: 'var(--font-mono)', color: 'var(--accent)', fontWeight: 700, fontSize: 11, width: 10 }}>{i + 1}</span>
             <PlayerPhoto photoUrl={photo} name={p.player} size={36} />
@@ -713,10 +705,10 @@ function RankList({ title, rows, valueFn, teamMeta = {} }) {
 
 function TeamRankList({ title, rows, valueFn }) {
   return (
-    <div style={card}>
-      <div style={listHead}>{title.toUpperCase()}</div>
+    <div className="rank-card">
+      <div className="rank-list-head">{title.toUpperCase()}</div>
       {rows.length ? rows.map((t, i) => (
-        <div key={t.team_key} style={listRow(i === rows.length - 1)}>
+        <div key={t.team_key} className={`rank-list-row ${i === rows.length - 1 ? 'last' : ''}`}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
             <span style={{ fontFamily: 'var(--font-mono)', color: 'var(--accent)', fontWeight: 700, fontSize: 11, width: 10 }}>{i + 1}</span>
             <TeamLogo src={t.team_logo_dark} fallbackSrc={img.team(t.team_code)} alt="" style={{ width: 16, height: 16, objectFit: 'contain' }} />
@@ -732,7 +724,7 @@ function TeamRankList({ title, rows, valueFn }) {
 
 function HeroRow({ rank, last, id, name, main, pct }) {
   return (
-    <div style={listRow(last)}>
+    <div className={`rank-list-row ${last ? 'last' : ''}`}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 0 }}>
         <span style={{ fontFamily: 'var(--font-mono)', color: 'var(--accent)', fontSize: 11 }}>#{rank}</span>
         {img.hero(id) ? <img src={img.hero(id)} alt="" style={{ width: 22, height: 22, borderRadius: '50%' }} /> : null}
