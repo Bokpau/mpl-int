@@ -293,7 +293,7 @@ function Cell({ col, row, rankIndex, stickyClass = '' }) {
         <td className={`l ${stickyClass}`.trim()}>
           <Link href={href} onClick={(e) => e.stopPropagation()}>
             <span className="idcell">
-              <PlayerPhoto photoUrl={photo} name={eraName} size={30} style={{ objectPosition: 'top' }} />
+              <PlayerPhoto photoUrl={photo} name={eraName} size={36} />
               <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                 <span className="name">{name}</span>
                 {country ? (

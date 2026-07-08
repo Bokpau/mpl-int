@@ -88,20 +88,23 @@ export function PlayerAvatar({ name, size = 32, style = {} }) {
 // CDN stopgap by IGN. The initial sits underneath and the photo overlays it, so a
 // missing/broken image just hides itself (DOM onError, no setState) and the initial
 // shows through — no state, so no setState-in-render churn inside dense table rows.
-export function PlayerPhoto({ photoUrl, name, size = 32, style = {}, imgStyle = {} }) {
+export function PlayerPhoto({ photoUrl, name, size = 32, zoom = 1.4, style = {}, imgStyle = {}, className = '' }) {
   const src = cdnify(photoUrl || PHOTO_FALLBACK[String(name || '').toUpperCase()]);
   const initial = (name || '?').trim().charAt(0).toUpperCase();
   
   // Extract image-specific styles passed to the container's style prop (like objectPosition)
-  const { objectPosition, objectFit, ...containerStyle } = style;
+  const { objectPosition, objectFit, borderRadius = '50%', ...containerStyle } = style;
 
   return (
-    <div style={{
-      position: 'relative', width: size, height: size, borderRadius: '50%', overflow: 'hidden',
-      background: 'var(--surface2)', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center',
-      fontSize: size * 0.42, fontWeight: 700, color: 'var(--muted)', fontFamily: 'var(--font-display)',
-      ...containerStyle,
-    }}>
+    <div
+      className={className}
+      style={{
+        position: 'relative', width: size, height: size, borderRadius, overflow: 'hidden',
+        background: 'var(--surface2)', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center',
+        fontSize: size * 0.42, fontWeight: 700, color: 'var(--muted)', fontFamily: 'var(--font-display)',
+        ...containerStyle,
+      }}
+    >
       {initial}
       {src && (
         <img
@@ -113,7 +116,7 @@ export function PlayerPhoto({ photoUrl, name, size = 32, style = {}, imgStyle = 
             position: 'absolute', inset: 0, width: '100%', height: '100%',
             objectFit: objectFit || 'cover',
             objectPosition: objectPosition || 'top center',
-            transform: 'scale(1.4)',
+            transform: `scale(${zoom})`,
             transformOrigin: 'top center',
             ...imgStyle,
           }}

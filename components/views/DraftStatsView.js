@@ -485,7 +485,7 @@ export default function DraftStatsView({ featured, eff, label }) {
                       <td style={{ padding: '6px 10px' }}>
                         {mp ? (
                           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                            <PlayerPhoto photoUrl={mp.photo_url} name={mp.player_name} size={28} />
+                            <PlayerPhoto photoUrl={mp.photo_url} name={mp.player_name} size={36} />
                             {mp.player_key ? (
                               <Link href={`/players/${encodeURIComponent(mp.player_key)}`} style={{ fontWeight: 700, color: 'var(--text)', whiteSpace: 'nowrap', fontSize: 13, textDecoration: 'none' }}>
                                 {mp.player_name}

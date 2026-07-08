@@ -8,6 +8,7 @@ import ErrorBox from '../ErrorBox';
 import PageHead from '../PageHead';
 import TeamLogo from '../TeamLogo';
 import { resolveTeam, identityMode } from '../../lib/identity';
+import { PlayerPhoto } from '../Images';
 
 // WILD_CARD_GROUPS, DECIDER, GAUNTLET_SERIES and buildSeries now live in
 // lib/msc2026Bracket.js (shared with the Matches page Grid view) — imported above.
@@ -693,9 +694,7 @@ function RankList({ title, rows, valueFn, teamMeta = {} }) {
         <div key={p.player_key} style={listRow(i === rows.length - 1)}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 0 }}>
             <span style={{ fontFamily: 'var(--font-mono)', color: 'var(--accent)', fontWeight: 700, fontSize: 11, width: 10 }}>{i + 1}</span>
-            {photo
-              ? <img src={cdnify(photo)} alt="" referrerPolicy="no-referrer" style={{ width: 26, height: 26, borderRadius: '50%', objectFit: 'cover', background: 'var(--surface2)' }} />
-              : <span style={{ width: 26, height: 26, borderRadius: '50%', background: 'var(--surface2)', flexShrink: 0 }} />}
+            <PlayerPhoto photoUrl={photo} name={p.player} size={36} />
             <div style={{ display: 'flex', flexDirection: 'column', minWidth: 0 }}>
               <span style={{ fontSize: 12, fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.player}</span>
               <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>

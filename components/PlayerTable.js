@@ -111,7 +111,7 @@ function PlayerRow({ p, hi, lo, expanded }) {
           <RoleImg role={p.role_lane} size={18} style={{ flexShrink: 0 }} />
           {/* Player: image stacked above name */}
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2, width: 70, flexShrink: 0 }}>
-            <PlayerPhoto photoUrl={p.photo_url} name={p.player_name} size={32} />
+            <PlayerPhoto photoUrl={p.photo_url} name={p.player_name} size={38} />
             {p.player_key ? (
               <Link href={`/players/${encodeURIComponent(p.player_key)}`} style={{ fontFamily: 'var(--font-mono)', fontSize: 8, fontWeight: 700, color: 'var(--text)', textDecoration: 'none', width: '100%', textAlign: 'center', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', display: 'block' }}>
                 {p.player_name}

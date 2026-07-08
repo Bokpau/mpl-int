@@ -129,8 +129,8 @@ export async function MatchBreakdown({ battleId, isCurrent = true }) {
             <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
               {gameMvp?.roleid && (
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10, border: '1px solid var(--accent)', padding: '10px 16px', flex: '1 1 200px', maxWidth: 280, background: 'var(--surface)' }}>
-                  {gameMvp.heroid && <HeroCircle heroid={gameMvp.heroid} campid={0} size={32} />}
-                  <PlayerPhoto photoUrl={gameMvp.photo_url} name={gameMvp.player_name} size={32} />
+                  {gameMvp.heroid && <HeroCircle heroid={gameMvp.heroid} campid={0} size={44} />}
+                  <PlayerPhoto photoUrl={gameMvp.photo_url} name={gameMvp.player_name} size={44} />
                   <div>
                     <div style={{ fontFamily: 'var(--font-mono)', fontSize: 8, color: 'var(--accent)', letterSpacing: '.12em', marginBottom: 2 }}>★ GAME MVP</div>
                     <div style={{ fontWeight: 700, fontSize: 14 }}>
@@ -142,7 +142,8 @@ export async function MatchBreakdown({ battleId, isCurrent = true }) {
               )}
               {matchMvp?.roleid && (
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10, border: '1px solid #e8b800', padding: '10px 16px', flex: '1 1 200px', maxWidth: 280, background: 'var(--surface)' }}>
-                  <PlayerPhoto photoUrl={matchMvp.photo_url} name={matchMvp.player_name} size={32} />
+                  {matchMvp.heroid && <HeroCircle heroid={matchMvp.heroid} campid={0} size={44} />}
+                  <PlayerPhoto photoUrl={matchMvp.photo_url} name={matchMvp.player_name} size={44} />
                   <div>
                     <div style={{ fontFamily: 'var(--font-mono)', fontSize: 8, color: '#e8b800', letterSpacing: '.12em', marginBottom: 2 }}>★ MATCH MVP</div>
                     <div style={{ fontWeight: 700, fontSize: 14 }}>

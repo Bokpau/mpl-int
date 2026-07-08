@@ -6,6 +6,7 @@ import { int } from '../../../../lib/format';
 import { cdnify } from '../../../../lib/images';
 import ErrorBox from '../../../../components/ErrorBox';
 import PlayerLegacy from '../../../players/[key]/PlayerLegacy';
+import { PlayerPhoto } from '../../../../components/Images';
 
 export async function generateMetadata({ params }) {
   const { key } = await params;
@@ -69,9 +70,7 @@ export default async function HistoryPlayerDetail({ params, searchParams }) {
       <div className="crumb"><Link href="/history/players">← Players</Link></div>
 
       <div className="detail-head">
-        {photo
-          ? <img className="big-avatar sq" src={cdnify(photo)} alt="" style={{ objectFit: 'cover', objectPosition: 'top' }} />
-          : logo ? <img className="big-avatar sq" src={cdnify(logo)} alt="" /> : null}
+        <PlayerPhoto photoUrl={photo} name={t.player || key} size={88} zoom={1.3} style={{ borderRadius: 12 }} />
         <div>
           <h1>{t.player || key}</h1>
           <div className="meta">

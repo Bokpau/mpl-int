@@ -288,7 +288,7 @@ export default function CurrentPlayerDashboard({ playerKey, scope, season, initi
           </div>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: 20, flexWrap: 'wrap' }}>
-            <PlayerPhoto photoUrl={player.photo_url} name={player.player_name} size={64} />
+            <PlayerPhoto photoUrl={player.photo_url} name={player.player_name} size={88} zoom={1.3} />
             <div style={{ flex: 1, minWidth: 200 }}>
               <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 32, fontWeight: 900, color: 'var(--text)', lineHeight: 1.1, margin: 0, textTransform: 'uppercase', letterSpacing: '0.02em' }}>{player.player_name}</h1>
               <div style={{ fontFamily: 'var(--font-mono)', fontSize: 12, color: 'var(--muted)', marginTop: 8, display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
@@ -455,11 +455,11 @@ export default function CurrentPlayerDashboard({ playerKey, scope, season, initi
                           <div style={{ fontFamily: 'var(--font-display)', fontSize: 16, fontWeight: 800, color: 'var(--text)' }}>{me.player_name}</div>
                           <div style={{ fontFamily: 'var(--font-mono)', fontSize: 10, color: 'var(--muted2)' }}>{me.team_code} · {me.games || 0} GP</div>
                         </div>
-                        <PlayerPhoto photoUrl={me.photo_url} name={me.player_name} size={40} />
+                        <PlayerPhoto photoUrl={me.photo_url} name={me.player_name} size={48} />
                       </div>
                       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'var(--font-mono)', fontSize: 10, fontWeight: 700, color: 'rgba(255,255,255,.3)', letterSpacing: '.1em' }}>VS</div>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '12px 16px', borderLeft: '1px solid var(--border)' }}>
-                        <PlayerPhoto photoUrl={them.photo_url} name={them.player_name} size={40} />
+                        <PlayerPhoto photoUrl={them.photo_url} name={them.player_name} size={48} />
                         <div>
                           <div style={{ fontFamily: 'var(--font-display)', fontSize: 16, fontWeight: 800, color: 'var(--text)' }}>{them.player_name}</div>
                           <div style={{ fontFamily: 'var(--font-mono)', fontSize: 10, color: 'var(--muted2)' }}>{them.team_code} · {them.games || 0} GP</div>

@@ -443,7 +443,7 @@ export default function CurrentTeamDashboard({ teamKey, scope, season, initial }
                     <span title={p.role_lane} aria-label={p.role_lane} style={{ display: 'inline-flex' }}>
                       <RoleImg role={p.role_lane} size={20} />
                     </span>
-                    <PlayerPhoto photoUrl={p.photo_url} name={p.player} size={40} />
+                    <PlayerPhoto photoUrl={p.photo_url} name={p.player} size={48} />
                     <Link href={`/players/${p.player_key}`} style={{ fontWeight: 700, fontSize: 14, color: 'var(--text)', textDecoration: 'none' }}>
                       {p.player}
                     </Link>

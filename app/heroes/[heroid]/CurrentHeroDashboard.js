@@ -954,7 +954,7 @@ export default function CurrentHeroDashboard({ heroid, scope, season, initialOve
                             </td>
                             <td style={{ position: 'sticky', left: 120, zIndex: 2, background: '#080810' }}>
                               <Link href={`/players/${encodeURIComponent(g.player_name)}`} style={{ display: 'flex', alignItems: 'center', gap: 6, textDecoration: 'none' }}>
-                                <PlayerPhoto photoUrl={null} name={g.player_name} size={28} />
+                                <PlayerPhoto photoUrl={g.photo_url} name={g.player_name} size={36} />
                                 <div>
                                   <div style={{ fontWeight: 600, fontSize: 12, color: 'var(--text)' }}>{g.player_name}</div>
                                   <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
