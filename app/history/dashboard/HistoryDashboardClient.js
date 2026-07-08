@@ -5,250 +5,294 @@ import Link from 'next/link';
 import TeamLogo from '../../../components/TeamLogo';
 import { PlayerPhoto } from '../../../components/Images';
 import { img, getTournamentLogo } from '../../../lib/images';
-import { editionTitle } from '../../../lib/filters';
 
-// Local fallback mapping for early tournament runner-ups that lack standings rows in the DB
-const EARLY_RUNNER_UPS = {
-  'MSC 2017': {
-    team_key: 'xteam-saltysalad',
-    team_code: 'Salty Salad',
-    team_name: 'Salty Salad',
-    logo_dark: 'https://raw.githubusercontent.com/Bokpau/mlbb-tool/main/intl_teamlogo/Salty_Salad_allmode.png',
-    logo_light: 'https://raw.githubusercontent.com/Bokpau/mlbb-tool/main/intl_teamlogo/Salty_Salad_allmode.png',
-    country_flag: '🇵🇭'
-  },
-  'MSC 2018': {
-    team_key: '68a44841982458382c28696a',
-    team_code: 'DD PRO',
-    team_name: 'Digital Devils Pro Gaming',
-    logo_dark: 'https://raw.githubusercontent.com/Bokpau/mlbb-tool/main/intl_teamlogo/Digital_Devils_Pro_allmode.png',
-    logo_light: 'https://raw.githubusercontent.com/Bokpau/mlbb-tool/main/intl_teamlogo/Digital_Devils_Pro_allmode.png',
-    country_flag: '🇵🇭'
-  },
-  'MSC 2019': {
-    team_key: 'xteam-louvreesports',
-    team_code: 'Louvre Esports',
-    team_name: 'Louvre Esports',
-    logo_dark: 'https://raw.githubusercontent.com/Bokpau/mlbb-tool/main/intl_teamlogo/Louvre_allmode.png',
-    logo_light: 'https://raw.githubusercontent.com/Bokpau/mlbb-tool/main/intl_teamlogo/Louvre_allmode.png',
-    country_flag: '🇮🇩'
-  }
-};
-
-// Date formatter: start_date, end_date -> "Jul 10 - 14, 2024" or "Nov 10 - Dec 1, 2025"
-function formatDateRange(startStr, endStr) {
-  if (!startStr && !endStr) return '—';
-  if (!startStr) return endStr;
-  if (!endStr) return startStr;
-
-  const start = new Date(startStr);
-  const end = new Date(endStr);
-
-  if (isNaN(start.getTime()) || isNaN(end.getTime())) {
-    return `${startStr} - ${endStr}`;
-  }
-
-  const options = { month: 'short', day: 'numeric', year: 'numeric' };
-  
-  if (start.getFullYear() === end.getFullYear()) {
-    if (start.getMonth() === end.getMonth()) {
-      return `${start.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} - ${end.getDate()}, ${start.getFullYear()}`;
-    }
-    return `${start.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} - ${end.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}, ${start.getFullYear()}`;
-  }
-  return `${start.toLocaleDateString('en-US', options)} - ${end.toLocaleDateString('en-US', options)}`;
+// ── Date helpers ─────────────────────────────────────────────────────────────
+// Parse date string as local (not UTC) so '2024-07-10' renders 'Jul 10' not 'Jul 9'.
+function parseLocal(str) {
+  if (!str) return null;
+  const [y, m, d] = str.split('-').map(Number);
+  return new Date(y, m - 1, d);
 }
 
+const MONTH = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+// "Jul 10 – 14, 2024"  |  "Nov 21 – Dec 15, 2024"  |  "Nov 10 – Dec 17, 2023"
+function formatDateRange(startStr, endStr) {
+  const start = parseLocal(startStr);
+  const end   = parseLocal(endStr);
+  if (!start && !end) return '—';
+  if (!start) return `${MONTH[end.getMonth()]} ${end.getDate()}, ${end.getFullYear()}`;
+  if (!end)   return `${MONTH[start.getMonth()]} ${start.getDate()}, ${start.getFullYear()}`;
+
+  const sy = start.getFullYear(), ey = end.getFullYear();
+  const sm = start.getMonth(),    em = end.getMonth();
+  const sd = start.getDate(),     ed = end.getDate();
+
+  if (sy === ey) {
+    if (sm === em)
+      return `${MONTH[sm]} ${sd} – ${ed}, ${sy}`;
+    return `${MONTH[sm]} ${sd} – ${MONTH[em]} ${ed}, ${sy}`;
+  }
+  return `${MONTH[sm]} ${sd}, ${sy} – ${MONTH[em]} ${ed}, ${ey}`;
+}
+
+// ── Runner-up fallback table for early editions without DB standings ───────
+const EARLY_RUNNER_UPS = {
+  'MSC 2017': { team_key: null, team_code: 'Salty Salad',   team_name: 'Salty Salad',              logo_dark: null, country_flag: '🇵🇭' },
+  'MSC 2018': { team_key: null, team_code: 'DD PRO',        team_name: 'Digital Devils Pro Gaming', logo_dark: null, country_flag: '🇮🇩' },
+  'MSC 2019': { team_key: null, team_code: 'Louvre Esports',team_name: 'Louvre Esports',            logo_dark: null, country_flag: '🇮🇩' },
+};
+
+// ── Inline entity display ─────────────────────────────────────────────────────
+function TeamEntity({ team_key, team_code, name, logo_dark, flag, asLink = true }) {
+  const inner = (
+    <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+      <TeamLogo
+        src={logo_dark}
+        fallbackSrc={img.team(team_code)}
+        alt=""
+        style={{ width: '18px', height: '18px', objectFit: 'contain', flexShrink: 0 }}
+      />
+      {flag && <span style={{ fontSize: '12px' }}>{flag}</span>}
+      <span style={{ fontWeight: 600, fontSize: '13px' }}>{name}</span>
+    </span>
+  );
+  if (!asLink || !team_key) return inner;
+  return (
+    <Link href={`/teams/${team_key}?context=history`} className="clickable-link" style={{ display: 'inline-block' }}>
+      {inner}
+    </Link>
+  );
+}
+
+// ── Main component ────────────────────────────────────────────────────────────
 export default function HistoryDashboardClient({
-  editions = [],
+  editions  = [],
   accolades = [],
   standings = [],
-  teams = [],
-  players = []
+  teams     = [],
+  players   = [],
 }) {
-  const [activeTab, setActiveTab] = useState('tournaments');
-  const [teamsSearch, setTeamsSearch] = useState('');
-  const [playersSearch, setPlayersSearch] = useState('');
-  
-  // Pagination counts
-  const [visibleTeamsCount, setVisibleTeamsCount] = useState(25);
-  const [visiblePlayersCount, setVisiblePlayersCount] = useState(25);
+  const [activeTab,          setActiveTab]          = useState('tournaments');
+  const [teamsSearch,        setTeamsSearch]        = useState('');
+  const [playersSearch,      setPlayersSearch]      = useState('');
+  const [visibleTeamsCount,  setVisibleTeamsCount]  = useState(25);
+  const [visiblePlayersCount,setVisiblePlayersCount]= useState(25);
 
-  // 1. Resolve Tournament/Edition List (Champ & Runner Up)
+  // ── 1. Resolve tournaments with champ, runner-up, Finals MVP ─────────────
   const resolvedTournaments = useMemo(() => {
     const list = editions.map(e => {
-      // Champion: Check accolades first, fallback to standings (1st)
-      let champion = accolades.find(a => String(a.season) === String(e.season) && a.award_type === 'champion');
+      const acc = {};
+      accolades
+        .filter(a => String(a.season) === String(e.season))
+        .forEach(a => { acc[a.award_type] = a; });
+
+      // Champion — prefer accolade, fallback to 1st-place standing
+      let champion = acc['champion'] || null;
       if (!champion) {
-        const champStanding = standings.find(s => String(s.tournament_code) === String(e.season) && s.placement === '1st');
-        if (champStanding) {
-          champion = {
-            team_key: champStanding.team_key,
-            team_code: champStanding.team_code,
-            recipient: champStanding.team_name,
-            logo_dark: champStanding.logo_dark,
-            logo_light: champStanding.logo_light,
-            flag_emoji: champStanding.country_flag
-          };
-        }
+        const row = standings.find(
+          s => String(s.tournament_code) === String(e.season) && s.placement === '1st'
+        );
+        if (row) champion = {
+          team_key:  row.team_key,
+          team_code: row.team_code,
+          recipient: row.team_name,
+          logo_dark: row.logo_dark,
+          flag_emoji:row.country_flag,
+        };
       }
 
-      // Runner Up: Check early hand-curated map first, fallback to standings (2nd)
+      // Runner-up — early fallback map first, then standing
       let runnerUp = EARLY_RUNNER_UPS[e.season] || null;
       if (!runnerUp) {
-        const ruStanding = standings.find(s => String(s.tournament_code) === String(e.season) && s.placement === '2nd');
-        if (ruStanding) {
-          runnerUp = {
-            team_key: ruStanding.team_key,
-            team_code: ruStanding.team_code,
-            team_name: ruStanding.team_name,
-            logo_dark: ruStanding.logo_dark,
-            logo_light: ruStanding.logo_light,
-            country_flag: ruStanding.country_flag
-          };
-        }
+        const row = standings.find(
+          s => String(s.tournament_code) === String(e.season) && s.placement === '2nd'
+        );
+        if (row) runnerUp = {
+          team_key:    row.team_key,
+          team_code:   row.team_code,
+          team_name:   row.team_name,
+          logo_dark:   row.logo_dark,
+          country_flag:row.country_flag,
+        };
       }
 
-      return {
-        ...e,
-        champion,
-        runnerUp
-      };
+      // Finals MVP
+      const finalsMvp = acc['finals_mvp'] || null;
+
+      return { ...e, champion, runnerUp, finalsMvp };
     });
 
-    // Sort descending by season_number / ID
+    // Newest first — sort by season_id descending
     return [...list].sort((a, b) => (Number(b.season_id) || 0) - (Number(a.season_id) || 0));
   }, [editions, accolades, standings]);
 
-  // 2. Filter Teams
+  // ── 2. Filter teams / players ────────────────────────────────────────────
   const filteredTeams = useMemo(() => {
     const term = teamsSearch.toLowerCase().trim();
     if (!term) return teams;
-    return teams.filter(t => 
-      (t.team_name || '').toLowerCase().includes(term) ||
-      (t.team_code || '').toLowerCase().includes(term) ||
-      (t.country || '').toLowerCase().includes(term)
+    return teams.filter(t =>
+      (t.team_name  || '').toLowerCase().includes(term) ||
+      (t.team_code  || '').toLowerCase().includes(term) ||
+      (t.country    || '').toLowerCase().includes(term)
     );
   }, [teams, teamsSearch]);
 
-  // 3. Filter Players
   const filteredPlayers = useMemo(() => {
     const term = playersSearch.toLowerCase().trim();
     if (!term) return players;
-    return players.filter(p => 
-      (p.current_player || p.player || '').toLowerCase().includes(term) ||
-      (p.latest_team || p.latest_team_code || '').toLowerCase().includes(term) ||
-      (p.country || '').toLowerCase().includes(term)
+    return players.filter(p =>
+      (p.current_player || p.player        || '').toLowerCase().includes(term) ||
+      (p.latest_team    || p.latest_team_code|| '').toLowerCase().includes(term) ||
+      (p.country        || '').toLowerCase().includes(term)
     );
   }, [players, playersSearch]);
 
-  // Helper to parse tournament season into scope/season parameters for URL mapping
-  const getEditionUrl = (seasonLabel) => {
+  // ── Helpers ───────────────────────────────────────────────────────────────
+  const getEditionUrl = (e) => {
+    const scope  = e.tournament_code;
+    const season = e.season;
+    return `/history/dashboard?scope=${encodeURIComponent(scope)}&season=${encodeURIComponent(season)}`;
+  };
+
+  const getCleanSeasonLabel = (seasonLabel) =>
+    String(seasonLabel)
+      .replace('World Championship', 'WC')
+      .replace(/MLBB (Mid Season Cup|Southeast Asia Cup)/, 'MSC');
+
+  const getEditionUrlFromLabel = (seasonLabel) => {
     const matched = editions.find(e => String(e.season) === String(seasonLabel));
-    const scope = matched ? matched.tournament_code : (String(seasonLabel).startsWith('MSC') ? 'MSC' : 'MWC');
+    const scope   = matched ? matched.tournament_code : (String(seasonLabel).startsWith('MSC') ? 'MSC' : 'MWC');
     return `/history/dashboard?scope=${encodeURIComponent(scope)}&season=${encodeURIComponent(seasonLabel)}`;
   };
 
-  const getCleanSeasonLabel = (seasonLabel) => {
-    return String(seasonLabel).replace('World Championship', 'WC').replace('Southeast Asia Cup', 'MSC');
-  };
-
+  // ── Render ────────────────────────────────────────────────────────────────
   return (
     <div>
+      {/* ── Tabs ── */}
       <div className="db-tabs-container" style={{ marginTop: '24px' }}>
         <div className="db-tabs-header">
-          <button
-            type="button"
-            className={`db-tab-btn ${activeTab === 'tournaments' ? 'active' : ''}`}
-            onClick={() => setActiveTab('tournaments')}
-          >
-            Tournaments
-          </button>
-          <button
-            type="button"
-            className={`db-tab-btn ${activeTab === 'teams' ? 'active' : ''}`}
-            onClick={() => setActiveTab('teams')}
-          >
-            Teams
-          </button>
-          <button
-            type="button"
-            className={`db-tab-btn ${activeTab === 'players' ? 'active' : ''}`}
-            onClick={() => setActiveTab('players')}
-          >
-            Players
-          </button>
+          {['tournaments', 'teams', 'players'].map(tab => (
+            <button
+              key={tab}
+              type="button"
+              className={`db-tab-btn ${activeTab === tab ? 'active' : ''}`}
+              onClick={() => setActiveTab(tab)}
+              style={{ textTransform: 'capitalize' }}
+            >
+              {tab}
+            </button>
+          ))}
         </div>
 
-        <div className="db-tabs-content" style={{ marginTop: '20px' }}>
-          
-          {/* TAB 1: TOURNAMENTS */}
+        <div style={{ marginTop: '20px' }}>
+
+          {/* ══ TAB 1: TOURNAMENTS ══════════════════════════════════════════ */}
           {activeTab === 'tournaments' && (
             <div className="table-wrap">
-              <table>
+              <table style={{ tableLayout: 'fixed', width: '100%' }}>
+                <colgroup>
+                  {/* Tournament  Date  Location  Champion  Runner-up  Finals MVP */}
+                  <col style={{ width: '22%' }} />
+                  <col style={{ width: '14%' }} />
+                  <col style={{ width: '14%' }} />
+                  <col style={{ width: '17%' }} />
+                  <col style={{ width: '17%' }} />
+                  <col style={{ width: '16%' }} />
+                </colgroup>
                 <thead>
                   <tr>
                     <th className="l">Tournament</th>
                     <th className="l">Date</th>
+                    <th className="l">Location</th>
                     <th className="l">Champion</th>
                     <th className="l">Runner-up</th>
+                    <th className="l">Finals MVP</th>
                   </tr>
                 </thead>
                 <tbody>
                   {resolvedTournaments.map(e => {
                     const logoUrl = getTournamentLogo(e.season);
+                    const displayName = e.official_name || e.season;
                     return (
-                      <tr key={`${e.tournament_code}-${e.season}`} style={{ borderBottom: '1px solid var(--border)' }}>
-                        {/* Tournament Column */}
+                      <tr key={`${e.tournament_code}-${e.season}`}>
+                        {/* Tournament */}
                         <td className="l">
-                          <Link href={getEditionUrl(e.season)} style={{ display: 'inline-flex', alignItems: 'center', gap: '10px' }} className="clickable-link">
-                            {logoUrl ? (
-                              <img src={logoUrl} alt="" style={{ width: '24px', height: '24px', objectFit: 'contain' }} />
-                            ) : (
-                              <div style={{ width: '24px', height: '24px', borderRadius: '4px', background: 'var(--surface2)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '9px', fontWeight: 'bold' }}>
-                                {e.tournament_code}
-                              </div>
-                            )}
-                            <span style={{ fontWeight: 600, color: 'var(--accent)' }}>{editionTitle(e)}</span>
+                          <Link href={getEditionUrl(e)} className="clickable-link"
+                            style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            {logoUrl
+                              ? <img src={logoUrl} alt="" style={{ width: '22px', height: '22px', objectFit: 'contain', flexShrink: 0 }} />
+                              : <span style={{
+                                  width: '22px', height: '22px', borderRadius: '4px',
+                                  background: 'var(--surface2)', display: 'inline-flex',
+                                  alignItems: 'center', justifyContent: 'center',
+                                  fontSize: '8px', fontWeight: 'bold', flexShrink: 0,
+                                }}>{e.tournament_code}</span>
+                            }
+                            <span style={{ fontWeight: 600, color: 'var(--accent)', fontSize: '13px',
+                              overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                              {displayName}
+                            </span>
                           </Link>
                         </td>
-                        
-                        {/* Date Column */}
-                        <td className="l" style={{ fontFamily: 'var(--font-mono)', fontSize: '12px', color: 'var(--muted2)' }}>
+
+                        {/* Date */}
+                        <td className="l" style={{ fontSize: '12px', color: 'var(--muted2)', whiteSpace: 'nowrap' }}>
                           {formatDateRange(e.start_date, e.end_date)}
                         </td>
 
-                        {/* Champion Column */}
-                        <td className="l">
-                          {e.champion ? (
-                            <Link href={`/teams/${e.champion.team_key}?context=history`} style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }} className="clickable-link">
-                              <TeamLogo 
-                                src={e.champion.logo_dark} 
-                                fallbackSrc={img.team(e.champion.team_code || e.champion.recipient)} 
-                                alt="" 
-                                style={{ width: '20px', height: '20px', objectFit: 'contain' }} 
-                              />
-                              {e.champion.flag_emoji && <span style={{ fontSize: '13px' }}>{e.champion.flag_emoji}</span>}
-                              <span style={{ fontWeight: 600 }}>{e.champion.recipient}</span>
-                            </Link>
-                          ) : (
-                            <span style={{ color: 'var(--muted2)' }}>—</span>
-                          )}
+                        {/* Location */}
+                        <td className="l" style={{ fontSize: '12px', color: 'var(--muted2)',
+                          overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                          {e.location || '—'}
                         </td>
 
-                        {/* Runner-up Column */}
+                        {/* Champion */}
                         <td className="l">
-                          {e.runnerUp ? (
-                            <Link href={`/teams/${e.runnerUp.team_key}?context=history`} style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }} className="clickable-link">
-                              <TeamLogo 
-                                src={e.runnerUp.logo_dark} 
-                                fallbackSrc={img.team(e.runnerUp.team_code)} 
-                                alt="" 
-                                style={{ width: '20px', height: '20px', objectFit: 'contain' }} 
+                          {e.champion
+                            ? <TeamEntity
+                                team_key={e.champion.team_key}
+                                team_code={e.champion.team_code || e.champion.recipient}
+                                name={e.champion.recipient}
+                                logo_dark={e.champion.logo_dark}
+                                flag={e.champion.flag_emoji}
                               />
-                              {e.runnerUp.country_flag && <span style={{ fontSize: '13px' }}>{e.runnerUp.country_flag}</span>}
-                              <span style={{ fontWeight: 600 }}>{e.runnerUp.team_name}</span>
-                            </Link>
+                            : <span style={{ color: 'var(--muted2)' }}>—</span>
+                          }
+                        </td>
+
+                        {/* Runner-up */}
+                        <td className="l">
+                          {e.runnerUp
+                            ? <TeamEntity
+                                team_key={e.runnerUp.team_key}
+                                team_code={e.runnerUp.team_code}
+                                name={e.runnerUp.team_name}
+                                logo_dark={e.runnerUp.logo_dark}
+                                flag={e.runnerUp.country_flag}
+                              />
+                            : <span style={{ color: 'var(--muted2)' }}>—</span>
+                          }
+                        </td>
+
+                        {/* Finals MVP */}
+                        <td className="l">
+                          {e.finalsMvp ? (
+                            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                              {(e.finalsMvp.logo_dark || e.finalsMvp.logo_light) && (
+                                <TeamLogo
+                                  src={e.finalsMvp.logo_dark || e.finalsMvp.logo_light}
+                                  fallbackSrc={img.team(e.finalsMvp.team_code || e.finalsMvp.recipient_team)}
+                                  alt=""
+                                  style={{ width: '16px', height: '16px', objectFit: 'contain', flexShrink: 0 }}
+                                />
+                              )}
+                              {e.finalsMvp.flag_emoji && <span style={{ fontSize: '12px' }}>{e.finalsMvp.flag_emoji}</span>}
+                              <span style={{ fontSize: '13px', fontWeight: 600,
+                                overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                {e.finalsMvp.recipient}
+                              </span>
+                            </span>
                           ) : (
                             <span style={{ color: 'var(--muted2)' }}>—</span>
                           )}
@@ -261,7 +305,7 @@ export default function HistoryDashboardClient({
             </div>
           )}
 
-          {/* TAB 2: TEAMS */}
+          {/* ══ TAB 2: TEAMS ════════════════════════════════════════════════ */}
           {activeTab === 'teams' && (
             <div>
               <div style={{ marginBottom: '16px' }}>
@@ -269,19 +313,11 @@ export default function HistoryDashboardClient({
                   type="text"
                   placeholder="Search teams by name or country..."
                   value={teamsSearch}
-                  onChange={(e) => {
-                    setTeamsSearch(e.target.value);
-                    setVisibleTeamsCount(25); // Reset pagination on search
-                  }}
+                  onChange={ev => { setTeamsSearch(ev.target.value); setVisibleTeamsCount(25); }}
                   style={{
-                    width: '100%',
-                    maxWidth: '400px',
-                    padding: '10px 14px',
-                    borderRadius: 'var(--radius-sm)',
-                    background: 'var(--surface)',
-                    border: '1px solid var(--border)',
-                    color: 'var(--text)',
-                    fontSize: '14px',
+                    width: '100%', maxWidth: '400px', padding: '10px 14px',
+                    borderRadius: 'var(--radius-sm)', background: 'var(--surface)',
+                    border: '1px solid var(--border)', color: 'var(--text)', fontSize: '14px',
                   }}
                 />
               </div>
@@ -297,39 +333,32 @@ export default function HistoryDashboardClient({
                   </thead>
                   <tbody>
                     {filteredTeams.slice(0, visibleTeamsCount).map(t => (
-                      <tr key={t.team_key} style={{ borderBottom: '1px solid var(--border)' }}>
+                      <tr key={t.team_key}>
                         <td className="l">
-                          <Link href={`/teams/${t.team_key}?context=history`} style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }} className="clickable-link">
-                            <TeamLogo 
-                              src={t.team_logo_dark} 
-                              fallbackSrc={img.team(t.team_code)} 
-                              alt="" 
-                              style={{ width: '24px', height: '24px', objectFit: 'contain' }} 
-                            />
+                          <Link href={`/teams/${t.team_key}?context=history`}
+                            style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}
+                            className="clickable-link">
+                            <TeamLogo src={t.team_logo_dark} fallbackSrc={img.team(t.team_code)} alt=""
+                              style={{ width: '22px', height: '22px', objectFit: 'contain' }} />
                             <span style={{ fontWeight: 600 }}>{t.team_name || t.team_code}</span>
                           </Link>
                         </td>
                         <td className="l">
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                          <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                             {t.country_flag && <span style={{ fontSize: '14px' }}>{t.country_flag}</span>}
                             <span>{t.country || '—'}</span>
-                          </div>
+                          </span>
                         </td>
                         <td className="l">
                           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
-                            {Array.isArray(t.seasons) ? (
-                              t.seasons.map(s => (
-                                <Link 
-                                  key={s} 
-                                  href={getEditionUrl(s)}
-                                  className="mini-badge"
-                                >
-                                  {getCleanSeasonLabel(s)}
-                                </Link>
-                              ))
-                            ) : (
-                              <span style={{ color: 'var(--muted2)' }}>—</span>
-                            )}
+                            {Array.isArray(t.seasons)
+                              ? t.seasons.map(s => (
+                                  <Link key={s} href={getEditionUrlFromLabel(s)} className="mini-badge">
+                                    {getCleanSeasonLabel(s)}
+                                  </Link>
+                                ))
+                              : <span style={{ color: 'var(--muted2)' }}>—</span>
+                            }
                           </div>
                         </td>
                       </tr>
@@ -347,21 +376,8 @@ export default function HistoryDashboardClient({
 
               {filteredTeams.length > visibleTeamsCount && (
                 <div style={{ textAlign: 'center', marginTop: '16px' }}>
-                  <button
-                    type="button"
-                    onClick={() => setVisibleTeamsCount(prev => prev + 25)}
-                    style={{
-                      padding: '8px 16px',
-                      borderRadius: 'var(--radius-sm)',
-                      background: 'var(--surface)',
-                      border: '1px solid var(--border)',
-                      color: 'var(--text)',
-                      fontWeight: 600,
-                      cursor: 'pointer',
-                      transition: 'border-color var(--dur-fast)'
-                    }}
-                    className="show-more-btn"
-                  >
+                  <button type="button" className="show-more-btn"
+                    onClick={() => setVisibleTeamsCount(c => c + 25)}>
                     Show More
                   </button>
                 </div>
@@ -369,7 +385,7 @@ export default function HistoryDashboardClient({
             </div>
           )}
 
-          {/* TAB 3: PLAYERS */}
+          {/* ══ TAB 3: PLAYERS ══════════════════════════════════════════════ */}
           {activeTab === 'players' && (
             <div>
               <div style={{ marginBottom: '16px' }}>
@@ -377,19 +393,11 @@ export default function HistoryDashboardClient({
                   type="text"
                   placeholder="Search players by name, team, or country..."
                   value={playersSearch}
-                  onChange={(e) => {
-                    setPlayersSearch(e.target.value);
-                    setVisiblePlayersCount(25); // Reset pagination on search
-                  }}
+                  onChange={ev => { setPlayersSearch(ev.target.value); setVisiblePlayersCount(25); }}
                   style={{
-                    width: '100%',
-                    maxWidth: '400px',
-                    padding: '10px 14px',
-                    borderRadius: 'var(--radius-sm)',
-                    background: 'var(--surface)',
-                    border: '1px solid var(--border)',
-                    color: 'var(--text)',
-                    fontSize: '14px',
+                    width: '100%', maxWidth: '400px', padding: '10px 14px',
+                    borderRadius: 'var(--radius-sm)', background: 'var(--surface)',
+                    border: '1px solid var(--border)', color: 'var(--text)', fontSize: '14px',
                   }}
                 />
               </div>
@@ -405,38 +413,31 @@ export default function HistoryDashboardClient({
                   </thead>
                   <tbody>
                     {filteredPlayers.slice(0, visiblePlayersCount).map(p => (
-                      <tr key={p.player_key} style={{ borderBottom: '1px solid var(--border)' }}>
+                      <tr key={p.player_key}>
                         <td className="l">
-                          <Link href={`/history/players/${p.player_key}`} style={{ display: 'inline-flex', alignItems: 'center', gap: '10px' }} className="clickable-link">
-                            <PlayerPhoto 
-                              photoUrl={p.photo_url} 
-                              name={p.current_player || p.player} 
-                              size={36} 
-                            />
+                          <Link href={`/history/players/${p.player_key}`}
+                            style={{ display: 'inline-flex', alignItems: 'center', gap: '10px' }}
+                            className="clickable-link">
+                            <PlayerPhoto photoUrl={p.photo_url} name={p.current_player || p.player} size={36} />
                             <span style={{ fontWeight: 600 }}>{p.current_player || p.player}</span>
                           </Link>
                         </td>
                         <td className="l">
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                          <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                             {p.country_flag && <span style={{ fontSize: '14px' }}>{p.country_flag}</span>}
                             <span>{p.country || '—'}</span>
-                          </div>
+                          </span>
                         </td>
                         <td className="l">
                           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
-                            {Array.isArray(p.seasons) ? (
-                              p.seasons.map(s => (
-                                <Link 
-                                  key={s} 
-                                  href={getEditionUrl(s)}
-                                  className="mini-badge"
-                                >
-                                  {getCleanSeasonLabel(s)}
-                                </Link>
-                              ))
-                            ) : (
-                              <span style={{ color: 'var(--muted2)' }}>—</span>
-                            )}
+                            {Array.isArray(p.seasons)
+                              ? p.seasons.map(s => (
+                                  <Link key={s} href={getEditionUrlFromLabel(s)} className="mini-badge">
+                                    {getCleanSeasonLabel(s)}
+                                  </Link>
+                                ))
+                              : <span style={{ color: 'var(--muted2)' }}>—</span>
+                            }
                           </div>
                         </td>
                       </tr>
@@ -454,21 +455,8 @@ export default function HistoryDashboardClient({
 
               {filteredPlayers.length > visiblePlayersCount && (
                 <div style={{ textAlign: 'center', marginTop: '16px' }}>
-                  <button
-                    type="button"
-                    onClick={() => setVisiblePlayersCount(prev => prev + 25)}
-                    style={{
-                      padding: '8px 16px',
-                      borderRadius: 'var(--radius-sm)',
-                      background: 'var(--surface)',
-                      border: '1px solid var(--border)',
-                      color: 'var(--text)',
-                      fontWeight: 600,
-                      cursor: 'pointer',
-                      transition: 'border-color var(--dur-fast)'
-                    }}
-                    className="show-more-btn"
-                  >
+                  <button type="button" className="show-more-btn"
+                    onClick={() => setVisiblePlayersCount(c => c + 25)}>
                     Show More
                   </button>
                 </div>
@@ -478,8 +466,7 @@ export default function HistoryDashboardClient({
 
         </div>
       </div>
-      
-      {/* Visual support for CSS classes that match "The Arena Archive" design style */}
+
       <style jsx global>{`
         .mini-badge {
           display: inline-block;
@@ -492,19 +479,20 @@ export default function HistoryDashboardClient({
           color: var(--muted);
           transition: border-color var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease);
         }
-        .mini-badge:hover {
-          border-color: var(--accent);
-          color: var(--accent);
+        .mini-badge:hover { border-color: var(--accent); color: var(--accent); }
+        .clickable-link { transition: opacity var(--dur-fast) var(--ease); }
+        .clickable-link:hover { opacity: 0.8; }
+        .show-more-btn {
+          padding: 8px 20px;
+          border-radius: var(--radius-sm);
+          background: var(--surface);
+          border: 1px solid var(--border);
+          color: var(--text);
+          font-weight: 600;
+          cursor: pointer;
+          transition: border-color var(--dur-fast);
         }
-        .clickable-link {
-          transition: color var(--dur-fast) var(--ease);
-        }
-        .clickable-link:hover span {
-          color: var(--accent) !important;
-        }
-        .show-more-btn:hover {
-          border-color: var(--border-strong) !important;
-        }
+        .show-more-btn:hover { border-color: var(--border-strong); }
       `}</style>
     </div>
   );
