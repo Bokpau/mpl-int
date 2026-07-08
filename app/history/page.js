@@ -6,6 +6,7 @@ import { int, dec } from '../../lib/format';
 import ErrorBox from '../../components/ErrorBox';
 import { img } from '../../lib/images';
 import TeamLogo from '../../components/TeamLogo';
+import HistoryDashboardClient from './dashboard/HistoryDashboardClient';
 
 export const metadata = { title: 'Overview' };
 
@@ -61,12 +62,18 @@ export default async function HistoryOverview() {
   let editions = [];
   let accolades = [];
   let overview = null;
+  let standings = [];
+  let teams = [];
+  let players = [];
   let error = null;
   try {
-    [editions, accolades, overview] = await Promise.all([
+    [editions, accolades, overview, standings, teams, players] = await Promise.all([
       api.editions(),
       api.accolades(),
-      api.overview()
+      api.overview(),
+      api.standings(),
+      api.teams(),
+      api.leaderboard()
     ]);
   } catch (e) {
     error = e.message;
@@ -212,77 +219,14 @@ export default async function HistoryOverview() {
         </div>
       )}
 
-      {/* ── Champions & MVPs Table ── */}
-      <div className="section-title" style={{ fontSize: '18px', marginBottom: '16px' }}>Champions & MVPs</div>
-      {seasonsDesc.length > 0 && (
-        <div style={{ overflowX: 'auto', marginBottom: '40px', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)' }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px' }}>
-            <thead>
-              <tr style={{ background: 'var(--surface)', color: 'var(--muted2)' }}>
-                <th className="l" style={th}>Tournament</th>
-                <th className="l" style={th}>Champion</th>
-                <th className="l" style={th}>Finals MVP</th>
-              </tr>
-            </thead>
-            <tbody>
-              {seasonsDesc.map(e => {
-                const live = String(e.status).toLowerCase() === 'live';
-                const href = `/?scope=${encodeURIComponent(e.tournament_code)}&season=${encodeURIComponent(e.season)}`;
-                const acc = accoladesBySeason[e.season] || {};
-                const ch = acc.champion;
-                const mvp = acc.finals_mvp;
-                const champLogo = ch?.logo_dark || ch?.logo_light;
-                const mvpLogo = mvp?.logo_dark || mvp?.logo_light;
-
-                return (
-                  <tr key={`${e.tournament_code}-${e.season}`}
-                    style={{ borderBottom: '1px solid var(--border)', transition: 'background-color 0.15s' }}
-                    className="clickable">
-                    <td className="l" style={tdWithLink}>
-                      <Link href={href} style={{ display: 'block', padding: '12px 14px', width: '100%', height: '100%', fontWeight: 700, color: 'var(--accent)' }}>
-                        {editionTitle(e)}
-                      </Link>
-                    </td>
-                    <td className="l" style={tdWithLink}>
-                      <Link href={href} style={{ display: 'block', padding: '12px 14px', width: '100%', height: '100%' }}>
-                        {live ? (
-                          <span className="badge badge-live">Live Now</span>
-                        ) : ch ? (
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                            {(champLogo || img.team(ch.team_code || ch.recipient)) && (
-                              <TeamLogo src={champLogo} fallbackSrc={img.team(ch.team_code || ch.recipient)} alt="" style={{ width: '22px', height: '22px', objectFit: 'contain' }} />
-                            )}
-                            {ch.flag_emoji && <span className="flag-sm">{ch.flag_emoji}</span>}
-                            <span style={{ fontWeight: 700, color: 'var(--text)' }}>{ch.recipient}</span>
-                          </div>
-                        ) : <span style={{ color: 'var(--muted2)' }}>—</span>}
-                      </Link>
-                    </td>
-                    <td className="l" style={tdWithLink}>
-                      <Link href={href} style={{ display: 'block', padding: '12px 14px', width: '100%', height: '100%' }}>
-                        {live ? (
-                          <span style={{ color: 'var(--muted2)' }}>—</span>
-                        ) : mvp ? (
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                            {(mvpLogo || img.team(mvp.team_code || mvp.recipient)) && (
-                              <TeamLogo src={mvpLogo} fallbackSrc={img.team(mvp.team_code || mvp.recipient)} alt="" style={{ width: '22px', height: '22px', objectFit: 'contain' }} />
-                            )}
-                            {mvp.flag_emoji && <span className="flag-sm">{mvp.flag_emoji}</span>}
-                            <span style={{ color: 'var(--text)', fontWeight: 600 }}>{mvp.recipient}</span>
-                            <span className="sub" style={{ fontSize: '11px', color: 'var(--muted2)', fontFamily: 'var(--font-mono)' }}>
-                              ({mvp.team_code})
-                            </span>
-                          </div>
-                        ) : <span style={{ color: 'var(--muted2)' }}>—</span>}
-                      </Link>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
-      )}
+      {/* ── Redesigned History Dashboard client tabs (Tournaments, Teams, Players) ── */}
+      <HistoryDashboardClient
+        editions={editions}
+        accolades={accolades}
+        standings={standings}
+        teams={teams}
+        players={players}
+      />
 
       {/* ── International Overview ── */}
       <div className="section-title" style={{ fontSize: '18px', marginBottom: '16px' }}>International Overview</div>

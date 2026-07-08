@@ -25,7 +25,7 @@ const NAV = [
     label: 'History',
     children: [
       { label: 'History Home', href: '/history' },
-      { label: 'Dashboard', href: '/history/dashboard' },
+      { label: 'Tournament', href: '/history/dashboard' },
       { label: 'Matches', href: '/history/matches' },
       { label: 'Players', href: '/history/players' },
       { label: 'Teams', href: '/history/teams' },
