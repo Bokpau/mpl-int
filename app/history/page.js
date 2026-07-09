@@ -68,13 +68,15 @@ export default async function HistoryOverview() {
   let players = [];
   let error = null;
   try {
-    [editions, accolades, overview, standings, teams, eraTeams, players] = await Promise.all([
-      api.editions(),
+    editions = await api.editions();
+    const liveEd = editions.find(e => String(e.status).toLowerCase() === 'live');
+    const eraQ = liveEd ? `?season=${encodeURIComponent(liveEd.season)}` : '';
+    [accolades, overview, standings, teams, eraTeams, players] = await Promise.all([
       api.accolades(),
       api.overview(),
       api.standings(),
       api.teams(),
-      api.eraTeams(),
+      api.eraTeams(eraQ),
       api.leaderboard()
     ]);
   } catch (e) {

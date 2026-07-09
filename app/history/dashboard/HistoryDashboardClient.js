@@ -422,7 +422,7 @@ export default function HistoryDashboardClient({
                 <div style={{ textAlign: 'center', marginTop: '16px' }}>
                   <button type="button" className="show-more-btn"
                     onClick={() => setVisibleTeamsCount(c => c + 25)}>
-                    Show More
+                    See All
                   </button>
                 </div>
               )}
@@ -501,7 +501,7 @@ export default function HistoryDashboardClient({
                 <div style={{ textAlign: 'center', marginTop: '16px' }}>
                   <button type="button" className="show-more-btn"
                     onClick={() => setVisiblePlayersCount(c => c + 25)}>
-                    Show More
+                    See All
                   </button>
                 </div>
               )}
