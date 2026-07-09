@@ -156,26 +156,13 @@ export default function HistoryDashboardClient({
     // Stats teams first (have full stats + seasons array)
     teams.forEach(t => { if (t.team_key) byKey.set(t.team_key, t); });
 
-    // Merge era teams: add new teams, and ensure the current live season is on
-    // teams already present in the stats map (they'd otherwise miss it because
-    // the stats endpoint only reflects completed-game data).
+    // Add era teams not already in the map (teams registered for the live
+    // edition that haven't played yet, so the stats endpoint won't have them).
     const liveEdition = editions.find(e => String(e.status).toLowerCase() === 'live');
     const liveSeasonLabel = liveEdition ? liveEdition.season : null;
 
     eraTeams.forEach(et => {
-      if (!et.team_key) return;
-
-      if (byKey.has(et.team_key)) {
-        // Already in stats map — add live season if not yet present
-        if (liveSeasonLabel) {
-          const existing = byKey.get(et.team_key);
-          if (Array.isArray(existing.seasons) && !existing.seasons.includes(liveSeasonLabel)) {
-            existing.seasons = [...existing.seasons, liveSeasonLabel];
-          }
-        }
-        return;
-      }
-
+      if (!et.team_key || byKey.has(et.team_key)) return;
       byKey.set(et.team_key, {
         team_key:       et.team_key,
         team_code:      et.era_code,
