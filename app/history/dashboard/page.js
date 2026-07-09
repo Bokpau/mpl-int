@@ -13,8 +13,12 @@ export default async function HistoryDashboardPage({ searchParams }) {
     return <DashboardView {...sel} context="history" />;
   }
 
-  // Otherwise, redirect to the History Home page (which now has the aggregate tables)
-  redirect('/history');
+  // No edition selected — show a prompt to pick one via the filter bar above
+  return (
+    <div style={{ marginTop: '32px', color: 'var(--muted2)', fontFamily: 'var(--font-mono)', fontSize: '13px' }}>
+      Select an edition using the filter above to view its tournament dashboard.
+    </div>
+  );
 }
 
 
