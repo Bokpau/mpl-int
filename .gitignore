@@ -34,3 +34,6 @@ npm-debug.log*
 aerena_mlbb.leagues.csv
 international_standings.json
 lib/data/
+
+# One-time planning docs (completed, not app code)
+INTERNATIONAL-LOGOS-PLAN.md

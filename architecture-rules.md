@@ -107,3 +107,37 @@ Reviewed by eye at PR time against Rule 3. An automated grep (e.g. `.reduce(` in
 `'use client'` files) was considered and **not** added — it false-positives on the allowed
 filtering/counting above. If a mechanical check is ever added, it must target *raw-data
 aggregation* specifically, not any array method.
+
+---
+
+## Reference: key `lib/` files
+
+| File | Role |
+|---|---|
+| `lib/api.js` | All server-side API calls. Add new endpoints here. |
+| `lib/images.js` | `img.*` helpers (jsDelivr CDN). `cdnify()` rewrites DB-stored raw GitHub URLs. `CDN_BASE` for manual paths. |
+| `lib/identity.js` | `resolveTeam()` — era vs franchise field selection. Never read `team_code` directly in a component. |
+| `lib/filters.js` | `effectiveFilters()`, `intlQuery()`, `selectionLabel()` — URL param → API query string. |
+| `lib/featured.js` | `pickFeatured()`, `resolveSelection()`, `resolveCurrent()` — featured edition logic. |
+| `lib/columns.js` | `StatTable` column definitions shared across all pages. Keys must match backend aliases. |
+| `lib/format.js` | `int()`, `dec()`, `pct()`, `wrClass()` — numeric formatting (API returns pg numerics as strings). |
+| `lib/msc2026Bracket.js` | Wild Card group data + `buildSeries()` (accepted client-side exception). |
+| `lib/msc2026MainBracket.js` | Main Stage double-elimination bracket data. |
+
+## Reference: two data tiers
+
+- **Box-score editions** (MSC 2017–2025, M1–M4): aggregate stats only; no per-frame, no draft, no hero bans. CSV import.
+- **Rich-data editions** (MSC 2026 onward): full snapshots, draft, bans, map viewer, role-diff. Rich-only endpoints return empty arrays / zero counts for box-score editions — no frontend special-casing needed.
+
+## Reference: featured edition & filter resolution
+
+Every list page defaults to the "featured" edition (live → most recently added → `FEATURED_EDITION` env var). `lib/featured.js` resolves it from `/api/intl/editions`. `lib/filters.js` maps `searchParams` (`scope`, `season`, `stage`, `min_games`) to the API query string. `season=all` = cross-edition aggregate; no `season` = featured edition default.
+
+## Reference: `eraTeams` vs `teams`
+
+- `/api/intl/era-teams` — from `team_era_name`; includes pre-tournament teams (no games yet). **Always pass `?season=<live season>`** or it returns all-time PH teams.
+- `/api/intl/teams` — stats-driven; only teams with match data.
+
+## Reference: `tournament_stage`
+
+`team_era_name.tournament_stage`: `'wildcard'` / `'main'` / `'both'` / `NULL`. Splits teams into Wild Card vs Main Stage columns. MSC 2026 seeded in `database/seed_msc2026_tournament_stage.sql`; historical editions derived from `intl_match_stats.stage_type` via `database/seed_tournament_stage_historical.sql`.

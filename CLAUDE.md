@@ -1,21 +1,26 @@
-# mpl-intl — Project Instructions
+# CLAUDE.md
 
-International (MSC / M-Series) stats site. Frontend-only Next.js app that proxies
-to the shared `mpl-ph-s17-backend`.
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-## Rules
-- Write in plain, clear language.
-- Ask clarifying questions before making assumptions. When unsure, say so.
-- **Read `security-rules.md`. Always follow it when touching the API proxy
-  (`app/api/[...slug]/route.js`), `lib/api.js`, environment variables, or response
-  headers (`next.config.js`).** This is mandatory, not optional.
-- **Read `architecture-rules.md`. Always follow it when adding a component, page, or
-  data fetch — especially anything that derives a stat, series, or chart from raw
-  data, or renders an image (Rule 4: images go through jsDelivr via `cdnify()`, never
-  `raw.githubusercontent.com`).** This site is a render layer; computation and raw data
-  belong on the shared backend, not the browser. This is mandatory, not optional.
-- Database, auth, RLS, and SQL security live in the **shared backend** and are
-  governed by `mpl-ph-s17/security-rules.md` — treat that as the authority for
-  anything below the proxy.
-- Identity, franchise grouping, and era rules: follow `mpl-ph-s17/identity-rules.md`
-  (this repo mirrors it via `lib/identity.js`).
+# mpl-intl
+
+Frontend-only Next.js app (MSC / M-Series stats). Proxies to `mpl-ph-s17-backend`. No DB, no auth, no write operations — render layer only.
+
+## Commands
+
+```bash
+cp .env.local.example .env.local   # fill in BACKEND_URL + INTERNAL_API_KEY
+npm install
+npm run dev     # http://localhost:3100
+npm run build
+npm run lint
+```
+
+Local backend: set `BACKEND_URL=http://localhost:3001`. Season param is always the full string (`"MSC 2026"`, not `"2026"`). No test suite — verify by running the page in the browser.
+
+## Mandatory rules
+
+- **Proxy / API / env vars / headers** → read `security-rules.md` first. The `INTERNAL_API_KEY` is server-only; client components fetch `/api/intl/*` (proxy), never the backend directly.
+- **Components, pages, data fetches, images** → read `architecture-rules.md` first. Stats are computed on the backend; the frontend only renders. Images go through jsDelivr via `cdnify()` / `img.*` — never `raw.githubusercontent.com`.
+- **Team identity** → always use `lib/identity.js` `resolveTeam()`. Era fields for season/current pages; franchise fields for all-time aggregates.
+- **Identity, franchise grouping, era rules** → `lib/identity.js` mirrors `mpl-ph-s17/identity-rules.md`.
