@@ -503,43 +503,78 @@ export default function HistoryDashboardClient({
                     <tr>
                       <th className="l">Player</th>
                       <th className="l">Nationality</th>
-                      <th className="l">Tournaments Played</th>
+                      <th className="l" style={{ minWidth: '160px' }}>Wild Card</th>
+                      <th className="l" style={{ minWidth: '160px' }}>Main</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {filteredPlayers.slice(0, visiblePlayersCount).map(p => (
-                      <tr key={p.player_key}>
-                        <td className="l">
-                          <Link href={`/history/players/${p.player_key}`}
-                            style={{ display: 'inline-flex', alignItems: 'center', gap: '10px' }}
-                            className="clickable-link">
-                            <PlayerPhoto photoUrl={p.photo_url} name={p.current_player || p.player} size={36} />
-                            <span style={{ fontWeight: 600 }}>{p.current_player || p.player}</span>
-                          </Link>
-                        </td>
-                        <td className="l">
-                          <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                            {p.country_flag && <span style={{ fontSize: '14px' }}>{p.country_flag}</span>}
-                            <span>{p.country || '—'}</span>
-                          </span>
-                        </td>
-                        <td className="l">
-                          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
-                            {Array.isArray(p.seasons)
-                              ? p.seasons.map(s => (
-                                  <Link key={s} href={getEditionUrlFromLabel(s)} className="mini-badge">
-                                    {getCleanSeasonLabel(s)}
-                                  </Link>
-                                ))
-                              : <span style={{ color: 'var(--muted2)' }}>—</span>
-                            }
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
+                    {filteredPlayers.slice(0, visiblePlayersCount).map(p => {
+                      // p.seasons is an array of { season, stage, team_code_era, team_logo_dark, country_flag }
+                      // stage: 'wildcard' | 'main' | 'both' (populated once backend lands)
+                      const seasonsArr = Array.isArray(p.seasons) ? p.seasons : [];
+                      const wcSeasons   = seasonsArr.filter(s => s.stage === 'wildcard' || s.stage === 'both');
+                      const mainSeasons = seasonsArr.filter(s => s.stage === 'main'     || s.stage === 'both');
+
+                      return (
+                        <tr key={p.player_key}>
+                          <td className="l">
+                            <Link href={`/history/players/${p.player_key}`}
+                              style={{ display: 'inline-flex', alignItems: 'center', gap: '10px' }}
+                              className="clickable-link">
+                              <PlayerPhoto photoUrl={p.photo_url} name={p.current_player || p.player} size={36} />
+                              <span style={{ fontWeight: 600 }}>{p.current_player || p.player}</span>
+                            </Link>
+                          </td>
+                          <td className="l">
+                            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                              {p.country_flag && <span style={{ fontSize: '14px' }}>{p.country_flag}</span>}
+                              <span>{p.country || '—'}</span>
+                            </span>
+                          </td>
+                          {[
+                            { key: 'wc',   seasons: wcSeasons },
+                            { key: 'main', seasons: mainSeasons },
+                          ].map(({ key, seasons }) => (
+                            <td key={key} className="l">
+                              {seasons.length > 0 ? (
+                                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', alignItems: 'flex-start' }}>
+                                  <span style={{ fontWeight: 700, color: 'var(--accent)', fontFamily: 'var(--font-mono)', fontSize: '12px', minWidth: '16px', paddingTop: '3px' }}>
+                                    {seasons.length}
+                                  </span>
+                                  {seasons.map(s => {
+                                    const isLive = s.season === liveSeason;
+                                    return (
+                                      <div key={s.season} style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: '3px' }}>
+                                        <Link href={getEditionUrlFromLabel(s.season)}
+                                          className={isLive ? 'mini-badge mini-badge--live' : 'mini-badge'}>
+                                          {getCleanSeasonLabel(s.season)}
+                                        </Link>
+                                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: '3px', paddingLeft: '2px' }}>
+                                          {s.team_logo_dark && (
+                                            <TeamLogo
+                                              src={s.team_logo_dark}
+                                              fallbackSrc={img.team(s.team_code_era)}
+                                              alt=""
+                                              style={{ width: '14px', height: '14px', objectFit: 'contain', flexShrink: 0 }}
+                                            />
+                                          )}
+                                          {s.country_flag && <span style={{ fontSize: '11px', lineHeight: 1 }}>{s.country_flag}</span>}
+                                        </span>
+                                      </div>
+                                    );
+                                  })}
+                                </div>
+                              ) : (
+                                <span style={{ color: 'var(--muted2)' }}>—</span>
+                              )}
+                            </td>
+                          ))}
+                        </tr>
+                      );
+                    })}
                     {filteredPlayers.length === 0 && (
                       <tr>
-                        <td colSpan={3} className="l" style={{ padding: '24px', color: 'var(--muted2)', textAlign: 'center' }}>
+                        <td colSpan={4} className="l" style={{ padding: '24px', color: 'var(--muted2)', textAlign: 'center' }}>
                           No players match your search.
                         </td>
                       </tr>
