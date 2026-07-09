@@ -30,14 +30,16 @@ export function SeriesBox({
   const showInfo = matchCode && !scaffold && onToggle;
   // `label` is the display fallback (e.g. a feeder like "W M1") shown when a team
   // slot isn't resolved to a real code yet — keeps the logo/flag off placeholders.
+  const codeFs = (s) => !s || s.length <= 5 ? 13 : s.length <= 7 ? 11 : 9;
   const row = (code, label) => {
     const meta = teamMeta[code] || {};
     const isWin = winner && winner === code;
+    const displayText = code || label || 'TBD';
     return (
       <div style={{ display: 'flex', alignItems: 'center', gap: 7, padding: pad }}>
         {code ? <TeamLogo src={meta.team_logo_dark} fallbackSrc={img.team(code)} alt="" style={{ width: sz, height: sz, objectFit: 'contain' }} /> : <span style={{ width: sz }} />}
         {code ? <Flag emoji={meta.country_flag} /> : null}
-        <span style={{ fontSize: 13, color: code ? (isWin ? 'var(--win)' : 'var(--text)') : 'var(--muted2)', fontWeight: isWin ? 700 : 400 }}>{code || label || 'TBD'}</span>
+        <span style={{ fontSize: codeFs(displayText), color: code ? (isWin ? 'var(--win)' : 'var(--text)') : 'var(--muted2)', fontWeight: isWin ? 700 : 400 }}>{displayText}</span>
         <span style={{ marginLeft: 'auto', fontFamily: 'var(--font-mono)', fontSize: 13, fontWeight: 700, color: isWin ? 'var(--win)' : 'var(--muted2)' }}>
           {scaffold ? '–' : (code === aCode ? aScore : bScore)}
         </span>

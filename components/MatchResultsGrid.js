@@ -93,6 +93,8 @@ export default function MatchResultsGrid({
     );
   })();
 
+  const codeFs = (code) => !code || code.length <= 5 ? 12 : code.length <= 7 ? 10 : 8;
+
   // A compact match row (used by Group Stage + the Main fallback grid). `s` is a
   // buildSeries() series.
   const renderMatchRow = (s) => {
@@ -104,7 +106,7 @@ export default function MatchResultsGrid({
     return (
       <div key={mc} className="match-row">
         <div className="match-row-team team-home">
-          <span className="team-code">{aEra}</span>
+          <span className="team-code" style={{ fontSize: codeFs(aEra) }}>{aEra}</span>
           <TeamMark meta={teamByKey[aKey]} era={aEra} />
         </div>
         <div className="match-row-center" style={{ position: 'relative' }}>
@@ -120,7 +122,7 @@ export default function MatchResultsGrid({
         </div>
         <div className="match-row-team team-away">
           <TeamMark meta={teamByKey[bKey]} era={bEra} />
-          <span className="team-code">{bEra}</span>
+          <span className="team-code" style={{ fontSize: codeFs(bEra) }}>{bEra}</span>
         </div>
       </div>
     );
