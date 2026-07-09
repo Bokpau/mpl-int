@@ -24,3 +24,4 @@ Local backend: set `BACKEND_URL=http://localhost:3001`. Season param is always t
 - **Components, pages, data fetches, images** → read `architecture-rules.md` first. Stats are computed on the backend; the frontend only renders. Images go through jsDelivr via `cdnify()` / `img.*` — never `raw.githubusercontent.com`.
 - **Team identity** → always use `lib/identity.js` `resolveTeam()`. Era fields for season/current pages; franchise fields for all-time aggregates.
 - **Identity, franchise grouping, era rules** → `lib/identity.js` mirrors `mpl-ph-s17/identity-rules.md`.
+- **After finishing a task or plan** → run `graphify update .` to keep the knowledge graph current.
