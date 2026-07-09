@@ -90,11 +90,12 @@ export default function HistoryDashboardClient({
   eraTeams  = [],
   players   = [],
 }) {
-  const [activeTab,          setActiveTab]          = useState('tournaments');
-  const [teamsSearch,        setTeamsSearch]        = useState('');
-  const [playersSearch,      setPlayersSearch]      = useState('');
-  const [visibleTeamsCount,  setVisibleTeamsCount]  = useState(25);
-  const [visiblePlayersCount,setVisiblePlayersCount]= useState(25);
+  const [activeTab,           setActiveTab]           = useState('tournaments');
+  const [teamsSearch,         setTeamsSearch]         = useState('');
+  const [teamsTournament,     setTeamsTournament]     = useState('');
+  const [playersSearch,       setPlayersSearch]       = useState('');
+  const [visibleTeamsCount,   setVisibleTeamsCount]   = useState(25);
+  const [visiblePlayersCount, setVisiblePlayersCount] = useState(25);
 
   // ── 1. Resolve tournaments with champ, runner-up, Finals MVP ─────────────
   const resolvedTournaments = useMemo(() => {
@@ -186,13 +187,16 @@ export default function HistoryDashboardClient({
 
   const filteredTeams = useMemo(() => {
     const term = teamsSearch.toLowerCase().trim();
-    if (!term) return mergedTeams;
-    return mergedTeams.filter(t =>
-      (t.team_name  || '').toLowerCase().includes(term) ||
-      (t.team_code  || '').toLowerCase().includes(term) ||
-      (t.country    || '').toLowerCase().includes(term)
-    );
-  }, [mergedTeams, teamsSearch]);
+    return mergedTeams.filter(t => {
+      if (term && !(
+        (t.team_name || '').toLowerCase().includes(term) ||
+        (t.team_code || '').toLowerCase().includes(term) ||
+        (t.country   || '').toLowerCase().includes(term)
+      )) return false;
+      if (teamsTournament && !(Array.isArray(t.seasons) && t.seasons.includes(teamsTournament))) return false;
+      return true;
+    });
+  }, [mergedTeams, teamsSearch, teamsTournament]);
 
   const filteredPlayers = useMemo(() => {
     const term = playersSearch.toLowerCase().trim();
@@ -344,18 +348,38 @@ export default function HistoryDashboardClient({
           {/* ══ TAB 2: TEAMS ════════════════════════════════════════════════ */}
           {activeTab === 'teams' && (
             <div>
-              <div style={{ marginBottom: '16px' }}>
+              <div style={{ marginBottom: '16px', display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
                 <input
                   type="text"
-                  placeholder="Search teams by name or country..."
+                  placeholder="Search by name or country..."
                   value={teamsSearch}
                   onChange={ev => { setTeamsSearch(ev.target.value); setVisibleTeamsCount(25); }}
                   style={{
-                    width: '100%', maxWidth: '400px', padding: '10px 14px',
+                    flex: '1 1 220px', maxWidth: '320px', padding: '10px 14px',
                     borderRadius: 'var(--radius-sm)', background: 'var(--surface)',
                     border: '1px solid var(--border)', color: 'var(--text)', fontSize: '14px',
                   }}
                 />
+                <select
+                  value={teamsTournament}
+                  onChange={ev => { setTeamsTournament(ev.target.value); setVisibleTeamsCount(25); }}
+                  style={{
+                    flex: '1 1 160px', maxWidth: '240px', padding: '10px 14px',
+                    borderRadius: 'var(--radius-sm)', background: 'var(--surface)',
+                    border: '1px solid var(--border)', color: 'var(--text)', fontSize: '14px',
+                    cursor: 'pointer',
+                  }}
+                >
+                  <option value="">All Tournaments</option>
+                  {[...editions]
+                    .sort((a, b) => (Number(b.season_id) || 0) - (Number(a.season_id) || 0))
+                    .map(e => (
+                      <option key={e.season} value={e.season}>
+                        {getCleanSeasonLabel(e.season)}
+                      </option>
+                    ))
+                  }
+                </select>
               </div>
 
               <div className="table-wrap">
@@ -409,7 +433,7 @@ export default function HistoryDashboardClient({
                     ))}
                     {filteredTeams.length === 0 && (
                       <tr>
-                        <td colSpan={3} className="l" style={{ padding: '24px', color: 'var(--muted2)', textAlign: 'center' }}>
+                        <td colSpan={4} className="l" style={{ padding: '24px', color: 'var(--muted2)', textAlign: 'center' }}>
                           No teams match your search.
                         </td>
                       </tr>
@@ -421,7 +445,7 @@ export default function HistoryDashboardClient({
               {filteredTeams.length > visibleTeamsCount && (
                 <div style={{ textAlign: 'center', marginTop: '16px' }}>
                   <button type="button" className="show-more-btn"
-                    onClick={() => setVisibleTeamsCount(c => c + 25)}>
+                    onClick={() => setVisibleTeamsCount(filteredTeams.length)}>
                     See All
                   </button>
                 </div>
