@@ -167,25 +167,33 @@ export default function HistoryDashboardClient({
     eraTeams.forEach(et => {
       if (!et.team_key) return;
 
+      const isWC   = et.tournament_stage === 'wildcard' || et.tournament_stage === 'both';
+      const isMain = et.tournament_stage === 'main'     || et.tournament_stage === 'both';
+
       if (byKey.has(et.team_key)) {
         if (liveSeasonLabel) {
           const existing = byKey.get(et.team_key);
-          if (Array.isArray(existing.seasons) && !existing.seasons.includes(liveSeasonLabel)) {
-            existing.seasons = [...existing.seasons, liveSeasonLabel];
-          }
+          if (!existing.seasons?.includes(liveSeasonLabel))
+            existing.seasons = [...(existing.seasons || []), liveSeasonLabel];
+          if (isWC && !existing.wildcard_seasons?.includes(liveSeasonLabel))
+            existing.wildcard_seasons = [...(existing.wildcard_seasons || []), liveSeasonLabel];
+          if (isMain && !existing.main_seasons?.includes(liveSeasonLabel))
+            existing.main_seasons = [...(existing.main_seasons || []), liveSeasonLabel];
         }
         return;
       }
 
       byKey.set(et.team_key, {
-        team_key:       et.team_key,
-        team_code:      et.era_code,
-        team_name:      et.era_name,
-        team_logo_dark: et.team_logo_dark,
-        team_logo_light:et.team_logo_light,
-        country:        et.country,
-        country_flag:   et.country_flag,
-        seasons:        liveSeasonLabel ? [liveSeasonLabel] : [],
+        team_key:         et.team_key,
+        team_code:        et.era_code,
+        team_name:        et.era_name,
+        team_logo_dark:   et.team_logo_dark,
+        team_logo_light:  et.team_logo_light,
+        country:          et.country,
+        country_flag:     et.country_flag,
+        seasons:          liveSeasonLabel ? [liveSeasonLabel] : [],
+        wildcard_seasons: liveSeasonLabel && isWC   ? [liveSeasonLabel] : [],
+        main_seasons:     liveSeasonLabel && isMain ? [liveSeasonLabel] : [],
       });
     });
 
@@ -401,8 +409,8 @@ export default function HistoryDashboardClient({
                     <tr>
                       <th className="l">Team</th>
                       <th className="l">Country</th>
-                      <th className="r" style={{ width: '80px' }}>App.</th>
-                      <th className="l">Tournaments Played</th>
+                      <th className="l" style={{ minWidth: '160px' }}>Wild Card</th>
+                      <th className="l" style={{ minWidth: '160px' }}>Main</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -423,13 +431,17 @@ export default function HistoryDashboardClient({
                             <span>{t.country || '—'}</span>
                           </span>
                         </td>
-                        <td className="r" style={{ fontWeight: 700, color: 'var(--accent)', fontFamily: 'var(--font-mono)', fontSize: '13px' }}>
-                          {Array.isArray(t.seasons) ? t.seasons.length : '—'}
-                        </td>
-                        <td className="l">
-                          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
-                            {Array.isArray(t.seasons)
-                              ? t.seasons.map(s => {
+                        {[
+                          { key: 'wc',   seasons: t.wildcard_seasons },
+                          { key: 'main', seasons: t.main_seasons },
+                        ].map(({ key, seasons }) => (
+                          <td key={key} className="l">
+                            {Array.isArray(seasons) && seasons.length > 0 ? (
+                              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', alignItems: 'center' }}>
+                                <span style={{ fontWeight: 700, color: 'var(--accent)', fontFamily: 'var(--font-mono)', fontSize: '12px', minWidth: '16px' }}>
+                                  {seasons.length}
+                                </span>
+                                {seasons.map(s => {
                                   const isLive = s === liveSeason;
                                   return (
                                     <Link key={s} href={getEditionUrlFromLabel(s)}
@@ -437,11 +449,13 @@ export default function HistoryDashboardClient({
                                       {getCleanSeasonLabel(s)}
                                     </Link>
                                   );
-                                })
-                              : <span style={{ color: 'var(--muted2)' }}>—</span>
-                            }
-                          </div>
-                        </td>
+                                })}
+                              </div>
+                            ) : (
+                              <span style={{ color: 'var(--muted2)' }}>—</span>
+                            )}
+                          </td>
+                        ))}
                       </tr>
                     ))}
                     {filteredTeams.length === 0 && (
