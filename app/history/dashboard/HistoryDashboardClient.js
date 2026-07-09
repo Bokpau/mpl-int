@@ -583,6 +583,10 @@ export default function HistoryDashboardClient({
                 </table>
               </div>
 
+              <p style={{ fontSize: '11px', color: 'var(--muted2)', marginTop: '10px', fontStyle: 'italic' }}>
+                * A tournament is listed only if the player played at least one game in it.
+              </p>
+
               {filteredPlayers.length > visiblePlayersCount && (
                 <div style={{ textAlign: 'center', marginTop: '16px' }}>
                   <button type="button" className="show-more-btn"
