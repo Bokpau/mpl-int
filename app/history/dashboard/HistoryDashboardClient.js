@@ -4,7 +4,7 @@ import { useState, useMemo } from 'react';
 import Link from 'next/link';
 import TeamLogo from '../../../components/TeamLogo';
 import { PlayerPhoto } from '../../../components/Images';
-import { img, getTournamentLogo } from '../../../lib/images';
+import { img, getTournamentLogo, CDN_BASE } from '../../../lib/images';
 
 // ── Date helpers ─────────────────────────────────────────────────────────────
 // Parse date string as local date (handles both 'YYYY-MM-DD' and ISO timestamp strings).
@@ -40,19 +40,31 @@ function formatDateRange(startStr, endStr) {
 }
 
 // ── Runner-up fallback table for early editions without DB standings ───────
-// Uses null logo_dark so TeamLogo falls back to img.team() CDN lookup.
 const EARLY_RUNNER_UPS = {
-  'MSC 2017': { team_key: null, team_code: 'Salty Salad',    team_name: 'Salty Salad',              logo_dark: null, country_flag: '🇵🇭' },
-  'MSC 2018': { team_key: null, team_code: 'Digital Devils',  team_name: 'Digital Devils Pro Gaming', logo_dark: null, country_flag: '🇮🇩' },
-  'MSC 2019': { team_key: null, team_code: 'Louvre Esports',  team_name: 'Louvre Esports',            logo_dark: null, country_flag: '🇮🇩' },
+  'MSC 2017': { team_key: null, team_code: 'Salty Salad',   team_name: 'Salty Salad',              logo_dark: `${CDN_BASE}/intl_teamlogo/Salty_Salad_allmode.png`,        country_flag: '🇵🇭' },
+  'MSC 2018': { team_key: null, team_code: 'Digital Devils', team_name: 'Digital Devils Pro Gaming', logo_dark: `${CDN_BASE}/intl_teamlogo/Digital_Devils_Pro_allmode.png`, country_flag: '🇮🇩' },
+  'MSC 2019': { team_key: null, team_code: 'Louvre Esports', team_name: 'Louvre Esports',            logo_dark: `${CDN_BASE}/intl_teamlogo/Louvre_allmode.png`,             country_flag: '🇮🇩' },
 };
+
+// ── Intl team logo overrides for standings-derived runner-ups whose DB
+// logo_dark is null and whose logos live in intl_teamlogo/ not teamlogo/.
+const INTL_LOGO_OVERRIDES = {
+  'burmese ghouls': 'Burmese_Ghouls_allmode.png',
+  'bg':             'Burmese_Ghouls_allmode.png',
+};
+
+function intlLogo(code) {
+  if (!code) return null;
+  const file = INTL_LOGO_OVERRIDES[code.toLowerCase().trim()];
+  return file ? `${CDN_BASE}/intl_teamlogo/${file}` : null;
+}
 
 // ── Inline entity display ─────────────────────────────────────────────────────
 function TeamEntity({ team_key, team_code, name, logo_dark, flag, asLink = true }) {
   const inner = (
     <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
       <TeamLogo
-        src={logo_dark}
+        src={logo_dark || intlLogo(team_code)}
         fallbackSrc={img.team(team_code)}
         alt=""
         style={{ width: '18px', height: '18px', objectFit: 'contain', flexShrink: 0 }}
@@ -144,14 +156,26 @@ export default function HistoryDashboardClient({
     // Stats teams first (have full stats + seasons array)
     teams.forEach(t => { if (t.team_key) byKey.set(t.team_key, t); });
 
-    // Add era teams not already in the map; find their season label from editions
+    // Merge era teams: add new teams, and ensure the current live season is on
+    // teams already present in the stats map (they'd otherwise miss it because
+    // the stats endpoint only reflects completed-game data).
+    const liveEdition = editions.find(e => String(e.status).toLowerCase() === 'live');
+    const liveSeasonLabel = liveEdition ? liveEdition.season : null;
+
     eraTeams.forEach(et => {
-      if (!et.team_key || byKey.has(et.team_key)) return;
-      // Find which season this era team belongs to via team_era_name.season lookup
-      // eraTeams rows don't expose their season label directly — but we can infer
-      // from the live edition and cross-reference with editions
-      const liveEdition = editions.find(e => String(e.status).toLowerCase() === 'live');
-      const seasonLabel = liveEdition ? liveEdition.season : null;
+      if (!et.team_key) return;
+
+      if (byKey.has(et.team_key)) {
+        // Already in stats map — add live season if not yet present
+        if (liveSeasonLabel) {
+          const existing = byKey.get(et.team_key);
+          if (Array.isArray(existing.seasons) && !existing.seasons.includes(liveSeasonLabel)) {
+            existing.seasons = [...existing.seasons, liveSeasonLabel];
+          }
+        }
+        return;
+      }
+
       byKey.set(et.team_key, {
         team_key:       et.team_key,
         team_code:      et.era_code,
@@ -160,7 +184,7 @@ export default function HistoryDashboardClient({
         team_logo_light:et.team_logo_light,
         country:        et.country,
         country_flag:   et.country_flag,
-        seasons:        seasonLabel ? [seasonLabel] : [],
+        seasons:        liveSeasonLabel ? [liveSeasonLabel] : [],
       });
     });
 
@@ -259,7 +283,7 @@ export default function HistoryDashboardClient({
                             {logoUrl
                               ? <img src={logoUrl} alt="" style={{ width: '22px', height: '22px', objectFit: 'contain', flexShrink: 0 }} />
                               : <span style={{
-                                  width: '22px', height: '22px', borderRadius: '4px',
+                                  width: '22px', height: '22px', borderRadius: 'var(--radius-sm)',
                                   background: 'var(--surface2)', display: 'inline-flex',
                                   alignItems: 'center', justifyContent: 'center',
                                   fontSize: '8px', fontWeight: 'bold', flexShrink: 0,

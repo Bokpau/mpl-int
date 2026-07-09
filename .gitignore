@@ -24,6 +24,7 @@ out/
 .claude/
 .codex/
 .impeccable/
+graphify-out/
 
 # Logs
 *.log
