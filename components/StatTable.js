@@ -63,17 +63,14 @@ function fmtNum(col, v) {
     return `${String(m).padStart(2, '0')}:${String(sec).padStart(2, '0')}`;
   }
 
-  // Helper to format with decimals rule:
-  // - If >999, no decimal on it.
-  // - If 2 decimal place rule is a whole number, 1 decimal place.
-  // - Otherwise, 2 decimal places (or col.decimals).
+  // Decimals rule (stats-rules.md §3): up to 2 decimals, trim trailing zeros,
+  // minimum 1 decimal. The ">999 no decimals" rule applies only to raw totals,
+  // which take the integer path below — not here.
   function formatValueWithDecimals(numberVal, decimals = 2) {
-    if (Math.abs(numberVal) > 999) {
-      return int(Math.round(numberVal));
-    }
-    const f = numberVal.toFixed(decimals);
-    if (decimals === 2) {
-      return f.endsWith('.00') ? numberVal.toFixed(1) : f;
+    let f = numberVal.toFixed(decimals);
+    if (decimals >= 2 && f.includes('.')) {
+      f = f.replace(/0+$/, '');
+      if (f.endsWith('.')) f += '0';
     }
     return f;
   }
