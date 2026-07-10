@@ -302,27 +302,29 @@ export default async function DashboardView({ q, label, eff, editions = [], feat
 
   const arenaContent = (
     <div className="db-flex-col-gap-10">
-      {/* Schedule */}
-      <div className="db-section">
-        <SectionHeader>Schedule</SectionHeader>
-        <div className="db-grid-240">
-          {recentSeries.map((s) => (
-            <ScheduleCard key={s.match_code} status="FINAL" accent teamMeta={mergedMeta}
-              detail={scheduleLabel(s.match_code, s.stage)}
-              a={s.team_a} b={s.team_b} aFlag={s.team_a_flag} bFlag={s.team_b_flag}
-              aScore={s.a_wins} bScore={s.b_wins} winner={s.winner_code} />
-          ))}
-          {upcoming.map((s, i) => (
-            <ScheduleCard key={s.match_code || i} status="UPCOMING" teamMeta={mergedMeta}
-              detail={scheduleLabel(s.match_code, s.phase)}
-              a={s.home_team} b={s.away_team} aFlag={s.home_flag} bFlag={s.away_flag} />
-          ))}
-          {!recentSeries.length && !upcoming.length ? <div className="empty">No schedule data for this selection.</div> : null}
+      {/* Schedule — current page only */}
+      {context !== 'history' && (
+        <div className="db-section">
+          <SectionHeader>Schedule</SectionHeader>
+          <div className="db-grid-240">
+            {recentSeries.map((s) => (
+              <ScheduleCard key={s.match_code} status="FINAL" accent teamMeta={mergedMeta}
+                detail={scheduleLabel(s.match_code, s.stage)}
+                a={s.team_a} b={s.team_b} aFlag={s.team_a_flag} bFlag={s.team_b_flag}
+                aScore={s.a_wins} bScore={s.b_wins} winner={s.winner_code} />
+            ))}
+            {upcoming.map((s, i) => (
+              <ScheduleCard key={s.match_code || i} status="UPCOMING" teamMeta={mergedMeta}
+                detail={scheduleLabel(s.match_code, s.phase)}
+                a={s.home_team} b={s.away_team} aFlag={s.home_flag} bFlag={s.away_flag} />
+            ))}
+            {!recentSeries.length && !upcoming.length ? <div className="empty">No schedule data for this selection.</div> : null}
+          </div>
+          <Link href="/matches" className="db-view-more">
+            View Full Schedule &amp; Matches →
+          </Link>
         </div>
-        <Link href={context === 'current' ? "/matches" : "/history/matches"} className="db-view-more">
-          View Full Schedule &amp; Matches →
-        </Link>
-      </div>
+      )}
 
       {/* Standings */}
       {(eff.stage || (context === 'history' && eff.season)) ? (
@@ -503,6 +505,18 @@ export default async function DashboardView({ q, label, eff, editions = [], feat
       />
     </div>
   );
+
+  if (context === 'history') {
+    return (
+      <div className="container">
+        {head}
+        <div style={{ marginTop: 16, display: 'flex', flexDirection: 'column', gap: 20 }}>
+          {arenaContent}
+          {statsContent}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="container">
