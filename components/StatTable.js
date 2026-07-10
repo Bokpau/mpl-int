@@ -6,6 +6,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { intlQuery } from '../lib/filters';
 import { num, int, dec, pct } from '../lib/format';
 import { img } from '../lib/images';
+import { resolvePlayer } from '../lib/identity';
 import TeamLogo from './TeamLogo';
 import { RoleImg, PlayerPhoto } from './Images';
 
@@ -224,16 +225,8 @@ function Cell({ col, row, rankIndex, stickyClass = '' }) {
 
     case 'player': {
       const eraName = row[col.nameKey] || row[col.fallbackKey];
-      const globalName = row.current_player;
-      
-      let name = eraName;
-      if (col.isHistory) {
-        if (col.isSeasonFiltered && globalName && globalName.toUpperCase() !== eraName.toUpperCase()) {
-          name = `${eraName} (${globalName})`;
-        } else if (!col.isSeasonFiltered && globalName) {
-          name = globalName;
-        }
-      }
+      const mode = col.isHistory ? (col.isSeasonFiltered ? 'season' : 'alltime') : 'current';
+      const name = resolvePlayer({ ...row, player: eraName }, mode).name || eraName;
 
       const href = col.query
         ? `${col.hrefBase}${encodeURIComponent(row[col.hrefKey])}?${new URLSearchParams(col.query).toString()}`
