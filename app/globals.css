@@ -60,6 +60,20 @@
   --accent-ink: #000;
 }
 
+/* ─── Breakpoint scale (five groups) ────────────────────────────────
+   xs   360–479 px   small phones portrait
+   sm   480–767 px   large phones / phone landscape
+   md   768–1023 px  tablets
+   lg  1024–1439 px  laptops / desktop  ← design baseline
+   xl  ≥1440 px      large monitors
+
+   Convention: desktop-first.
+   @media (max-width: 1023px)  ← md and below
+   @media (max-width:  767px)  ← sm and below
+   @media (max-width:  479px)  ← xs only
+   @media (min-width: 1440px)  ← xl only
+   ─────────────────────────────────────────────────────────────────── */
+
 *, *::before, *::after { box-sizing: border-box; }
 
 html { font-size: 16px; scroll-behavior: smooth; }
@@ -94,6 +108,9 @@ button { cursor: pointer; border: none; background: none; font: inherit; color: 
 
 /* ─── Layout ────────────────────────────────────────────────────── */
 .container { max-width: 1180px; margin: 0 auto; padding: 0 20px; }
+@media (max-width: 767px) { .container { padding: 0 16px; } }
+@media (max-width: 479px) { .container { padding: 0 12px; } }
+@media (min-width: 1440px) { .container { max-width: 1320px; } }
 main { padding-bottom: 80px; }
 
 .page-head { padding: 32px 0 8px; }
@@ -575,12 +592,18 @@ table.h2h td .sub { font-size: 11px; }
 .dash-more { font-size: 13px; font-weight: 600; color: var(--muted2); white-space: nowrap; }
 .dash-more:hover { color: var(--accent); }
 
-@media (max-width: 860px) {
+@media (max-width: 1023px) {
   .nav { gap: 12px; overflow-x: auto; }
   .navgroups { gap: 2px; }
   .navgroup-link, .navgroup-btn { padding: 8px 9px; font-size: 13px; }
   .search { margin-left: 8px; }
   .search-input { width: 150px; }
+}
+@media (max-width: 479px) {
+  .nav { gap: 8px; padding: 0 12px; }
+  .nav .brand { font-size: 17px; }
+  .navgroup-link, .navgroup-btn { padding: 8px 7px; font-size: 12px; }
+  .search-input { width: 110px; max-width: 28vw; }
 }
 
 /* --- Last Used Info Button & Popover (mirrored from PH site) --- */
@@ -669,19 +692,19 @@ table.h2h td .sub { font-size: 11px; }
 }
 
 /* Responsive adjustment for Mobile */
-@media (max-width: 680px) {
+@media (max-width: 767px) {
   .match-info-btn {
     width: 24px;
     height: 24px;
     font-size: 10px;
   }
-  
+
   .match-popover {
     width: calc(100vw - 24px);
     left: 50%;
     transform: translateX(-50%);
   }
-  
+
   .match-popover-body {
     padding: 8px;
   }
@@ -856,7 +879,7 @@ table.h2h td .sub { font-size: 11px; }
   border-color: rgba(255, 215, 0, 0.4);
 }
 
-@media (max-width: 680px) {
+@media (max-width: 767px) {
   .game-row {
     grid-template-columns: 32px 1fr auto 1fr 50px;
     padding: 8px 8px;
@@ -1086,6 +1109,17 @@ table.h2h td .sub { font-size: 11px; }
   scrollbar-width: thin;
   -webkit-overflow-scrolling: touch;
 }
+/* Add .tbl-sticky alongside .tbl-scroll to pin first column of wrapped table. */
+.tbl-sticky table > thead > tr > th:first-child,
+.tbl-sticky table > tbody > tr > td:first-child {
+  position: sticky;
+  left: 0;
+  z-index: 1;
+  background: var(--surface2);
+  box-shadow: 2px 0 4px rgba(0, 0, 0, 0.3);
+}
+.tbl-sticky table > thead > tr > th:first-child { z-index: 3; }
+.tbl-sticky table > tbody > tr:hover > td:first-child { background: var(--surface); }
 .sr-only {
   position: absolute;
   width: 1px;
@@ -1185,7 +1219,7 @@ table.h2h td .sub { font-size: 11px; }
   font-weight: 700;
 }
 
-@media (max-width: 640px) {
+@media (max-width: 767px) {
   .filter-sidebar { display: none; }
   .filter-sidebar.open {
     display: block;
@@ -1214,10 +1248,10 @@ table.h2h td .sub { font-size: 11px; }
     color: var(--text);
     cursor: pointer;
     margin-bottom: 16px;
-    border-radius: 4px;
+    border-radius: var(--radius-sm);
   }
 }
-@media (min-width: 641px) {
+@media (min-width: 768px) {
   .filter-toggle-btn { display: none; }
 }
 

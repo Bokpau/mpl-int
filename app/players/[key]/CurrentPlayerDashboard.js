@@ -358,7 +358,7 @@ export default function CurrentPlayerDashboard({ playerKey, scope, season, initi
 
             {/* ── Hero Pool ── */}
             <div className="section-header">Hero Pool</div>
-            <div className="tbl-wrap" style={{ border: '1px solid var(--border)' }}>
+            <div className="tbl-wrap tbl-sticky" style={{ border: '1px solid var(--border)' }}>
               {heroPoolLoading ? <div className="loading" style={{ margin: '20px 0' }} /> : (
                 <table className="tbl">
                   <thead>
@@ -448,7 +448,8 @@ export default function CurrentPlayerDashboard({ playerKey, scope, season, initi
               const theirUnique = compareHeroPool.filter(c => !heroPool.some(h => h.heroid === c.heroid));
               return (
                 <>
-                  <div style={{ border: '1px solid var(--border)', background: 'var(--surface)', marginBottom: 24 }}>
+                  <div style={{ border: '1px solid var(--border)', background: 'var(--surface)', marginBottom: 24, overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
+                  <div style={{ minWidth: 400 }}>
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 160px 1fr', borderBottom: '1px solid var(--border)' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 10, justifyContent: 'flex-end', padding: '12px 16px', borderRight: '1px solid var(--border)' }}>
                         <div style={{ textAlign: 'right' }}>
@@ -501,6 +502,7 @@ export default function CurrentPlayerDashboard({ playerKey, scope, season, initi
                         </div>
                       );
                     })}
+                  </div>
                   </div>
 
                   <div style={{ fontFamily: 'var(--font-mono)', fontSize: 10, fontWeight: 700, color: 'var(--muted2)', letterSpacing: '.1em', marginBottom: 10 }}>// UNIQUE &amp; SHARED HEROES</div>

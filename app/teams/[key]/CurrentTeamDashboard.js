@@ -567,7 +567,8 @@ export default function CurrentTeamDashboard({ teamKey, scope, season, initial }
                 ) : !cmpData || cmpData.games === 0 ? (
                   <div style={{ fontFamily: 'var(--font-mono)', fontSize: 12, color: 'var(--muted)' }}>// no comparison data</div>
                 ) : (
-                  <div>
+                  <div style={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
+                  <div style={{ minWidth: 480 }}>
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 150px 1fr', gap: 8, marginBottom: 16, alignItems: 'center' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                         <TeamLogo src={t.team_logo_dark} fallbackSrc={img.team(t.team_code)} alt="" className="avatar sq" style={{ width: 32, height: 32, objectFit: 'contain' }} />
@@ -606,6 +607,7 @@ export default function CurrentTeamDashboard({ teamKey, scope, season, initial }
                       );
                     })}
                   </div>
+                  </div>
                 )}
               </div>
             );
@@ -639,7 +641,7 @@ export default function CurrentTeamDashboard({ teamKey, scope, season, initial }
                 {vsLoading ? <div className="loading" /> : vsOpps.length === 0 ? (
                   <div style={{ ...mo, fontSize: 12, color: 'var(--muted)' }}>// No data</div>
                 ) : (
-                  <div className="table-wrap" style={{ overflowX: 'auto' }}>
+                  <div className="table-wrap tbl-sticky" style={{ overflowX: 'auto' }}>
                     <table style={{ borderCollapse: 'collapse', fontSize: 12, width: '100%' }}>
                       <thead>
                         <tr style={{ borderBottom: '1px solid var(--border)' }}>
@@ -881,7 +883,7 @@ export default function CurrentTeamDashboard({ teamKey, scope, season, initial }
                 </div>
 
                 {/* Hero pool table */}
-                <div className="table-wrap" style={{ overflowX: 'auto', marginBottom: 32 }}>
+                <div className="table-wrap tbl-sticky" style={{ overflowX: 'auto', marginBottom: 32 }}>
                   <table style={{ borderCollapse: 'collapse', fontSize: 12, width: '100%' }}>
                     <thead>
                       <tr style={{ borderBottom: '1px solid var(--border)' }}>
