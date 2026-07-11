@@ -9,6 +9,7 @@ import { buildSeries, computeDecider, DECIDER, GAUNTLET_SERIES } from '../lib/ms
 import { resolveMainGroup } from '../lib/msc2026MainBracket';
 import { getFormat } from '../lib/tournamentFormats';
 import { getMatchMeta } from '../lib/matchRoundMap';
+import BracketView from './BracketView';
 
 // Grid view for the Matches page.
 //
@@ -57,20 +58,22 @@ function Section({ title, children }) {
 // ── Generic view (all editions except MSC 2026) ────────────────────────────
 // Groups series by stage → day, oldest first. Round labels come from the
 // static matchRoundMap; day numbers fall back to date-index when not mapped.
-function GenericMatchesView({ series, season, renderMatchRow }) {
+function GenericMatchesView({ series, season, renderMatchRow, teamByKey = {}, toggle, active }) {
   const format = getFormat(season);
 
   // Stage display metadata from tournamentFormats.js (label + layout type).
-  const stageMeta = (dbStage) => {
-    if (!format) return { label: dbStage, layoutLabel: null };
-    const desc = format.stages.find((sd) => sd.db_stage === dbStage && !sd.merged_into);
-    if (!desc) return { label: dbStage, layoutLabel: null };
-    return { label: desc.label || dbStage, layoutLabel: LAYOUT_LABELS[desc.layout] || null };
+  // For merged stages (e.g. Finals), resolve to the parent stage's label.
+  const stageMeta = (groupKey) => {
+    if (!format) return { label: groupKey, layout: null, layoutLabel: null };
+    const desc = format.stages.find((sd) => sd.db_stage === groupKey && !sd.merged_into);
+    if (!desc) return { label: groupKey, layout: null, layoutLabel: null };
+    return { label: desc.label || groupKey, layout: desc.layout || null, layoutLabel: LAYOUT_LABELS[desc.layout] || null };
   };
 
   // Build: stages in chronological order → each stage → days in order → series[].
   // Day and within-day order both come from the match code (YYYYMMDD + M#) so that
   // inconsistent played_at UTC dates never affect grouping or ordering.
+  // Stages with merged_into (e.g. Finals) are folded into their parent stage.
   const stageGroups = useMemo(() => {
     function mcParse(mc) {
       const m = String(mc || '').match(/(\d{8})M(\d+)$/);
@@ -85,9 +88,11 @@ function GenericMatchesView({ series, season, renderMatchRow }) {
     const stageOrder = [];
     const byStage = {};
     for (const { s } of augmented) {
-      const key = s.stage || 'Unknown';
-      if (!byStage[key]) { byStage[key] = []; stageOrder.push(key); }
-      byStage[key].push(s);
+      const dbStage = s.stage || 'Unknown';
+      const desc = format?.stages.find((sd) => sd.db_stage === dbStage);
+      const groupKey = desc?.merged_into || dbStage;
+      if (!byStage[groupKey]) { byStage[groupKey] = []; stageOrder.push(groupKey); }
+      byStage[groupKey].push(s);
     }
 
     return stageOrder.map((dbStage) => {
@@ -109,7 +114,7 @@ function GenericMatchesView({ series, season, renderMatchRow }) {
           series: items.sort((a, b) => a.idx - b.idx).map(x => x.s),
         }));
 
-      return { dbStage, days };
+      return { dbStage, stageSeries, days };
     });
   }, [series, season]);
 
@@ -119,8 +124,9 @@ function GenericMatchesView({ series, season, renderMatchRow }) {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
-      {stageGroups.map(({ dbStage, days }) => {
-        const { label, layoutLabel } = stageMeta(dbStage);
+      {stageGroups.map(({ dbStage, stageSeries, days }) => {
+        const { label, layout, layoutLabel } = stageMeta(dbStage);
+        const isBracket = layout === 'double-elim';
         return (
           <Section key={dbStage} title={label}>
             {layoutLabel && (
@@ -128,17 +134,27 @@ function GenericMatchesView({ series, season, renderMatchRow }) {
                 {layoutLabel}
               </div>
             )}
-            <div style={{ display: 'grid', gridTemplateColumns: `repeat(${Math.min(days.length, 4)}, minmax(0, 1fr))` }}>
-              {days.map((d, i) => (
-                <div key={d.dayNum} className="results-day-block"
-                  style={i > 0 ? { borderLeft: '1px solid var(--border)' } : undefined}>
-                  <div className="results-day-header">DAY {d.dayNum}</div>
-                  <div className="results-day-matches">
-                    {d.series.map(s => renderMatchRow(s, getMatchMeta(season, s.match_code)?.round))}
+            {isBracket ? (
+              <BracketView
+                series={stageSeries}
+                season={season}
+                teamByKey={teamByKey}
+                toggle={toggle}
+                active={active}
+              />
+            ) : (
+              <div style={{ display: 'grid', gridTemplateColumns: `repeat(${Math.min(days.length, 4)}, minmax(0, 1fr))` }}>
+                {days.map((d, i) => (
+                  <div key={d.dayNum} className="results-day-block"
+                    style={i > 0 ? { borderLeft: '1px solid var(--border)' } : undefined}>
+                    <div className="results-day-header">DAY {d.dayNum}</div>
+                    <div className="results-day-matches">
+                      {d.series.map(s => renderMatchRow(s, getMatchMeta(season, s.match_code)?.round))}
+                    </div>
                   </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
           </Section>
         );
       })}
@@ -261,7 +277,8 @@ export default function MatchResultsGrid({
       : allSeries.filter(s => stage === 'qualifier' ? s.stage_type === 'qualifier' : s.stage_type !== 'qualifier');
     return (
       <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
-        <GenericMatchesView series={filtered} season={season} renderMatchRow={renderMatchRow} />
+        <GenericMatchesView series={filtered} season={season} renderMatchRow={renderMatchRow}
+          teamByKey={teamByKey} toggle={toggle} active={active} />
         {modal}
       </div>
     );
