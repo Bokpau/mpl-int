@@ -1,7 +1,7 @@
 import './globals.css';
 import Nav from '../components/Nav';
 
-const SITE = 'MLBB International'; // placeholder branding — rename later (D6)
+const SITE = 'MSC and M-Series By The Bok'; // placeholder branding — rename later (D6)
 
 export const metadata = {
   title: {
