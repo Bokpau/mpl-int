@@ -29,18 +29,25 @@ function computeGeometry(layout) {
   // Column index per round id.
   const colOf = {};
   shape.columns.forEach((c, i) => {
-    if (c.ub) colOf[c.ub] = i;
-    if (c.lb) colOf[c.lb] = i;
-    if (c.gf) colOf.gf = i;
+    if (c.ub)    colOf[c.ub] = i;
+    if (c.lb)    colOf[c.lb] = i;
+    if (c.se)    colOf[c.se] = i;
+    if (c.gf)    colOf.gf    = i;
+    if (c.third) colOf.third = i;
   });
+
+  // Determine which top-level sections exist.
+  const roundIds = Object.keys(shape.rounds);
+  const hasUb = roundIds.some(rid => shape.rounds[rid].section === 'ub');
+  const hasSe = roundIds.some(rid => shape.rounds[rid].section === 'se');
 
   // Vertical center (in row units) per slot, within its section.
   // No feeds → even distribution by slot index; feeds → midpoint of feeders.
+  // Skip gf and third — they are positioned separately.
   const unit = {};
-  const roundIds = Object.keys(shape.rounds);
   for (const rid of roundIds) {
     const r = shape.rounds[rid];
-    if (r.section === 'gf') continue;
+    if (r.section === 'gf' || r.section === 'third') continue;
     for (let i = 0; i < r.size; i++) {
       const feeders = (r.feeds?.[i] || []).filter(Boolean);
       unit[rid + i] = feeders.length
@@ -49,34 +56,56 @@ function computeGeometry(layout) {
     }
   }
 
-  const rows = (section) => Math.max(
-    ...roundIds.filter(rid => shape.rounds[rid].section === section)
-      .map(rid => shape.rounds[rid].size)
-  );
+  const rows = (section) => {
+    const filtered = roundIds.filter(rid => shape.rounds[rid].section === section);
+    return filtered.length ? Math.max(...filtered.map(rid => shape.rounds[rid].size)) : 0;
+  };
+
   const bandH = (nRows) => HEADER_H + (nRows - 1) * PITCH + BOX_H;
-  const ubRows = rows('ub');
-  const lbTop = bandH(ubRows) + SECTION_GAP;
-  const height = lbTop + bandH(rows('lb')) + 8;
+
+  // For double-elim: UB top band + LB bottom band.
+  // For single-elim: one band ('se'), no LB.
+  const topSection = hasSe ? 'se' : 'ub';
+  const topRows = rows(topSection);
+  const lbTop = (hasUb && !hasSe) ? (bandH(topRows) + SECTION_GAP) : 0;
+  let height = (hasUb && !hasSe)
+    ? lbTop + bandH(rows('lb')) + 8
+    : bandH(topRows) + 8;
 
   const pos = {};
   for (const rid of roundIds) {
     const r = shape.rounds[rid];
-    if (r.section === 'gf') continue;
+    if (r.section === 'gf' || r.section === 'third') continue;
     const x = colOf[rid] * (BOX_W + H_GAP);
     const offY = r.section === 'lb' ? lbTop : 0;
     for (let i = 0; i < r.size; i++) {
       pos[rid + i] = { x, yCenter: offY + HEADER_H + unit[rid + i] * PITCH + BOX_H / 2 };
     }
   }
-  // Grand Final sits between the two finals, in the last column.
+
+  // Grand Final: midpoint of its two feeders.
   const [ubFeed, lbFeed] = shape.rounds.gf.feeds[0];
   pos.gf0 = {
     x: colOf.gf * (BOX_W + H_GAP),
     yCenter: (pos[ubFeed].yCenter + pos[lbFeed].yCenter) / 2,
   };
 
-  const width = (colOf.gf + 1) * BOX_W + colOf.gf * H_GAP;
-  return { pos, colOf, lbTop, width, height };
+  // Third Place Match (SE only): own column, positioned below GF with a clear gap.
+  let thirdTop = 0;
+  if (shape.rounds.third) {
+    const thirdGap = 24; // px between GF box bottom and 3rd-place header
+    pos.third0 = {
+      x: colOf.third * (BOX_W + H_GAP),
+      yCenter: pos.gf0.yCenter + BOX_H / 2 + thirdGap + HEADER_H + BOX_H / 2,
+    };
+    thirdTop = pos.gf0.yCenter + BOX_H / 2 + thirdGap;
+    height = Math.max(height, pos.third0.yCenter + BOX_H / 2 + 8);
+  }
+
+  // Width spans all columns including the rightmost.
+  const lastCol = Math.max(...Object.values(colOf));
+  const width = (lastCol + 1) * BOX_W + lastCol * H_GAP;
+  return { pos, colOf, lbTop, thirdTop, width, height };
 }
 
 // L-shaped connector: feeder right edge → mid-channel → target left edge.
@@ -89,7 +118,7 @@ function elbowPath(from, to) {
 
 function LayoutBracket({ layout, series, teamByKey, toggle, active }) {
   const { shape, bo, slots } = layout;
-  const { pos, colOf, lbTop, width, height } = useMemo(() => computeGeometry(layout), [layout]);
+  const { pos, colOf, lbTop, thirdTop, width, height } = useMemo(() => computeGeometry(layout), [layout]);
 
   const byMc = useMemo(() => {
     const m = {};
@@ -134,9 +163,11 @@ function LayoutBracket({ layout, series, teamByKey, toggle, active }) {
   shape.columns.forEach((c, i) => {
     const x = i * (BOX_W + H_GAP);
     const label = (rid) => bo?.[rid] ? `${shape.rounds[rid].label} (${bo[rid]})` : shape.rounds[rid].label;
-    if (c.ub) headers.push(header(label(c.ub), x, 0));
-    if (c.gf) headers.push(header(label('gf'), x, 0));
-    if (c.lb) headers.push(header(label(c.lb), x, lbTop));
+    if (c.ub)    headers.push(header(label(c.ub), x, 0));
+    if (c.se)    headers.push(header(label(c.se), x, 0));
+    if (c.gf)    headers.push(header(label('gf'),    x, 0));
+    if (c.third) headers.push(header(label('third'), x, thirdTop));
+    if (c.lb)    headers.push(header(label(c.lb), x, lbTop));
   });
 
   const boxes = Object.entries(slots).map(([slotId, slot]) => {

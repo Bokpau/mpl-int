@@ -126,7 +126,7 @@ function GenericMatchesView({ series, season, renderMatchRow, teamByKey = {}, to
     <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
       {stageGroups.map(({ dbStage, stageSeries, days }) => {
         const { label, layout, layoutLabel } = stageMeta(dbStage);
-        const isBracket = layout === 'double-elim';
+        const isBracket = layout === 'double-elim' || layout === 'single-elim';
         return (
           <Section key={dbStage} title={label}>
             {layoutLabel && (
