@@ -599,9 +599,14 @@ table.h2h td .sub { font-size: 11px; }
   .search { margin-left: 8px; }
   .search-input { width: 150px; }
 }
+/* sm/xs: icon-only nav so content fits without overflow (overflow clips dropdowns) */
+@media (max-width: 767px) {
+  .nav { overflow-x: visible; }
+  .nav .brand { display: none; }
+  .navgroup-link span, .navgroup-btn span { display: none; }
+}
 @media (max-width: 479px) {
   .nav { gap: 8px; padding: 0 12px; }
-  .nav .brand { font-size: 17px; }
   .navgroup-link, .navgroup-btn { padding: 8px 7px; font-size: 12px; }
   .search-input { width: 110px; max-width: 28vw; }
 }
