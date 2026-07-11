@@ -270,7 +270,7 @@ export default function HistoryDashboardClient({
 
           {/* ══ TAB 1: TOURNAMENTS ══════════════════════════════════════════ */}
           {activeTab === 'tournaments' && (
-            <div className="table-wrap">
+            <div className="table-wrap tbl-sticky">
               <table style={{ width: '100%' }}>
                 <thead>
                   <tr>
@@ -403,7 +403,7 @@ export default function HistoryDashboardClient({
                 </select>
               </div>
 
-              <div className="table-wrap">
+              <div className="table-wrap tbl-sticky">
                 <table>
                   <thead>
                     <tr>
@@ -497,7 +497,7 @@ export default function HistoryDashboardClient({
                 />
               </div>
 
-              <div className="table-wrap">
+              <div className="table-wrap tbl-sticky">
                 <table>
                   <thead>
                     <tr>

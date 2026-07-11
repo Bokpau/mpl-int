@@ -161,7 +161,7 @@ function TeamSection({ rows }) {
   return (
     <div style={card}>
       <SectionTitle>Stats by Team</SectionTitle>
-      <div style={{ overflowX: 'auto' }}>
+      <div className="tbl-sticky" style={{ overflowX: 'auto' }}>
         <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
           <thead>
             <tr>
@@ -232,7 +232,7 @@ function SeasonsSection({ data }) {
   return (
     <div style={card}>
       <SectionTitle>Per Season</SectionTitle>
-      <div style={{ overflowX: 'auto' }}>
+      <div className="tbl-sticky" style={{ overflowX: 'auto' }}>
         <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
           <thead>
             <tr>
@@ -303,7 +303,7 @@ function HeroesSection({ rows }) {
   return (
     <div style={card}>
       <SectionTitle>Hero Pool</SectionTitle>
-      <div style={{ overflowX: 'auto' }}>
+      <div className="tbl-sticky" style={{ overflowX: 'auto' }}>
         <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
           <thead>
             <tr>
@@ -360,7 +360,7 @@ function VsTeamsSection({ rows }) {
   return (
     <div style={card}>
       <SectionTitle>Record vs Teams</SectionTitle>
-      <div style={{ overflowX: 'auto' }}>
+      <div className="tbl-sticky" style={{ overflowX: 'auto' }}>
         <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
           <thead>
             <tr>
@@ -415,7 +415,7 @@ function VsNationsSection({ rows }) {
       <div style={{ fontSize: 11, color: 'var(--muted2)', marginBottom: 10 }}>
         Grouped by the represented country of the opposing team.
       </div>
-      <div style={{ overflowX: 'auto' }}>
+      <div className="tbl-sticky" style={{ overflowX: 'auto' }}>
         <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
           <thead>
             <tr>
