@@ -1120,6 +1120,18 @@ table.h2h td .sub { font-size: 11px; }
 }
 .tbl-sticky table > thead > tr > th:first-child { z-index: 3; }
 .tbl-sticky table > tbody > tr:hover > td:first-child { background: var(--surface); }
+
+/* TeamKdaDistribution — left-controls + right-map grid, stacks at sm */
+.kda-dist-grid {
+  display: grid;
+  grid-template-columns: minmax(200px, 240px) 1fr;
+  gap: 24px;
+  align-items: start;
+}
+@media (max-width: 767px) {
+  .kda-dist-grid { grid-template-columns: 1fr; }
+}
+
 .sr-only {
   position: absolute;
   width: 1px;

@@ -151,7 +151,7 @@ export function TeamKdaDistribution({ teamKey, buildQ }) {
       <h3 style={{ fontFamily: 'var(--font-display)', fontSize: 20, margin: '4px 0 18px 0', color: 'var(--text)' }}>Where it happens & against whom</h3>
 
       {loading ? <div className="loading" /> : (
-        <div style={{ display: 'grid', gridTemplateColumns: 'minmax(200px, 240px) 1fr', gap: 24, alignItems: 'start' }}>
+        <div className="kda-dist-grid">
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
             <div>
               <div style={{ fontFamily: 'var(--font-mono)', fontSize: 9, color: 'var(--muted)', letterSpacing: '.06em', marginBottom: 6 }}>CATEGORY</div>
@@ -192,6 +192,8 @@ export function TeamKdaDistribution({ teamKey, buildQ }) {
           {total === 0 ? (
             <div style={{ padding: '48px 0', textAlign: 'center', fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--muted)' }}>// No {cat.label.toLowerCase()} for this filter.</div>
           ) : (
+            <div style={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
+            <div style={{ minWidth: 480 }}>
             <div style={{ display: 'grid', gridTemplateColumns: 'minmax(260px, 1.2fr) minmax(200px, 0.8fr)', gap: 20, alignItems: 'center' }}>
               <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', padding: 16 }} role="img" aria-label="Team event locations geolocated on the game map">
                 <canvas ref={canvasRef} style={{ width: '100%', display: 'block', borderRadius: 2 }} />
@@ -204,6 +206,8 @@ export function TeamKdaDistribution({ teamKey, buildQ }) {
               <div style={{ width: '100%' }}>
                 <Donut dist={dist} total={total} />
               </div>
+            </div>
+            </div>
             </div>
           )}
         </div>

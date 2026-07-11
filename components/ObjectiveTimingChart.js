@@ -465,7 +465,7 @@ export function ObjectiveTimingChart({ teamKey, teamCode, buildQ, totalGames }) 
       )}
 
       {/* Summary cards */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12, marginTop: 20 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 12, marginTop: 20 }}>
         {summary.map(s => {
           if (!s.count) return null;
           if (!['lord', 'tortoise', 'tower'].includes(s.key)) return null;

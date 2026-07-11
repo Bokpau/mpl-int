@@ -143,7 +143,8 @@ function GenericMatchesView({ series, season, renderMatchRow, teamByKey = {}, to
                 active={active}
               />
             ) : (
-              <div style={{ display: 'grid', gridTemplateColumns: `repeat(${Math.min(days.length, 4)}, minmax(0, 1fr))` }}>
+              <div style={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: `repeat(${Math.min(days.length, 4)}, minmax(0, 1fr))`, minWidth: days.length * 220 }}>
                 {days.map((d, i) => (
                   <div key={d.dayNum} className="results-day-block"
                     style={i > 0 ? { borderLeft: '1px solid var(--border)' } : undefined}>
@@ -153,6 +154,7 @@ function GenericMatchesView({ series, season, renderMatchRow, teamByKey = {}, to
                     </div>
                   </div>
                 ))}
+              </div>
               </div>
             )}
           </Section>
@@ -364,13 +366,15 @@ export default function MatchResultsGrid({
       {/* Group Stage — Day 1 / Day 2 match rows */}
       {wc.groupDays.length > 0 && (
         <Section title="Group Stage">
-          <div style={{ display: 'grid', gridTemplateColumns: `repeat(${wc.groupDays.length}, minmax(0, 1fr))` }}>
+          <div style={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: `repeat(${wc.groupDays.length}, minmax(0, 1fr))`, minWidth: wc.groupDays.length * 220 }}>
             {wc.groupDays.map((d, i) => (
               <div key={d.day} className="results-day-block" style={i > 0 ? { borderLeft: '1px solid var(--border)' } : undefined}>
                 <div className="results-day-header">DAY {d.day}</div>
                 <div className="results-day-matches">{d.matches.map(s => renderMatchRow(s))}</div>
               </div>
             ))}
+          </div>
           </div>
         </Section>
       )}
