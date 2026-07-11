@@ -165,6 +165,7 @@ export default function MatchesListView({ q = '', label = '' }) {
   const isHistoryMode = !loading && games.length > 0 && weeks.length === 0;
 
   // Ordered list of DB stages for history phase chips, chronological.
+  // Stages with merged_into are folded into their parent — no separate chip.
   const histPhases = useMemo(() => {
     if (!isHistoryMode) return [];
     const format = getFormat(season);
@@ -175,6 +176,7 @@ export default function MatchesListView({ q = '', label = '' }) {
       if (!seen.has(g.stage)) {
         seen.add(g.stage);
         const desc = format?.stages.find(s => s.db_stage === g.stage);
+        if (desc?.merged_into) continue; // folded into parent stage chip
         ordered.push({ key: g.stage, label: desc?.label || g.stage });
       }
     }
@@ -191,7 +193,20 @@ export default function MatchesListView({ q = '', label = '' }) {
   // History-mode: group series by stage → day for the list view render.
   const histGroups = useMemo(() => {
     if (!isHistoryMode) return null;
-    const src = histPhase ? series.filter(s => s.info.stage === histPhase) : series;
+    const format = getFormat(season);
+
+    // Build the set of DB stages to show when a phase chip is selected.
+    // Includes the selected stage plus any stages merged into it.
+    let src = series;
+    if (histPhase) {
+      const included = new Set([histPhase]);
+      if (format) {
+        for (const s of format.stages) {
+          if (s.merged_into === histPhase) included.add(s.db_stage);
+        }
+      }
+      src = series.filter(s => included.has(s.info.stage));
+    }
 
     // Parse local date (YYYYMMDD) and match index (M#) from match code.
     // e.g. 'M720260103M4' → { localDate: '20260103', idx: 4 }
@@ -206,18 +221,19 @@ export default function MatchesListView({ q = '', label = '' }) {
       (a.localDate || '').localeCompare(b.localDate || '') || a.idx - b.idx
     );
 
-    const format = getFormat(season);
     const stageOrder = [];
     const byStage = {};
     for (const { s } of augmented) {
-      const key = s.info.stage || 'Unknown';
-      if (!byStage[key]) { byStage[key] = []; stageOrder.push(key); }
-      byStage[key].push(s);
+      const dbStage = s.info.stage || 'Unknown';
+      const desc = format?.stages.find(sd => sd.db_stage === dbStage);
+      // Fold merged stages (e.g. Finals) into their parent (e.g. Playoffs).
+      const groupKey = desc?.merged_into || dbStage;
+      if (!byStage[groupKey]) { byStage[groupKey] = []; stageOrder.push(groupKey); }
+      byStage[groupKey].push(s);
     }
 
     return stageOrder.map(dbStage => {
       const stageSeries = byStage[dbStage];
-      // Include merged stages so e.g. M5 "Finals" shows as "Grand Final".
       const desc = format?.stages.find(sd => sd.db_stage === dbStage);
       const stageLabel = desc?.label || dbStage;
 
