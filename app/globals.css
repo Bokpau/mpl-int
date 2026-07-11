@@ -600,9 +600,11 @@ table.h2h td .sub { font-size: 11px; }
   .search-input { width: 150px; }
 }
 /* sm/xs: icon-only nav so content fits without overflow (overflow clips dropdowns) */
+.nav .brand-abbr { display: none; }
 @media (max-width: 767px) {
   .nav { overflow-x: visible; }
-  .nav .brand { display: none; }
+  .nav .brand-full { display: none; }
+  .nav .brand-abbr { display: inline; }
   .navgroup-link span, .navgroup-btn span { display: none; }
 }
 @media (max-width: 479px) {

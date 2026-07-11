@@ -23,7 +23,7 @@ export default function RootLayout({ children }) {
     <html lang="en">
       <body>
         <a href="#main" className="skip-link">Skip to main content</a>
-        <Nav siteName={SITE} />
+        <Nav siteName={SITE} siteNameShort="MSC" />
         <main id="main">{children}</main>
         {isDev && (
           <>

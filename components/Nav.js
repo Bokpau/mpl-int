@@ -66,7 +66,7 @@ const ChevronIcon = () => (
 );
 const ICONS = { Dashboard: HomeIcon, Matches: SwordsIcon, Stats: StatsIcon, History: HistoryIcon };
 
-export default function Nav({ siteName }) {
+export default function Nav({ siteName, siteNameShort }) {
   const pathname = usePathname();
   const [openMenu, setOpenMenu] = useState(null); // label of the open dropdown
   const navRef = useRef(null);
@@ -89,7 +89,9 @@ export default function Nav({ siteName }) {
   return (
     <nav className="nav" ref={navRef}>
         <Link href="/" className="brand">
-          {siteName}<span className="dot">.</span>
+          <span className="brand-full">{siteName}</span>
+          <span className="brand-abbr">{siteNameShort ?? siteName}</span>
+          <span className="dot">.</span>
         </Link>
 
         <div className="navgroups">
