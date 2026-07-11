@@ -159,17 +159,20 @@ When a side-by-side grid must stack at sm:
 **The fix:** At sm/xs, use icon-only nav so content fits without any overflow. Remove `overflow-x: auto` at those breakpoints.
 
 ```css
-/* sm/xs: icon-only — content fits, no overflow, dropdowns work */
+/* sm/xs: two-row nav — brand on own row, icon-only items + search below */
 @media (max-width: 767px) {
-  .nav { overflow-x: visible; }
-  .nav .brand { display: none; }          /* brand text too wide on phones */
-  .navgroup-link span, .navgroup-btn span { display: none; }  /* text labels hidden */
+  :root { --nav-h: 96px; }
+  .nav { overflow-x: visible; height: auto; flex-wrap: wrap; padding: 8px 16px; gap: 4px 12px; }
+  .nav .brand { flex: 0 0 100%; }           /* brand fills row 1 */
+  .navgroup-link span, .navgroup-btn span { display: none; }  /* icon-only row 2 */
+  /* pin dropdown to viewport so it can't overflow right edge on phones */
+  .dropdown { position: fixed; left: 12px; right: 12px; top: calc(var(--nav-h) + 4px); min-width: 0; }
 }
 ```
 
-The nav icons (Home, Swords, BarChart, Clock) + chevrons fit in ~330 px at xs — no scroll needed.
+Brand shows on row 1 (full width). Icons+search fit row 2 without overflow. Dropdown uses `position: fixed` so it spans viewport width and can never clip off the right edge regardless of which button opened it.
 
-**At md/lg+:** `overflow-x: auto` stays as a safety net. Dropdowns are less of a problem there since the nav rarely overflows at 768 px+.
+**At md/lg+:** `overflow-x: auto` stays. Dropdowns rarely overflow at 768px+ since the nav has room for all items with text labels.
 
 ---
 
@@ -299,7 +302,7 @@ Check every `repeat(N, 1fr)` or `repeat(N, Xpx)` grid:
 
 ### Step 6: Match / Schedule Grids
 
-- [ ] Any day-column grid with `repeat(N, 1fr)`: add scroll wrapper + `minWidth: N * 220`
+- [ ] Any day-column grid with `repeat(N, 1fr)`: add scroll wrapper + `minWidth: N * 280`
 
 ### Step 7: Detail-head (player/team hero pages)
 
@@ -339,5 +342,5 @@ Checklist per page:
 | Nav dropdown clipped | Remove `overflow-x: auto` from `.nav`; use icon-only at sm/xs |
 | Header row (logo+name+chips) breaks | `flex-wrap: wrap` on the container |
 | Two-panel side-by-side crushes on phone | CSS class with `grid-template-columns: 1fr` at ≤767px |
-| Day-column match grid overflows | `overflowX: auto` + `minWidth: N * 220` |
+| Day-column match grid overflows | `overflowX: auto` + `minWidth: N * 280` |
 | SVG chart overflows | `viewBox` on svg + `width: 100%` style |

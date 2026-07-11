@@ -609,6 +609,8 @@ table.h2h td .sub { font-size: 11px; }
   .nav { overflow-x: visible; height: auto; flex-wrap: wrap; padding: 8px 16px; gap: 4px 12px; }
   .nav .brand { flex: 0 0 100%; }
   .navgroup-link span, .navgroup-btn span { display: none; }
+  /* pin dropdown to viewport so it never clips off the right edge */
+  .dropdown { position: fixed; left: 12px; right: 12px; top: calc(var(--nav-h) + 4px); min-width: 0; }
 }
 @media (max-width: 479px) {
   :root { --nav-h: 96px; }

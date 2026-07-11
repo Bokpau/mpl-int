@@ -144,7 +144,7 @@ function GenericMatchesView({ series, season, renderMatchRow, teamByKey = {}, to
               />
             ) : (
               <div style={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
-              <div style={{ display: 'grid', gridTemplateColumns: `repeat(${Math.min(days.length, 4)}, minmax(0, 1fr))`, minWidth: days.length * 220 }}>
+              <div style={{ display: 'grid', gridTemplateColumns: `repeat(${Math.min(days.length, 4)}, minmax(0, 1fr))`, minWidth: days.length * 280 }}>
                 {days.map((d, i) => (
                   <div key={d.dayNum} className="results-day-block"
                     style={i > 0 ? { borderLeft: '1px solid var(--border)' } : undefined}>
@@ -215,7 +215,7 @@ export default function MatchResultsGrid({
             <span className="match-popover-title">// MATCH DETAILS</span>
             <button className="match-popover-close" onClick={() => setActive(null)} aria-label="Close">&times;</button>
           </div>
-          <div style={{ padding: 12 }}>
+          <div style={{ padding: 12, overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
             <MatchCard
               info={s.info}
               games={s.games}
@@ -367,7 +367,7 @@ export default function MatchResultsGrid({
       {wc.groupDays.length > 0 && (
         <Section title="Group Stage">
           <div style={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
-          <div style={{ display: 'grid', gridTemplateColumns: `repeat(${wc.groupDays.length}, minmax(0, 1fr))`, minWidth: wc.groupDays.length * 220 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: `repeat(${wc.groupDays.length}, minmax(0, 1fr))`, minWidth: wc.groupDays.length * 280 }}>
             {wc.groupDays.map((d, i) => (
               <div key={d.day} className="results-day-block" style={i > 0 ? { borderLeft: '1px solid var(--border)' } : undefined}>
                 <div className="results-day-header">DAY {d.day}</div>
