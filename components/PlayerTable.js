@@ -100,7 +100,7 @@ function Th({ children, title }) {
   );
 }
 
-function PlayerRow({ p, hi, lo, expanded }) {
+function PlayerRow({ p, hi, lo, expanded, cols }) {
   const items = [p.equip_1, p.equip_2, p.equip_3, p.equip_4, p.equip_5, p.equip_6].filter(Boolean);
   const talents = [p.rune_map_1, p.rune_map_2, p.rune_map_3].filter(Boolean);
 
@@ -139,7 +139,9 @@ function PlayerRow({ p, hi, lo, expanded }) {
       <td style={cs('gold_pct', p.gold_pct, hi, lo)}>{p.gold_pct ? p.gold_pct + '%' : '--'}</td>
       <td style={cs('damage_dealt_per_min', p.damage_dealt_per_min, hi, lo)}>{p.damage_dealt_per_min ? Math.round(p.damage_dealt_per_min) : '--'}</td>
       <td style={cs('damage_dealt_pct', p.damage_dealt_pct, hi, lo)}>{p.damage_dealt_pct ? p.damage_dealt_pct + '%' : '--'}</td>
-      <td style={cs('control_time_ms', p.control_time_ms, hi, lo)}>{fmtCC(p.control_time_ms)}</td>
+      {cols.hasCC && (
+        <td style={cs('control_time_ms', p.control_time_ms, hi, lo)}>{fmtCC(p.control_time_ms)}</td>
+      )}
 
       {expanded && (
         <>
@@ -147,38 +149,62 @@ function PlayerRow({ p, hi, lo, expanded }) {
           <td style={cs('total_damage', p.total_damage, hi, lo)}>{big(p.total_damage)}</td>
           <td style={cs('total_hurt', p.total_hurt, hi, lo)}>{big(p.total_hurt)}</td>
           <td style={cs('damage_taken_per_min', p.damage_taken_per_min, hi, lo)}>{p.damage_taken_per_min ? Math.round(p.damage_taken_per_min) : '--'}</td>
-          <td style={cs('total_heal', p.total_heal, hi, lo)}>{big(p.total_heal)}</td>
-          <td style={cs('total_heal_other', p.total_heal_other, hi, lo)}>{big(p.total_heal_other)}</td>
+          {cols.hasHeal && (
+            <>
+              <td style={cs('total_heal', p.total_heal, hi, lo)}>{big(p.total_heal)}</td>
+              <td style={cs('total_heal_other', p.total_heal_other, hi, lo)}>{big(p.total_heal_other)}</td>
+            </>
+          )}
         </>
       )}
 
       {/* Loadout: fixed min-width prevents overlap with items */}
-      <td style={{ padding: '4px 8px', minWidth: 130 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 3, flexWrap: 'nowrap' }}>
-          {p.skillid && <SkillImg skillid={p.skillid} size={24} />}
-          <span style={{ color: 'var(--border)', fontSize: 9 }}>·</span>
-          {p.rune_id && <RuneImg runeMap={p.rune_id} size={24} />}
-          {talents.length > 0 && <span style={{ color: 'var(--border)', fontSize: 9 }}>·</span>}
-          {talents.map((rm, i) => <RuneImg key={i} runeMap={rm} size={20} />)}
-        </div>
-      </td>
+      {cols.hasLoadout && (
+        <td style={{ padding: '4px 8px', minWidth: cols.hasItems ? 130 : 40 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 3, flexWrap: 'nowrap' }}>
+            {p.skillid && <SkillImg skillid={p.skillid} size={24} />}
+            {p.rune_id && (
+              <>
+                <span style={{ color: 'var(--border)', fontSize: 9 }}>·</span>
+                <RuneImg runeMap={p.rune_id} size={24} />
+              </>
+            )}
+            {talents.length > 0 && <span style={{ color: 'var(--border)', fontSize: 9 }}>·</span>}
+            {talents.map((rm, i) => <RuneImg key={i} runeMap={rm} size={20} />)}
+          </div>
+        </td>
+      )}
       {/* Items: fixed min-width for 6 x 28px icons + gaps */}
-      <td style={{ padding: '4px 8px', minWidth: 192 }}>
-        <div style={{ display: 'flex', gap: 2, flexWrap: 'nowrap' }}>
-          {items.map((eq, i) => <ItemImg key={i} equipId={eq} size={28} />)}
-          {Array.from({ length: Math.max(0, 6 - items.length) }).map((_, i) => (
-            <div key={`e${i}`} style={{ width: 28, height: 28, background: 'var(--surface2)', borderRadius: 2 }} />
-          ))}
-        </div>
-      </td>
+      {cols.hasItems && (
+        <td style={{ padding: '4px 8px', minWidth: 192 }}>
+          <div style={{ display: 'flex', gap: 2, flexWrap: 'nowrap' }}>
+            {items.map((eq, i) => <ItemImg key={i} equipId={eq} size={28} />)}
+            {Array.from({ length: Math.max(0, 6 - items.length) }).map((_, i) => (
+              <div key={`e${i}`} style={{ width: 28, height: 28, background: 'var(--surface2)', borderRadius: 2 }} />
+            ))}
+          </div>
+        </td>
+      )}
     </tr>
   );
 }
 
 export function PlayerTable({ camp1, camp2, camp1players, camp2players }) {
   const [expanded, setExpanded] = useState(false);
-  const { hi, lo } = computeHighlights([...camp1players, ...camp2players]);
-  const colCount = expanded ? 19 : 13;
+  const all = [...camp1players, ...camp2players];
+  const { hi, lo } = computeHighlights(all);
+
+  // Box-score editions carry no CC / loadout / items / heal fields at all —
+  // hide those columns entirely instead of rendering all-'--' cells.
+  const cols = {
+    hasCC: all.some(p => p.control_time_ms != null),
+    hasLoadout: all.some(p => p.skillid || p.rune_id || p.rune_map_1 || p.rune_map_2 || p.rune_map_3),
+    hasItems: all.some(p => p.equip_1),
+    hasHeal: all.some(p => p.total_heal != null),
+  };
+  const colCount = 10 // player + K/D/A/KDA/KP/GPM/GOLD%/DPM/DMG%
+    + (cols.hasCC ? 1 : 0) + (cols.hasLoadout ? 1 : 0) + (cols.hasItems ? 1 : 0)
+    + (expanded ? 4 + (cols.hasHeal ? 2 : 0) : 0);
 
   return (
     <div className="mb-6">
@@ -205,19 +231,23 @@ export function PlayerTable({ camp1, camp2, camp1players, camp2players }) {
               <Th title="Gold Share">GOLD%</Th>
               <Th title="Damage per Minute">DPM</Th>
               <Th title="Damage Share">DMG%</Th>
-              <Th title="Crowd Control Time">CC</Th>
+              {cols.hasCC && <Th title="Crowd Control Time">CC</Th>}
               {expanded && (
                 <>
                   <Th title="Total Gold">GOLD</Th>
                   <Th title="Total Damage">DMG</Th>
                   <Th title="Damage Taken">TAKEN</Th>
                   <Th title="Damage Taken per Minute">DTPM</Th>
-                  <Th title="Total Heal">HEAL</Th>
-                  <Th title="Heal to Allies">H.ALLY</Th>
+                  {cols.hasHeal && (
+                    <>
+                      <Th title="Total Heal">HEAL</Th>
+                      <Th title="Heal to Allies">H.ALLY</Th>
+                    </>
+                  )}
                 </>
               )}
-              <Th title="Spell * Emblem * Talents">Spell | Emblem | Talents</Th>
-              <Th title="Items">ITEMS</Th>
+              {cols.hasLoadout && <Th title="Spell * Emblem * Talents">{cols.hasItems ? 'Spell | Emblem | Talents' : 'Spell'}</Th>}
+              {cols.hasItems && <Th title="Items">ITEMS</Th>}
             </tr>
           </thead>
           <tbody>
@@ -242,7 +272,7 @@ export function PlayerTable({ camp1, camp2, camp1players, camp2players }) {
               </tr>
             )}
             {sortP(camp1players).map(p => (
-              <PlayerRow key={p.roleid} p={p} hi={hi} lo={lo} expanded={expanded} />
+              <PlayerRow key={p.roleid} p={p} hi={hi} lo={lo} expanded={expanded} cols={cols} />
             ))}
 
             {/* Red Side Group Header */}
@@ -266,7 +296,7 @@ export function PlayerTable({ camp1, camp2, camp1players, camp2players }) {
               </tr>
             )}
             {sortP(camp2players).map(p => (
-              <PlayerRow key={p.roleid} p={p} hi={hi} lo={lo} expanded={expanded} />
+              <PlayerRow key={p.roleid} p={p} hi={hi} lo={lo} expanded={expanded} cols={cols} />
             ))}
           </tbody>
         </table>

@@ -148,7 +148,7 @@ function GenericMatchesView({ series, season, renderMatchRow }) {
 
 export default function MatchResultsGrid({
   series = [], teamByKey = {}, metaByEra = {}, wildCardGames = [], mainGames = [], stage = 'all',
-  season = null,
+  season = null, isHistory = false,
 }) {
   const [active, setActive] = useState(null); // open match_code
   const isWildCard = stage !== 'main';
@@ -198,7 +198,14 @@ export default function MatchResultsGrid({
             <button className="match-popover-close" onClick={() => setActive(null)} aria-label="Close">&times;</button>
           </div>
           <div style={{ padding: 12 }}>
-            <MatchCard info={s.info} games={s.games} match_mvp={s.match_mvp} teamByKey={teamByKey} />
+            <MatchCard
+              info={s.info}
+              games={s.games}
+              match_mvp={s.match_mvp}
+              teamByKey={teamByKey}
+              roundTag={getMatchMeta(season, active)?.round ?? null}
+              isHistory={isHistory}
+            />
           </div>
         </div>
       </div>

@@ -94,6 +94,9 @@ export function BoxScore({ camp1, camp2 }) {
             {metrics.map(m => {
               const val1 = camp1[m.key];
               const val2 = camp2[m.key];
+              // Box-score editions omit fields like CC time entirely — drop the
+              // row instead of rendering a fake zero-vs-zero comparison.
+              if (val1 == null && val2 == null) return null;
               const parsed1 = parseFloat(val1) || 0;
               const parsed2 = parseFloat(val2) || 0;
               

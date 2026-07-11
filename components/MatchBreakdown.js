@@ -42,6 +42,10 @@ export async function MatchBreakdown({ battleId, isCurrent = true }) {
 
   const { match, era, teams, players, draft, events = [], gameMvp, matchMvp } = data;
 
+  // Box-score editions (historical CSV imports) have no realtime data at all —
+  // hide the realtime collapsibles entirely instead of rendering empty states.
+  const isBox = match.data_source === 'box_score';
+
   // Era code / key per camp (camp 1 = team_a, camp 2 = team_b).
   const eraCode = { 1: era?.team_a_era, 2: era?.team_b_era };
   const eraKey = { 1: era?.team_a_key, 2: era?.team_b_key };
@@ -69,6 +73,11 @@ export async function MatchBreakdown({ battleId, isCurrent = true }) {
     <TeamLogo src={teamByKey[eraKey[campid]]?.team_logo_dark} fallbackSrc={img.team(eraCode[campid])} alt=""
       style={{ width: size, height: size, objectFit: 'contain' }} />
   );
+  // identity-rules Rule 5: intl team logos render WITH the represented country.
+  const Flag = ({ campid }) => {
+    const f = teamByKey[eraKey[campid]]?.country_flag;
+    return f ? <span style={{ fontSize: 16 }} aria-hidden>{f}</span> : null;
+  };
 
   const gameMvpTeam = gameMvp ? eraCode[gameMvp.campid] || gameMvp.team_code : null;
 
@@ -98,6 +107,7 @@ export async function MatchBreakdown({ battleId, isCurrent = true }) {
               <span style={{ fontFamily: 'var(--font-mono)', fontSize: 9, fontWeight: 800, color: 'var(--win)', letterSpacing: '.12em', border: '1px solid var(--win)', padding: '2px 6px' }}>WIN</span>
             )}
             <span style={{ fontFamily: 'var(--font-display)', fontSize: 28, textTransform: 'uppercase', color: 'var(--text)' }}>{camp1?.team_code}</span>
+            <Flag campid={1} />
             <Logo campid={1} />
           </div>
           <div style={{ fontFamily: 'var(--font-display)', fontSize: 28, display: 'flex', gap: 8, letterSpacing: '0.1em' }}>
@@ -107,6 +117,7 @@ export async function MatchBreakdown({ battleId, isCurrent = true }) {
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12, flex: '1', justifyContent: 'flex-start' }}>
             <Logo campid={2} />
+            <Flag campid={2} />
             <span style={{ fontFamily: 'var(--font-display)', fontSize: 28, textTransform: 'uppercase', color: 'var(--text)' }}>{camp2?.team_code}</span>
             {camp2?.is_winner && (
               <span style={{ fontFamily: 'var(--font-mono)', fontSize: 9, fontWeight: 800, color: 'var(--win)', letterSpacing: '.12em', border: '1px solid var(--win)', padding: '2px 6px' }}>WIN</span>
@@ -226,7 +237,9 @@ export async function MatchBreakdown({ battleId, isCurrent = true }) {
       <PlayerTable camp1={camp1} camp2={camp2} camp1players={camp1players} camp2players={camp2players} />
 
       {/* Realtime panels (Phase 4b) — populate only for games whose per-second CSVs
-          were imported; otherwise each shows its own "no data" state. */}
+          were imported; otherwise each shows its own "no data" state. Box-score
+          editions skip them entirely. */}
+      {!isBox && (<>
       <details className="collapsible mt-8" open>
         <summary><span className="section-header" style={{ marginBottom: 0 }}><span className="disclosure">▶</span>Stats Advantage</span></summary>
         <div className="collapsible-body">
@@ -268,6 +281,7 @@ export async function MatchBreakdown({ battleId, isCurrent = true }) {
           </div>
         </div>
       </details>
+      </>)}
     </>
   );
 }

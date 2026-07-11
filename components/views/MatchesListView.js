@@ -325,6 +325,7 @@ export default function MatchesListView({ q = '', label = '' }) {
           mainGames={mainGames}
           stage={stage}
           season={season}
+          isHistory={isHistoryMode}
         />
       ) : isHistoryMode ? (
         /* History list: Phase → Day headers → MatchCards with round tags */
@@ -355,6 +356,7 @@ export default function MatchesListView({ q = '', label = '' }) {
                             match_mvp={match_mvp}
                             teamByKey={teamByKey}
                             roundTag={roundTag}
+                            isHistory
                           />
                         );
                       })}
