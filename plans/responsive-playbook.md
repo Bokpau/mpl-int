@@ -130,11 +130,38 @@ Canvas-based charts: set canvas width from `parentElement.clientWidth` at draw t
 
 Recharts `ResponsiveContainer`: `<ResponsiveContainer width="100%" height={380}>` — already fluid.
 
-### 7. Stacked grid (breakpoint class) for two-panel layouts
+### 7. Card-level horizontal scroll for multi-column grids inside cards
+
+When a `display: grid` section is inside a card that has `overflow: hidden` (for border-radius clipping), you cannot scroll at the card boundary — the grid gets squeezed and content clips silently. The fix: add a scroll container INSIDE the card, wrapping the sections that need more width.
+
+```jsx
+<div className="match-card">  {/* overflow: hidden */}
+  {/* flex-wrap sections above — don't need scroll */}
+  
+  {/* Scroll container for fixed-width grid sections */}
+  <div style={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
+    <div style={{ minWidth: 420 }}>  {/* tune to fit content */}
+      {/* score row (1fr auto 1fr grid) */}
+      {/* game rows grid */}
+    </div>
+  </div>
+</div>
+```
+
+The `overflow: hidden` on the card clips the scroll container's LAYOUT SIZE (matches card width), not the content inside it. The inner `overflow-x: auto` scroll container handles its overflowing children independently. No conflict.
+
+Also compact the rightmost grid column's button at mobile:
+```css
+@media (max-width: 767px) {
+  .game-row__detail-btn { padding: 4px 4px; font-size: 8px; letter-spacing: 0; }
+}
+```
+
+### 8. Stacked grid (breakpoint class) for two-panel layouts
 
 When a side-by-side grid must stack at sm:
 ```css
-/* globals.css */
+/* globals.css — see Technique 7 above for matching CSS */
 .kda-dist-grid {
   display: grid;
   grid-template-columns: minmax(200px, 240px) 1fr;

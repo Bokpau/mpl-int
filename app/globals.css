@@ -937,6 +937,11 @@ table.h2h td .sub { font-size: 11px; }
   .game-row__prio {
     display: none;
   }
+  .game-row__detail-btn {
+    padding: 4px 4px;
+    font-size: 8px;
+    letter-spacing: 0;
+  }
 }
 
 /* ───────────────────────────────────────────────────────────────────

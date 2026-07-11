@@ -223,6 +223,9 @@ export default function MatchCard({ info, games, match_mvp, teamByKey = {}, roun
         </div>
       )}
 
+      {/* Score + game rows: need ~420px min on phones; scroll horizontally */}
+      <div style={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
+      <div style={{ minWidth: 420 }}>
       {/* ── Score row ──────────────────────────────────────── */}
       <div style={{
         display: 'grid',
@@ -311,6 +314,8 @@ export default function MatchCard({ info, games, match_mvp, teamByKey = {}, roun
           );
         })}
       </div>
+      </div>{/* minWidth: 420 */}
+      </div>{/* overflowX: auto scroll container */}
     </div>
   );
 }
