@@ -1,11 +1,12 @@
 import './globals.css';
 import Nav from '../components/Nav';
 
-const SITE = 'MSC and M-Series By The Bok'; // placeholder branding — rename later (D6)
+const SITE = 'MSC & M-Series';
+const SITE_SUB = 'By the Bok';
 
 export const metadata = {
   title: {
-    default: `${SITE} · MSC & M-Series Stats`,
+    default: `${SITE} Stats — ${SITE_SUB}`,
     template: `%s · ${SITE}`,
   },
   description:
@@ -23,7 +24,7 @@ export default function RootLayout({ children }) {
     <html lang="en">
       <body>
         <a href="#main" className="skip-link">Skip to main content</a>
-        <Nav siteName={SITE} siteNameShort="MSC" />
+        <Nav siteName={SITE} siteNameSub={SITE_SUB} />
         <main id="main">{children}</main>
         {isDev && (
           <>
