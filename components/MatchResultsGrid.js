@@ -69,7 +69,8 @@ function GenericMatchesView({ series, season, renderMatchRow }) {
   };
 
   // Build: stages in chronological order → each stage → days in order → series[].
-  // Day number: from static map first; fallback = index among unique dates in stage.
+  // Day number: from static map keyed by match_code first (avoids UTC/local date
+  // mismatches in played_at); unmapped series fall back to sequential date index.
   const stageGroups = useMemo(() => {
     // Sort all series oldest → newest.
     const sorted = [...series].sort((a, b) =>
@@ -89,34 +90,29 @@ function GenericMatchesView({ series, season, renderMatchRow }) {
     return stageOrder.map((dbStage) => {
       const stageSeries = byStage[dbStage];
 
-      // Build date→dayNum index from static map first; unmapped dates fill in after.
-      const dateDayMap = {};
-      for (const s of stageSeries) {
-        const mc = s.match_code;
-        const meta = getMatchMeta(season, mc);
-        if (meta?.day) {
-          const date = (s.played_at || '').slice(0, 10);
-          if (!dateDayMap[date]) dateDayMap[date] = meta.day;
-        }
-      }
-      // Fill any dates not covered by static map with sequential indices.
+      // Assign day per series: static map by match_code is the primary source so
+      // inconsistent played_at UTC dates (e.g. M5) don't collide in the mapping.
+      const seriesDays = stageSeries.map(s => ({
+        s,
+        day: getMatchMeta(season, s.match_code)?.day ?? null,
+      }));
+      const mappedDaySet = new Set(seriesDays.filter(x => x.day !== null).map(x => x.day));
       const unmappedDates = [...new Set(
-        stageSeries.map(s => (s.played_at || '').slice(0, 10))
-      )].filter(d => !dateDayMap[d]).sort();
-      const usedDays = new Set(Object.values(dateDayMap));
+        seriesDays.filter(x => x.day === null).map(x => (x.s.played_at || '').slice(0, 10))
+      )].sort();
       let nextDay = 1;
+      const fallbackDateMap = {};
       for (const date of unmappedDates) {
-        while (usedDays.has(nextDay)) nextDay++;
-        dateDayMap[date] = nextDay;
-        usedDays.add(nextDay);
+        while (mappedDaySet.has(nextDay)) nextDay++;
+        fallbackDateMap[date] = nextDay;
+        mappedDaySet.add(nextDay);
         nextDay++;
       }
 
       // Group series by day number.
       const byDay = {};
-      for (const s of stageSeries) {
-        const date = (s.played_at || '').slice(0, 10);
-        const dayNum = dateDayMap[date] || 1;
+      for (const { s, day } of seriesDays) {
+        const dayNum = day !== null ? day : (fallbackDateMap[(s.played_at || '').slice(0, 10)] || 1);
         if (!byDay[dayNum]) byDay[dayNum] = [];
         byDay[dayNum].push(s);
       }
