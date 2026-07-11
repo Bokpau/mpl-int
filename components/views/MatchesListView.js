@@ -4,6 +4,8 @@ import { useState, useEffect, useMemo } from 'react';
 import MatchCard from '../MatchCard';
 import MatchResultsGrid from '../MatchResultsGrid';
 import PageHead from '../PageHead';
+import { getFormat } from '../../lib/tournamentFormats';
+import { getMatchMeta } from '../../lib/matchRoundMap';
 
 // Client Matches view — the intl port of the PH /matches list. Fetches the current
 // edition's rich games once (all stages), then filters by stage (Wild Card / Main)
@@ -56,6 +58,7 @@ export default function MatchesListView({ q = '', label = '' }) {
   const [loading, setLoading] = useState(true);
   const [stage, setStage] = useState('all');
   const [week, setWeek] = useState(null);
+  const [histPhase, setHistPhase] = useState(null); // DB stage name filter for history editions
   const [view, setView] = useState('list');
 
   useEffect(() => {
@@ -158,12 +161,83 @@ export default function MatchesListView({ q = '', label = '' }) {
   const season = useMemo(() => games[0]?.season ?? null, [games]);
   const hasWildCard = wildCardGames.length > 0;
 
+  // History mode: no week data in DB. Use per-stage phase chips instead of WC/Main/Week.
+  const isHistoryMode = !loading && games.length > 0 && weeks.length === 0;
+
+  // Ordered list of DB stages for history phase chips, chronological.
+  const histPhases = useMemo(() => {
+    if (!isHistoryMode) return [];
+    const format = getFormat(season);
+    const seen = new Set();
+    const ordered = [];
+    const sorted = [...games].sort((a, b) => String(a.played_at || '').localeCompare(String(b.played_at || '')));
+    for (const g of sorted) {
+      if (!seen.has(g.stage)) {
+        seen.add(g.stage);
+        const desc = format?.stages.find(s => s.db_stage === g.stage && !s.merged_into);
+        ordered.push({ key: g.stage, label: desc?.label || g.stage });
+      }
+    }
+    return ordered;
+  }, [isHistoryMode, games, season]);
+
   // Reset stage to 'all' when switching to an edition that has no qualifier games.
   useEffect(() => {
     if (!loading && !hasWildCard && stage === 'qualifier') setStage('all');
   }, [loading, hasWildCard, stage]);
 
   const setStageReset = (k) => { setStage(k); setWeek(null); };
+
+  // History-mode: group series by stage → day for the list view render.
+  const histGroups = useMemo(() => {
+    if (!isHistoryMode) return null;
+    const src = histPhase ? series.filter(s => s.info.stage === histPhase) : series;
+    const sorted = [...src].sort((a, b) =>
+      String(a.info.played_at || '').localeCompare(String(b.info.played_at || '')) ||
+      (a.info.match_number || 0) - (b.info.match_number || 0)
+    );
+    const format = getFormat(season);
+    const stageOrder = [];
+    const byStage = {};
+    for (const s of sorted) {
+      const key = s.info.stage || 'Unknown';
+      if (!byStage[key]) { byStage[key] = []; stageOrder.push(key); }
+      byStage[key].push(s);
+    }
+    return stageOrder.map(dbStage => {
+      const stageSeries = byStage[dbStage];
+      const desc = format?.stages.find(sd => sd.db_stage === dbStage && !sd.merged_into);
+      const stageLabel = desc?.label || dbStage;
+
+      // Build date→dayNum from static map then fill unmapped dates sequentially.
+      const dateDayMap = {};
+      for (const s of stageSeries) {
+        const meta = getMatchMeta(season, s.info.match_code);
+        if (meta?.day) {
+          const date = (s.info.played_at || '').slice(0, 10);
+          if (!dateDayMap[date]) dateDayMap[date] = meta.day;
+        }
+      }
+      const unmapped = [...new Set(stageSeries.map(s => (s.info.played_at || '').slice(0, 10)))]
+        .filter(d => !dateDayMap[d]).sort();
+      const used = new Set(Object.values(dateDayMap));
+      let next = 1;
+      for (const date of unmapped) {
+        while (used.has(next)) next++;
+        dateDayMap[date] = next; used.add(next); next++;
+      }
+
+      const byDay = {};
+      for (const s of stageSeries) {
+        const d = dateDayMap[(s.info.played_at || '').slice(0, 10)] || 1;
+        (byDay[d] = byDay[d] || []).push(s);
+      }
+      const days = Object.entries(byDay).sort(([a], [b]) => Number(a) - Number(b))
+        .map(([dayNum, daySeries]) => ({ dayNum: Number(dayNum), series: daySeries }));
+
+      return { dbStage, stageLabel, days };
+    });
+  }, [isHistoryMode, series, histPhase, season]);
 
   return (
     <div className="container">
@@ -195,23 +269,37 @@ export default function MatchesListView({ q = '', label = '' }) {
         display: 'flex', flexWrap: 'wrap', gap: 16, padding: '16px 0 20px',
         borderBottom: '1px solid var(--border)', marginBottom: 24, alignItems: 'center',
       }}>
-        <div style={{ display: 'flex', gap: 4 }}>
-          {STAGES.filter(t => t.k !== 'qualifier' || hasWildCard).map(t => (
-            <button key={t.k} onClick={() => setStageReset(t.k)} className={`filter-btn ${stage === t.k ? 'active' : ''}`}>
-              {t.l}
-            </button>
-          ))}
-        </div>
-
-        {weeks.length > 0 && (
+        {isHistoryMode ? (
+          /* History: phase chips per DB stage, chronological */
+          <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
+            <button onClick={() => setHistPhase(null)} className={`filter-btn ${histPhase === null ? 'active' : ''}`}>All</button>
+            {histPhases.map(p => (
+              <button key={p.key} onClick={() => setHistPhase(p.key)} className={`filter-btn ${histPhase === p.key ? 'active' : ''}`}>
+                {p.label}
+              </button>
+            ))}
+          </div>
+        ) : (
+          /* Current edition: Wild Card / Main stage chips + Week chips */
           <>
-            <div style={{ width: 1, height: 20, background: 'var(--border2)' }} />
-            <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
-              <button onClick={() => setWeek(null)} className={`filter-btn ${week === null ? 'active' : ''}`}>All</button>
-              {weeks.map(w => (
-                <button key={w} onClick={() => setWeek(w)} className={`filter-btn ${week === w ? 'active' : ''}`}>W{w}</button>
+            <div style={{ display: 'flex', gap: 4 }}>
+              {STAGES.filter(t => t.k !== 'qualifier' || hasWildCard).map(t => (
+                <button key={t.k} onClick={() => setStageReset(t.k)} className={`filter-btn ${stage === t.k ? 'active' : ''}`}>
+                  {t.l}
+                </button>
               ))}
             </div>
+            {weeks.length > 0 && (
+              <>
+                <div style={{ width: 1, height: 20, background: 'var(--border2)' }} />
+                <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
+                  <button onClick={() => setWeek(null)} className={`filter-btn ${week === null ? 'active' : ''}`}>All</button>
+                  {weeks.map(w => (
+                    <button key={w} onClick={() => setWeek(w)} className={`filter-btn ${week === w ? 'active' : ''}`}>W{w}</button>
+                  ))}
+                </div>
+              </>
+            )}
           </>
         )}
 
@@ -234,7 +322,50 @@ export default function MatchesListView({ q = '', label = '' }) {
           stage={stage}
           season={season}
         />
+      ) : isHistoryMode ? (
+        /* History list: Phase → Day headers → MatchCards with round tags */
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 32 }}>
+          {histGroups && histGroups.map(({ dbStage, stageLabel, days }) => (
+            <details key={dbStage} className="results-week collapsible full-width" open>
+              <summary className="results-week-summary">
+                <div className="results-week-head">
+                  <span className="disclosure">▶</span>
+                  <span className="results-week-title">{stageLabel}</span>
+                  <span className="results-week-toggle-label">// Expand/Collapse</span>
+                </div>
+              </summary>
+              <div className="collapsible-body results-week-body">
+                {days.map(({ dayNum, series: daySeries }) => (
+                  <div key={dayNum}>
+                    <div className="results-day-header" style={{ margin: '12px 0 8px' }}>
+                      DAY {dayNum}
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                      {daySeries.map(({ info, games: gs, match_mvp }) => {
+                        const roundTag = getMatchMeta(season, info.match_code)?.round ?? null;
+                        return (
+                          <MatchCard
+                            key={info.match_code || info.battle_id}
+                            info={info}
+                            games={gs}
+                            match_mvp={match_mvp}
+                            teamByKey={teamByKey}
+                            roundTag={roundTag}
+                          />
+                        );
+                      })}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </details>
+          ))}
+          {(!histGroups || histGroups.length === 0) && (
+            <div className="empty"><div>No matches found for the selected filter.</div></div>
+          )}
+        </div>
       ) : (
+        /* Current edition list: flat cards */
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
           {series.map(({ info, games: gs, match_mvp }) => (
             <MatchCard

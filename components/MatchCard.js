@@ -127,7 +127,7 @@ function MapPill({ gameNum, mapName }) {
 
 // `info` is the first game of the series (carries match-level meta). `games` is the
 // array of that match's games. `teamByKey` maps team_key -> team meta (logo/flag).
-export default function MatchCard({ info, games, match_mvp, teamByKey = {} }) {
+export default function MatchCard({ info, games, match_mvp, teamByKey = {}, roundTag = null }) {
   const sorted = [...games].sort((a, b) => (a.game_number || 0) - (b.game_number || 0));
 
   // Series' two teams, stable across games (sides swap game-to-game, keys don't).
@@ -178,6 +178,9 @@ export default function MatchCard({ info, games, match_mvp, teamByKey = {} }) {
           )}
           {info.match_count && (
             <span className="badge badge-role">{info.match_count}</span>
+          )}
+          {roundTag && (
+            <span className="badge badge-role">{roundTag}</span>
           )}
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>

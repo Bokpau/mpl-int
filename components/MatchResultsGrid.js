@@ -8,6 +8,7 @@ import { SeriesBox, QualifiedCol, SubHead, BracketCol } from './BracketBits';
 import { buildSeries, computeDecider, DECIDER, GAUNTLET_SERIES } from '../lib/msc2026Bracket';
 import { resolveMainGroup } from '../lib/msc2026MainBracket';
 import { getFormat } from '../lib/tournamentFormats';
+import { getMatchMeta } from '../lib/matchRoundMap';
 
 // Grid view for the Matches page.
 //
@@ -54,46 +55,87 @@ function Section({ title, children }) {
 }
 
 // ── Generic view (all editions except MSC 2026) ────────────────────────────
-// Groups series by their DB stage name and renders each as a collapsible section
-// with match rows. Stage labels + format descriptions come from tournamentFormats.js.
+// Groups series by stage → day, oldest first. Round labels come from the
+// static matchRoundMap; day numbers fall back to date-index when not mapped.
 function GenericMatchesView({ series, season, renderMatchRow }) {
   const format = getFormat(season);
 
-  // Group series by db_stage, preserving insertion order from the data.
-  const byStage = {};
-  const stageOrder = [];
-  for (const s of series) {
-    const key = s.stage || 'Unknown';
-    if (!byStage[key]) { byStage[key] = []; stageOrder.push(key); }
-    byStage[key].push(s);
-  }
-
-  // Build display metadata per db_stage from the format, falling back to the
-  // raw DB stage name when the edition isn't in tournamentFormats.js.
+  // Stage display metadata from tournamentFormats.js (label + layout type).
   const stageMeta = (dbStage) => {
     if (!format) return { label: dbStage, layoutLabel: null };
-    // Find the first non-merged stage descriptor that matches this DB stage name.
     const desc = format.stages.find((sd) => sd.db_stage === dbStage && !sd.merged_into);
     if (!desc) return { label: dbStage, layoutLabel: null };
-    return {
-      label: desc.label || dbStage,
-      layoutLabel: LAYOUT_LABELS[desc.layout] || null,
-      note: desc.note || null,
-    };
+    return { label: desc.label || dbStage, layoutLabel: LAYOUT_LABELS[desc.layout] || null };
   };
 
-  if (!stageOrder.length) {
+  // Build: stages in chronological order → each stage → days in order → series[].
+  // Day number: from static map first; fallback = index among unique dates in stage.
+  const stageGroups = useMemo(() => {
+    // Sort all series oldest → newest.
+    const sorted = [...series].sort((a, b) =>
+      String(a.played_at || '').localeCompare(String(b.played_at || '')) ||
+      (a.match_number || 0) - (b.match_number || 0)
+    );
+
+    // Collect stages in first-seen (chronological) order.
+    const stageOrder = [];
+    const byStage = {};
+    for (const s of sorted) {
+      const key = s.stage || 'Unknown';
+      if (!byStage[key]) { byStage[key] = []; stageOrder.push(key); }
+      byStage[key].push(s);
+    }
+
+    return stageOrder.map((dbStage) => {
+      const stageSeries = byStage[dbStage];
+
+      // Build date→dayNum index from static map first; unmapped dates fill in after.
+      const dateDayMap = {};
+      for (const s of stageSeries) {
+        const mc = s.match_code;
+        const meta = getMatchMeta(season, mc);
+        if (meta?.day) {
+          const date = (s.played_at || '').slice(0, 10);
+          if (!dateDayMap[date]) dateDayMap[date] = meta.day;
+        }
+      }
+      // Fill any dates not covered by static map with sequential indices.
+      const unmappedDates = [...new Set(
+        stageSeries.map(s => (s.played_at || '').slice(0, 10))
+      )].filter(d => !dateDayMap[d]).sort();
+      const usedDays = new Set(Object.values(dateDayMap));
+      let nextDay = 1;
+      for (const date of unmappedDates) {
+        while (usedDays.has(nextDay)) nextDay++;
+        dateDayMap[date] = nextDay;
+        usedDays.add(nextDay);
+        nextDay++;
+      }
+
+      // Group series by day number.
+      const byDay = {};
+      for (const s of stageSeries) {
+        const date = (s.played_at || '').slice(0, 10);
+        const dayNum = dateDayMap[date] || 1;
+        if (!byDay[dayNum]) byDay[dayNum] = [];
+        byDay[dayNum].push(s);
+      }
+      const days = Object.entries(byDay)
+        .sort(([a], [b]) => Number(a) - Number(b))
+        .map(([dayNum, daySeries]) => ({ dayNum: Number(dayNum), series: daySeries }));
+
+      return { dbStage, days };
+    });
+  }, [series, season]);
+
+  if (!stageGroups.length) {
     return <div className="empty"><div>No matches found for the selected filter.</div></div>;
   }
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
-      {stageOrder.map((dbStage) => {
+      {stageGroups.map(({ dbStage, days }) => {
         const { label, layoutLabel } = stageMeta(dbStage);
-        const stageSeries = [...byStage[dbStage]].sort((a, b) =>
-          String(a.played_at || '').localeCompare(String(b.played_at || '')) ||
-          (a.match_number || 0) - (b.match_number || 0)
-        );
         return (
           <Section key={dbStage} title={label}>
             {layoutLabel && (
@@ -101,8 +143,16 @@ function GenericMatchesView({ series, season, renderMatchRow }) {
                 {layoutLabel}
               </div>
             )}
-            <div style={{ padding: '0 8px 8px' }}>
-              {stageSeries.map(renderMatchRow)}
+            <div style={{ display: 'grid', gridTemplateColumns: `repeat(${Math.min(days.length, 4)}, minmax(0, 1fr))` }}>
+              {days.map((d, i) => (
+                <div key={d.dayNum} className="results-day-block"
+                  style={i > 0 ? { borderLeft: '1px solid var(--border)' } : undefined}>
+                  <div className="results-day-header">DAY {d.dayNum}</div>
+                  <div className="results-day-matches">
+                    {d.series.map(s => renderMatchRow(s, getMatchMeta(season, s.match_code)?.round))}
+                  </div>
+                </div>
+              ))}
             </div>
           </Section>
         );
@@ -173,8 +223,9 @@ export default function MatchResultsGrid({
   const codeFs = (code) => !code || code.length <= 5 ? 12 : code.length <= 7 ? 10 : 8;
 
   // A compact match row (used by Group Stage + the Main fallback grid). `s` is a
-  // buildSeries() series.
-  const renderMatchRow = (s) => {
+  // buildSeries() series. `roundLabel` is an optional string shown as a small tag
+  // above the score (e.g. "UB Quarter-Final", "Round 3").
+  const renderMatchRow = (s, roundLabel) => {
     const aKey = s.team_a_key, bKey = s.team_b_key;
     const aEra = s.team_a || '—', bEra = s.team_b || '—';
     const aWon = s.a_wins > s.b_wins, bWon = s.b_wins > s.a_wins;
@@ -188,9 +239,9 @@ export default function MatchResultsGrid({
           <TeamMark meta={teamByKey[aKey]} era={aEra} />
         </div>
         <div className="match-row-center" style={{ position: 'relative' }}>
-          {matchNum && (
+          {(roundLabel || matchNum) && (
             <span style={{ position: 'absolute', top: -14, left: '50%', transform: 'translateX(-50%)', fontSize: 9, fontFamily: 'var(--font-mono)', color: 'var(--muted2)', letterSpacing: '.05em', whiteSpace: 'nowrap' }}>
-              M{matchNum}
+              {roundLabel || `M${matchNum}`}
             </span>
           )}
           <div className="match-row-score-box">
@@ -223,6 +274,7 @@ export default function MatchResultsGrid({
       </div>
     );
   }
+  // renderMatchRow is used below for MSC 2026 group brackets (no round label needed there).
 
   // A gauntlet/decider series box; its `i` opens the shared centered modal.
   const boxFor = (s, { title, compact } = {}) => (
@@ -307,7 +359,7 @@ export default function MatchResultsGrid({
             {wc.groupDays.map((d, i) => (
               <div key={d.day} className="results-day-block" style={i > 0 ? { borderLeft: '1px solid var(--border)' } : undefined}>
                 <div className="results-day-header">DAY {d.day}</div>
-                <div className="results-day-matches">{d.matches.map(renderMatchRow)}</div>
+                <div className="results-day-matches">{d.matches.map(s => renderMatchRow(s))}</div>
               </div>
             ))}
           </div>
