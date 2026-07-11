@@ -192,49 +192,52 @@ export default function MatchesListView({ q = '', label = '' }) {
   const histGroups = useMemo(() => {
     if (!isHistoryMode) return null;
     const src = histPhase ? series.filter(s => s.info.stage === histPhase) : series;
-    const sorted = [...src].sort((a, b) =>
-      String(a.info.played_at || '').localeCompare(String(b.info.played_at || '')) ||
-      (a.info.match_number || 0) - (b.info.match_number || 0)
+
+    // Parse local date (YYYYMMDD) and match index (M#) from match code.
+    // e.g. 'M720260103M4' → { localDate: '20260103', idx: 4 }
+    // This is the authoritative source for both day order and within-day order.
+    function mcParse(mc) {
+      const m = String(mc || '').match(/(\d{8})M(\d+)$/);
+      return m ? { localDate: m[1], idx: parseInt(m[2]) } : { localDate: null, idx: 0 };
+    }
+
+    const augmented = src.map(s => ({ s, ...mcParse(s.info.match_code) }));
+    augmented.sort((a, b) =>
+      (a.localDate || '').localeCompare(b.localDate || '') || a.idx - b.idx
     );
+
     const format = getFormat(season);
     const stageOrder = [];
     const byStage = {};
-    for (const s of sorted) {
+    for (const { s } of augmented) {
       const key = s.info.stage || 'Unknown';
       if (!byStage[key]) { byStage[key] = []; stageOrder.push(key); }
       byStage[key].push(s);
     }
+
     return stageOrder.map(dbStage => {
       const stageSeries = byStage[dbStage];
-      // Include merged stages so e.g. M5 "Finals" shows as "Grand Final" not raw DB name.
+      // Include merged stages so e.g. M5 "Finals" shows as "Grand Final".
       const desc = format?.stages.find(sd => sd.db_stage === dbStage);
       const stageLabel = desc?.label || dbStage;
 
-      // Assign day per series directly from match_code static map so that
-      // inconsistent played_at UTC dates (e.g. M5 local Dec 9 stored as UTC Dec 10)
-      // don't cause multiple local dates to collide on the same date key.
-      const seriesDays = stageSeries.map(s => ({
-        s,
-        day: getMatchMeta(season, s.info.match_code)?.day ?? null,
-      }));
-      const mappedDaySet = new Set(seriesDays.filter(x => x.day !== null).map(x => x.day));
-      const unmappedDates = [...new Set(
-        seriesDays.filter(x => x.day === null).map(x => (x.s.info.played_at || '').slice(0, 10))
-      )].sort();
-      let next = 1;
-      const fallbackDateMap = {};
-      for (const date of unmappedDates) {
-        while (mappedDaySet.has(next)) next++;
-        fallbackDateMap[date] = next; mappedDaySet.add(next); next++;
-      }
+      // Assign day numbers: sort unique local dates chronologically → Day 1, 2, 3…
+      const mcParsed = stageSeries.map(s => ({ s, ...mcParse(s.info.match_code) }));
+      const uniqueDates = [...new Set(mcParsed.map(x => x.localDate).filter(Boolean))].sort();
+      const dateDayMap = {};
+      uniqueDates.forEach((d, i) => { dateDayMap[d] = i + 1; });
 
       const byDay = {};
-      for (const { s, day } of seriesDays) {
-        const d = day !== null ? day : (fallbackDateMap[(s.info.played_at || '').slice(0, 10)] || 1);
-        (byDay[d] = byDay[d] || []).push(s);
+      for (const { s, localDate, idx } of mcParsed) {
+        const d = dateDayMap[localDate] || 1;
+        (byDay[d] = byDay[d] || []).push({ s, idx });
       }
-      const days = Object.entries(byDay).sort(([a], [b]) => Number(a) - Number(b))
-        .map(([dayNum, daySeries]) => ({ dayNum: Number(dayNum), series: daySeries }));
+      const days = Object.entries(byDay)
+        .sort(([a], [b]) => Number(a) - Number(b))
+        .map(([dayNum, items]) => ({
+          dayNum: Number(dayNum),
+          series: items.sort((a, b) => a.idx - b.idx).map(x => x.s),
+        }));
 
       return { dbStage, stageLabel, days };
     });

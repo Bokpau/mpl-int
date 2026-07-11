@@ -69,19 +69,22 @@ function GenericMatchesView({ series, season, renderMatchRow }) {
   };
 
   // Build: stages in chronological order → each stage → days in order → series[].
-  // Day number: from static map keyed by match_code first (avoids UTC/local date
-  // mismatches in played_at); unmapped series fall back to sequential date index.
+  // Day and within-day order both come from the match code (YYYYMMDD + M#) so that
+  // inconsistent played_at UTC dates never affect grouping or ordering.
   const stageGroups = useMemo(() => {
-    // Sort all series oldest → newest.
-    const sorted = [...series].sort((a, b) =>
-      String(a.played_at || '').localeCompare(String(b.played_at || '')) ||
-      (a.match_number || 0) - (b.match_number || 0)
+    function mcParse(mc) {
+      const m = String(mc || '').match(/(\d{8})M(\d+)$/);
+      return m ? { localDate: m[1], idx: parseInt(m[2]) } : { localDate: null, idx: 0 };
+    }
+
+    const augmented = series.map(s => ({ s, ...mcParse(s.match_code) }));
+    augmented.sort((a, b) =>
+      (a.localDate || '').localeCompare(b.localDate || '') || a.idx - b.idx
     );
 
-    // Collect stages in first-seen (chronological) order.
     const stageOrder = [];
     const byStage = {};
-    for (const s of sorted) {
+    for (const { s } of augmented) {
       const key = s.stage || 'Unknown';
       if (!byStage[key]) { byStage[key] = []; stageOrder.push(key); }
       byStage[key].push(s);
@@ -89,36 +92,22 @@ function GenericMatchesView({ series, season, renderMatchRow }) {
 
     return stageOrder.map((dbStage) => {
       const stageSeries = byStage[dbStage];
+      const mcParsed = stageSeries.map(s => ({ s, ...mcParse(s.match_code) }));
+      const uniqueDates = [...new Set(mcParsed.map(x => x.localDate).filter(Boolean))].sort();
+      const dateDayMap = {};
+      uniqueDates.forEach((d, i) => { dateDayMap[d] = i + 1; });
 
-      // Assign day per series: static map by match_code is the primary source so
-      // inconsistent played_at UTC dates (e.g. M5) don't collide in the mapping.
-      const seriesDays = stageSeries.map(s => ({
-        s,
-        day: getMatchMeta(season, s.match_code)?.day ?? null,
-      }));
-      const mappedDaySet = new Set(seriesDays.filter(x => x.day !== null).map(x => x.day));
-      const unmappedDates = [...new Set(
-        seriesDays.filter(x => x.day === null).map(x => (x.s.played_at || '').slice(0, 10))
-      )].sort();
-      let nextDay = 1;
-      const fallbackDateMap = {};
-      for (const date of unmappedDates) {
-        while (mappedDaySet.has(nextDay)) nextDay++;
-        fallbackDateMap[date] = nextDay;
-        mappedDaySet.add(nextDay);
-        nextDay++;
-      }
-
-      // Group series by day number.
       const byDay = {};
-      for (const { s, day } of seriesDays) {
-        const dayNum = day !== null ? day : (fallbackDateMap[(s.played_at || '').slice(0, 10)] || 1);
-        if (!byDay[dayNum]) byDay[dayNum] = [];
-        byDay[dayNum].push(s);
+      for (const { s, localDate, idx } of mcParsed) {
+        const dayNum = dateDayMap[localDate] || 1;
+        (byDay[dayNum] = byDay[dayNum] || []).push({ s, idx });
       }
       const days = Object.entries(byDay)
         .sort(([a], [b]) => Number(a) - Number(b))
-        .map(([dayNum, daySeries]) => ({ dayNum: Number(dayNum), series: daySeries }));
+        .map(([dayNum, items]) => ({
+          dayNum: Number(dayNum),
+          series: items.sort((a, b) => a.idx - b.idx).map(x => x.s),
+        }));
 
       return { dbStage, days };
     });
