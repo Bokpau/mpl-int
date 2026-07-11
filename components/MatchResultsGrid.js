@@ -180,6 +180,7 @@ export default function MatchResultsGrid({
     const aWon = s.a_wins > s.b_wins, bWon = s.b_wins > s.a_wins;
     const mc = s.match_code;
     const open = active === mc;
+    const matchNum = s.match_number ?? (mc?.match(/M(\d+)$/)?.[1] ?? null);
     return (
       <div key={mc} className="match-row">
         <div className="match-row-team team-home">
@@ -187,6 +188,11 @@ export default function MatchResultsGrid({
           <TeamMark meta={teamByKey[aKey]} era={aEra} />
         </div>
         <div className="match-row-center" style={{ position: 'relative' }}>
+          {matchNum && (
+            <span style={{ position: 'absolute', top: -14, left: '50%', transform: 'translateX(-50%)', fontSize: 9, fontFamily: 'var(--font-mono)', color: 'var(--muted2)', letterSpacing: '.05em', whiteSpace: 'nowrap' }}>
+              M{matchNum}
+            </span>
+          )}
           <div className="match-row-score-box">
             <span className={`score-num ${aWon ? 'winner' : 'loser'}`}>{s.a_wins}</span>
             <button className={`match-info-btn ${open ? 'active' : ''}`}
