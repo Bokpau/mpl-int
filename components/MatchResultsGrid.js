@@ -7,13 +7,29 @@ import MatchCard from './MatchCard';
 import { SeriesBox, QualifiedCol, SubHead, BracketCol } from './BracketBits';
 import { buildSeries, computeDecider, DECIDER, GAUNTLET_SERIES } from '../lib/msc2026Bracket';
 import { resolveMainGroup } from '../lib/msc2026MainBracket';
+import { getFormat } from '../lib/tournamentFormats';
 
-// Grid view for the Matches page. For the Wild Card it mirrors the Dashboard's
-// bracket format, split into three collapsible sections classified the way BOK
-// specified — Group Stage (Day 1–2, shown as match rows), Cross-Group Gauntlet
-// (Day 3, series-box bracket) and Decider (Day 4, semis → grand final → Main Stage).
-// An `i` on every match row / series box opens that series' full MatchCard. For the
-// Main stage (no games yet) it falls back to a Week→Day match-row grid.
+// Grid view for the Matches page.
+//
+// MSC 2026: renders the full bracket structure (Wild Card groups → Gauntlet →
+// Decider; Main Stage GSL groups). This is the only edition with hardcoded
+// bracket positions.
+//
+// All other editions: renders organised match-row sections per stage, using
+// tournamentFormats.js for the correct stage labels and format description.
+// Historical data has no bracket-position metadata so a bracket rendering isn't
+// possible — clean match rows per stage is the right UX.
+
+const LAYOUT_LABELS = {
+  'table+rows':  'Round Robin',
+  'double-elim': 'Double Elimination',
+  'single-elim': 'Single Elimination',
+  'swiss':        'Swiss System',
+  'gsl':          'Double Elimination (GSL)',
+  'koth':         'King-of-the-Hill',
+  'decider':      'Decider Match',
+  'match-rows':   'Crossover Matches',
+};
 
 function TeamMark({ meta, era, size = 24 }) {
   return (
@@ -37,8 +53,67 @@ function Section({ title, children }) {
   );
 }
 
+// ── Generic view (all editions except MSC 2026) ────────────────────────────
+// Groups series by their DB stage name and renders each as a collapsible section
+// with match rows. Stage labels + format descriptions come from tournamentFormats.js.
+function GenericMatchesView({ series, season, renderMatchRow }) {
+  const format = getFormat(season);
+
+  // Group series by db_stage, preserving insertion order from the data.
+  const byStage = {};
+  const stageOrder = [];
+  for (const s of series) {
+    const key = s.stage || 'Unknown';
+    if (!byStage[key]) { byStage[key] = []; stageOrder.push(key); }
+    byStage[key].push(s);
+  }
+
+  // Build display metadata per db_stage from the format, falling back to the
+  // raw DB stage name when the edition isn't in tournamentFormats.js.
+  const stageMeta = (dbStage) => {
+    if (!format) return { label: dbStage, layoutLabel: null };
+    // Find the first non-merged stage descriptor that matches this DB stage name.
+    const desc = format.stages.find((sd) => sd.db_stage === dbStage && !sd.merged_into);
+    if (!desc) return { label: dbStage, layoutLabel: null };
+    return {
+      label: desc.label || dbStage,
+      layoutLabel: LAYOUT_LABELS[desc.layout] || null,
+      note: desc.note || null,
+    };
+  };
+
+  if (!stageOrder.length) {
+    return <div className="empty"><div>No matches found for the selected filter.</div></div>;
+  }
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+      {stageOrder.map((dbStage) => {
+        const { label, layoutLabel } = stageMeta(dbStage);
+        const stageSeries = [...byStage[dbStage]].sort((a, b) =>
+          String(a.played_at || '').localeCompare(String(b.played_at || '')) ||
+          (a.match_number || 0) - (b.match_number || 0)
+        );
+        return (
+          <Section key={dbStage} title={label}>
+            {layoutLabel && (
+              <div style={{ padding: '4px 12px 8px', fontSize: 10, fontFamily: 'var(--font-mono)', color: 'var(--muted2)', textTransform: 'uppercase', letterSpacing: '.06em' }}>
+                {layoutLabel}
+              </div>
+            )}
+            <div style={{ padding: '0 8px 8px' }}>
+              {stageSeries.map(renderMatchRow)}
+            </div>
+          </Section>
+        );
+      })}
+    </div>
+  );
+}
+
 export default function MatchResultsGrid({
   series = [], teamByKey = {}, metaByEra = {}, wildCardGames = [], mainGames = [], stage = 'all',
+  season = null,
 }) {
   const [active, setActive] = useState(null); // open match_code
   const isWildCard = stage !== 'main';
@@ -54,7 +129,9 @@ export default function MatchResultsGrid({
 
   // match_code -> { info, games, match_mvp } for the popover MatchCard.
   const byCode = useMemo(() => {
-    const src = isWildCard ? wildCardGames : mainGames;
+    const src = season !== 'MSC 2026'
+      ? [...wildCardGames, ...mainGames]
+      : isWildCard ? wildCardGames : mainGames;
     const m = {};
     for (const g of src) {
       const c = g.match_code || g.battle_id;
@@ -63,7 +140,7 @@ export default function MatchResultsGrid({
       if (g.match_mvp?.roleid) m[c].match_mvp = g.match_mvp;
     }
     return m;
-  }, [wildCardGames, series, isWildCard]);
+  }, [wildCardGames, mainGames, season, isWildCard]);
 
   // The breakdown is a single screen-centered modal (not an inline popover): the
   // match rows / series boxes are narrow and in columns, so an anchored popover
@@ -127,6 +204,19 @@ export default function MatchResultsGrid({
       </div>
     );
   };
+
+  // Route all non-MSC-2026 editions to generic match-row view.
+  if (season !== 'MSC 2026') {
+    const allSeries = buildSeries([...wildCardGames, ...mainGames]);
+    const filtered = stage === 'all' ? allSeries
+      : allSeries.filter(s => stage === 'qualifier' ? s.stage_type === 'qualifier' : s.stage_type !== 'qualifier');
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+        <GenericMatchesView series={filtered} season={season} renderMatchRow={renderMatchRow} />
+        {modal}
+      </div>
+    );
+  }
 
   // A gauntlet/decider series box; its `i` opens the shared centered modal.
   const boxFor = (s, { title, compact } = {}) => (

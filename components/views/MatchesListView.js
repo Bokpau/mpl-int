@@ -155,6 +155,8 @@ export default function MatchesListView({ q = '', label = '' }) {
     return { matchesPlayed, gamesPlayed, remainingMatches: Math.max(0, totalMatches - matchesPlayed) };
   }, [series, schedule, stage]);
 
+  const season = useMemo(() => games[0]?.season ?? null, [games]);
+
   const setStageReset = (k) => { setStage(k); setWeek(null); };
 
   return (
@@ -224,6 +226,7 @@ export default function MatchesListView({ q = '', label = '' }) {
           wildCardGames={wildCardGames}
           mainGames={mainGames}
           stage={stage}
+          season={season}
         />
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
