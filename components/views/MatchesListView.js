@@ -156,6 +156,12 @@ export default function MatchesListView({ q = '', label = '' }) {
   }, [series, schedule, stage]);
 
   const season = useMemo(() => games[0]?.season ?? null, [games]);
+  const hasWildCard = wildCardGames.length > 0;
+
+  // Reset stage to 'all' when switching to an edition that has no qualifier games.
+  useEffect(() => {
+    if (!loading && !hasWildCard && stage === 'qualifier') setStage('all');
+  }, [loading, hasWildCard, stage]);
 
   const setStageReset = (k) => { setStage(k); setWeek(null); };
 
@@ -190,7 +196,7 @@ export default function MatchesListView({ q = '', label = '' }) {
         borderBottom: '1px solid var(--border)', marginBottom: 24, alignItems: 'center',
       }}>
         <div style={{ display: 'flex', gap: 4 }}>
-          {STAGES.map(t => (
+          {STAGES.filter(t => t.k !== 'qualifier' || hasWildCard).map(t => (
             <button key={t.k} onClick={() => setStageReset(t.k)} className={`filter-btn ${stage === t.k ? 'active' : ''}`}>
               {t.l}
             </button>
