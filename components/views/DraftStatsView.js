@@ -249,15 +249,15 @@ export default function DraftStatsView({ featured, eff, label }) {
         <>
           {/* Hero Pool Summary */}
           <div style={{ display: 'flex', gap: 14, marginBottom: 24, flexWrap: 'wrap' }}>
-            <div className="card" style={{ flex: '1 1 180px', padding: '14px 18px' }}>
+            <div className="card" style={{ flex: '1 1 140px', padding: '14px 18px' }}>
               <div className="k" style={{ marginBottom: 6 }}>Unique Heroes Picked</div>
               <div className="v" style={{ fontWeight: 800, color: 'var(--text)' }}>{picked}</div>
             </div>
-            <div className="card" style={{ flex: '1 1 180px', padding: '14px 18px' }}>
+            <div className="card" style={{ flex: '1 1 140px', padding: '14px 18px' }}>
               <div className="k" style={{ marginBottom: 6 }}>Unique Heroes Banned</div>
               <div className="v" style={{ fontWeight: 800, color: 'var(--text)' }}>{banned}</div>
             </div>
-            <div className="card" style={{ flex: '1 1 180px', padding: '14px 18px' }}>
+            <div className="card" style={{ flex: '1 1 140px', padding: '14px 18px' }}>
               <div className="k" style={{ marginBottom: 6, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <span>Picked, Not Banned</span>
                 <button
@@ -270,7 +270,7 @@ export default function DraftStatsView({ featured, eff, label }) {
               </div>
               <div className="v" style={{ fontWeight: 800, color: 'var(--text)' }}>{notBanned.length}</div>
             </div>
-            <div className="card" style={{ flex: '1 1 180px', padding: '14px 18px' }}>
+            <div className="card" style={{ flex: '1 1 140px', padding: '14px 18px' }}>
               <div className="k" style={{ marginBottom: 6, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <span>Banned, Not Picked</span>
                 <button

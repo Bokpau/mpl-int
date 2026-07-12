@@ -387,15 +387,15 @@ export default function CurrentHeroStatsView({ featured, eff, label }) {
           {/* Quick Summary Cards */}
           {!loading && heroes.length > 0 && (
             <div style={{ display: 'flex', gap: 14, marginBottom: 24, flexWrap: 'wrap' }}>
-              <div className="card" style={{ flex: '1 1 180px', padding: '14px 18px' }}>
+              <div className="card" style={{ flex: '1 1 140px', padding: '14px 18px' }}>
                 <div className="k" style={{ marginBottom: 6, color: 'var(--muted2)', fontSize: 11, fontFamily: 'var(--font-mono)' }}>Unique Heroes Picked</div>
                 <div className="v" style={{ fontSize: 24, fontWeight: 800, color: 'var(--text)' }}>{uniquePicks}</div>
               </div>
-              <div className="card" style={{ flex: '1 1 180px', padding: '14px 18px' }}>
+              <div className="card" style={{ flex: '1 1 140px', padding: '14px 18px' }}>
                 <div className="k" style={{ marginBottom: 6, color: 'var(--muted2)', fontSize: 11, fontFamily: 'var(--font-mono)' }}>Unique Heroes Banned</div>
                 <div className="v" style={{ fontSize: 24, fontWeight: 800, color: 'var(--text)' }}>{uniqueBans}</div>
               </div>
-              <div className="card" style={{ flex: '1 1 180px', padding: '14px 18px' }}>
+              <div className="card" style={{ flex: '1 1 140px', padding: '14px 18px' }}>
                 <div className="k" style={{ marginBottom: 6, display: 'flex', justifyContent: 'space-between', alignItems: 'center', color: 'var(--muted2)', fontSize: 11, fontFamily: 'var(--font-mono)' }}>
                   <span>Picked, Not Banned</span>
                   <button
@@ -408,7 +408,7 @@ export default function CurrentHeroStatsView({ featured, eff, label }) {
                 </div>
                 <div className="v" style={{ fontSize: 24, fontWeight: 800, color: 'var(--text)' }}>{notBanned.length}</div>
               </div>
-              <div className="card" style={{ flex: '1 1 180px', padding: '14px 18px' }}>
+              <div className="card" style={{ flex: '1 1 140px', padding: '14px 18px' }}>
                 <div className="k" style={{ marginBottom: 6, display: 'flex', justifyContent: 'space-between', alignItems: 'center', color: 'var(--muted2)', fontSize: 11, fontFamily: 'var(--font-mono)' }}>
                   <span>Banned, Not Picked</span>
                   <button

@@ -244,7 +244,6 @@ export default function CurrentTeamDashboard({ teamKey, scope, season, initial }
       {/* ── Premium Masthead ── */}
       <div style={{
         background: 'linear-gradient(90deg, rgba(26,26,46,0.9) 0%, rgba(18,18,32,0.9) 100%)',
-        borderLeft: '4px solid var(--accent)',
         borderRight: '1px solid var(--border)',
         borderTop: '1px solid var(--border)',
         borderBottom: '1px solid var(--border)',
@@ -265,7 +264,7 @@ export default function CurrentTeamDashboard({ teamKey, scope, season, initial }
               {t.team_name || t.team_code || teamKey}
             </h1>
             <div style={{ fontFamily: 'var(--font-mono)', fontSize: 12, color: 'var(--muted)', marginTop: 8, display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-              <span style={{ color: 'var(--accent)', fontWeight: 700 }}>{scope} {season}</span>
+              <span style={{ color: 'var(--accent)', fontWeight: 700 }}>{season}</span>
             </div>
           </div>
 

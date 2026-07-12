@@ -550,7 +550,7 @@ function ScheduleCard({ status, accent, phase, detail, a, b, aFlag, bFlag, aScor
     );
   };
   return (
-    <div className="rank-card" style={{ borderLeft: accent ? '3px solid var(--win)' : undefined, padding: '12px 14px', display: 'flex', flexDirection: 'column', gap: 8 }}>
+    <div className="rank-card" style={{ background: accent ? 'rgba(43, 212, 155, 0.06)' : undefined, padding: '12px 14px', display: 'flex', flexDirection: 'column', gap: 8 }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 9, fontFamily: 'var(--font-mono)', color: 'var(--muted2)', gap: 6 }}>
         <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{detail || phase}</span>
         <span style={{ color: accent ? 'var(--accent)' : 'var(--muted2)', fontWeight: 600, flexShrink: 0 }}>{status}</span>
