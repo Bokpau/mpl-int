@@ -1922,3 +1922,112 @@ table.h2h td .sub { font-size: 11px; }
 .match-card:hover {
   border-color: var(--border-strong);
 }
+
+/* ─── Mobile Layout Improvements ─────────────────────────────────── */
+@media (max-width: 767px) {
+  .filterbar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+  .filterbar .filter-group {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    width: 100%;
+  }
+  .filterbar .filter-group > label {
+    margin-bottom: 0;
+  }
+  .filterbar .filter-group select {
+    min-width: 0;
+    flex: 0 1 auto;
+  }
+  .filterbar .filter-group .seg {
+    flex: 0 1 auto;
+  }
+}
+
+/* Matches Page Filters */
+.matches-filters-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  padding: 16px 0 20px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 24px;
+  align-items: center;
+}
+
+.matches-phase-group {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+}
+
+.matches-weeks-group {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.matches-separator {
+  width: 1px;
+  height: 20px;
+  background: var(--border2);
+}
+
+.matches-weeks-chips {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.matches-view-toggle-wrap {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+}
+
+@media (max-width: 767px) {
+  .matches-filters-container {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    grid-template-rows: auto auto;
+    grid-template-areas:
+      "phase view"
+      "weeks weeks";
+    row-gap: 12px;
+    column-gap: 8px;
+    align-items: center;
+  }
+
+  .matches-phase-group {
+    grid-area: phase;
+    max-width: 100%;
+    overflow-x: auto;
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .matches-phase-group::-webkit-scrollbar {
+    display: none;
+  }
+
+  .matches-view-toggle-wrap {
+    grid-area: view;
+    margin-left: 0;
+  }
+
+  .matches-weeks-group {
+    grid-area: weeks;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+  }
+
+  .matches-separator {
+    display: none;
+  }
+}

@@ -311,23 +311,20 @@ export default function MatchesListView({ q = '', label = '', isHistory = false,
       </div>
 
       {/* ── Filters ───────────────────────────────────────────────── */}
-      <div style={{
-        display: 'flex', flexWrap: 'wrap', gap: 16, padding: '16px 0 20px',
-        borderBottom: '1px solid var(--border)', marginBottom: 24, alignItems: 'center',
-      }}>
-        {isHistoryMode ? (
-          /* History: phase chips per DB stage, chronological */
-          <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
-            <button onClick={() => setHistPhase(null)} className={`filter-btn ${histPhase === null ? 'active' : ''}`}>All</button>
-            {histPhases.map(p => (
-              <button key={p.key} onClick={() => setHistPhase(p.key)} className={`filter-btn ${histPhase === p.key ? 'active' : ''}`}>
-                {p.label}
-              </button>
-            ))}
-          </div>
-        ) : (
-          /* Current edition: Wild Card / Main stage chips + Week chips */
-          <>
+      <div className="matches-filters-container">
+        <div className="matches-phase-group">
+          {isHistoryMode ? (
+            /* History: phase chips per DB stage, chronological */
+            <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
+              <button onClick={() => setHistPhase(null)} className={`filter-btn ${histPhase === null ? 'active' : ''}`}>All</button>
+              {histPhases.map(p => (
+                <button key={p.key} onClick={() => setHistPhase(p.key)} className={`filter-btn ${histPhase === p.key ? 'active' : ''}`}>
+                  {p.label}
+                </button>
+              ))}
+            </div>
+          ) : (
+            /* Current edition: Wild Card / Main stage chips */
             <div style={{ display: 'flex', gap: 4 }}>
               {STAGES.filter(t => t.k !== 'qualifier' || hasWildCard).map(t => (
                 <button key={t.k} onClick={() => setStageReset(t.k)} className={`filter-btn ${stage === t.k ? 'active' : ''}`}>
@@ -335,21 +332,22 @@ export default function MatchesListView({ q = '', label = '', isHistory = false,
                 </button>
               ))}
             </div>
-            {weeks.length > 0 && (
-              <>
-                <div style={{ width: 1, height: 20, background: 'var(--border2)' }} />
-                <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
-                  <button onClick={() => setWeek(null)} className={`filter-btn ${week === null ? 'active' : ''}`}>All</button>
-                  {weeks.map(w => (
-                    <button key={w} onClick={() => setWeek(w)} className={`filter-btn ${week === w ? 'active' : ''}`}>W{w}</button>
-                  ))}
-                </div>
-              </>
-            )}
-          </>
+          )}
+        </div>
+
+        {!isHistoryMode && weeks.length > 0 && (
+          <div className="matches-weeks-group">
+            <div className="matches-separator" />
+            <div className="matches-weeks-chips">
+              <button onClick={() => setWeek(null)} className={`filter-btn ${week === null ? 'active' : ''}`}>All</button>
+              {weeks.map(w => (
+                <button key={w} onClick={() => setWeek(w)} className={`filter-btn ${week === w ? 'active' : ''}`}>W{w}</button>
+              ))}
+            </div>
+          </div>
         )}
 
-        <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center' }}>
+        <div className="matches-view-toggle-wrap">
           <div className="view-toggle">
             <button className={`view-toggle-btn ${view === 'grid' ? 'active' : ''}`} onClick={() => handleSetView('grid')}>Grid</button>
             <button className={`view-toggle-btn ${view === 'list' ? 'active' : ''}`} onClick={() => handleSetView('list')}>List</button>
