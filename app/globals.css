@@ -1150,16 +1150,23 @@ table.h2h td .sub { font-size: 11px; }
   -webkit-overflow-scrolling: touch;
 }
 /* Add .tbl-sticky alongside .tbl-scroll to pin first column of wrapped table. */
-.tbl-sticky table > thead > tr > th:first-child,
+.tbl-sticky table > thead > tr > th:first-child {
+  position: sticky;
+  left: 0;
+  z-index: 3;
+  background: var(--surface2) !important;
+  border-right: 2px solid var(--border-strong) !important;
+}
 .tbl-sticky table > tbody > tr > td:first-child {
   position: sticky;
   left: 0;
   z-index: 1;
-  background: var(--surface2);
-  box-shadow: 2px 0 4px rgba(0, 0, 0, 0.3);
+  background: var(--bg) !important;
+  border-right: 2px solid var(--border-strong) !important;
 }
-.tbl-sticky table > thead > tr > th:first-child { z-index: 3; }
-.tbl-sticky table > tbody > tr:hover > td:first-child { background: var(--surface); }
+.tbl-sticky table > tbody > tr:hover > td:first-child {
+  background: var(--surface) !important;
+}
 
 /* TeamKdaDistribution — left-controls + right-map grid, stacks at sm */
 .kda-dist-grid {
@@ -1446,7 +1453,7 @@ table.h2h td .sub { font-size: 11px; }
   position: sticky;
   top: 0;
   z-index: 3;
-  background: var(--surface);
+  background: var(--surface2);
 }
 .tbl td.num {
   font-family: var(--font-mono);
@@ -1623,40 +1630,13 @@ table.h2h td .sub { font-size: 11px; }
 }
 
 /* ─── Table Sorting ──────────────────────────────────────────────── */
-.tbl th:hover {
-  color: var(--muted);
-}
-
-.tbl th::after {
-  content: ' ↕';
-  color: var(--muted2);
-  opacity: 0.35;
-  margin-left: 4px;
+.tbl th.sortable:hover {
+  color: var(--text);
 }
 
 .tbl.no-sort th,
 .tbl th.no-sort {
   cursor: default;
-}
-.tbl.no-sort th:hover,
-.tbl th.no-sort:hover {
-  color: var(--muted2);
-}
-.tbl.no-sort th::after,
-.tbl th.no-sort::after {
-  content: none !important;
-}
-
-.tbl th.sort-asc::after {
-  content: ' ↑';
-  color: var(--accent);
-  opacity: 1;
-}
-
-.tbl th.sort-desc::after {
-  content: ' ↓';
-  color: var(--accent);
-  opacity: 1;
 }
 
 /* ─── Tier Labels ────────────────────────────────────────────────── */

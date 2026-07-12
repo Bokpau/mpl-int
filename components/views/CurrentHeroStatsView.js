@@ -279,11 +279,12 @@ export default function CurrentHeroStatsView({ featured, eff, label }) {
     return (
       <th
         aria-sort={sortOrder}
-        className={`center ${isSorted ? (asc ? 'sort-asc' : 'sort-desc') : ''}`.trim()}
+        className={`center sortable ${isSorted ? 'sorted' : ''}`.trim()}
         style={{ whiteSpace: 'nowrap', padding: 0 }}
       >
         <button
           type="button"
+          className="th-sort"
           onClick={() => toggleSort(col)}
           title={title}
           style={{
@@ -298,10 +299,14 @@ export default function CurrentHeroStatsView({ featured, eff, label }) {
             textAlign: 'center',
             display: 'inline-flex',
             alignItems: 'center',
-            justifyContent: 'center'
+            justifyContent: 'center',
+            gap: 4
           }}
         >
           {label}
+          <span className="sort-ind" aria-hidden="true">
+            {isSorted ? (asc ? '▲' : '▼') : ''}
+          </span>
         </button>
       </th>
     );
