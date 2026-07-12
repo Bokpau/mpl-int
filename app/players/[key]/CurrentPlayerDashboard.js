@@ -449,8 +449,7 @@ export default function CurrentPlayerDashboard({ playerKey, scope, season, initi
               return (
                 <>
                   <div style={{ border: '1px solid var(--border)', background: 'var(--surface)', marginBottom: 24, overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
-                  <div style={{ minWidth: 400 }}>
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 160px 1fr', borderBottom: '1px solid var(--border)' }}>
+                    <div className="cmp-grid" style={{ borderBottom: '1px solid var(--border)' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 10, justifyContent: 'flex-end', padding: '12px 16px', borderRight: '1px solid var(--border)' }}>
                         <div style={{ textAlign: 'right' }}>
                           <div style={{ fontFamily: 'var(--font-display)', fontSize: 16, fontWeight: 800, color: 'var(--text)' }}>{me.player_name}</div>
@@ -478,7 +477,7 @@ export default function CurrentPlayerDashboard({ playerKey, scope, season, initi
                       const aPct = tot > 0 ? Math.round((isNaN(aRaw) ? 0 : aRaw) / tot * 100) : 50;
                       return (
                         <div key={stat.label} style={{ borderBottom: si < COMPARE_STATS.length - 1 ? '1px solid rgba(255,255,255,.04)' : 'none' }}>
-                          <div style={{ display: 'grid', gridTemplateColumns: '1fr 160px 1fr', alignItems: 'center', padding: '8px 0' }}>
+                          <div className="cmp-grid" style={{ padding: '8px 0' }}>
                             <div style={{ textAlign: 'right', paddingRight: 16, paddingLeft: 8 }}>
                               <div style={{ fontFamily: 'var(--font-display)', fontSize: 18, fontWeight: 800, color: aWins ? 'var(--accent)' : 'var(--text)', display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: 6 }}>
                                 {aWins && <span style={{ fontSize: 12 }}>▲</span>}{stat.fmt(me[stat.key])}
@@ -502,7 +501,6 @@ export default function CurrentPlayerDashboard({ playerKey, scope, season, initi
                         </div>
                       );
                     })}
-                  </div>
                   </div>
 
                   <div style={{ fontFamily: 'var(--font-mono)', fontSize: 10, fontWeight: 700, color: 'var(--muted2)', letterSpacing: '.1em', marginBottom: 10 }}>// UNIQUE &amp; SHARED HEROES</div>

@@ -194,6 +194,17 @@ main { padding-bottom: 80px; }
 @media (max-width: 479px) {
   .wl-stat-row { grid-template-columns: 1fr 84px 1fr; }
 }
+/* ─── Comparison grid (team / player head-to-head) ──────────────── */
+.cmp-grid {
+  display: grid;
+  grid-template-columns: 1fr 150px 1fr;
+  gap: 8px;
+  align-items: center;
+}
+@media (max-width: 479px) {
+  .cmp-grid { grid-template-columns: 1fr 60px 1fr; gap: 4px; }
+  .cmp-bar  { display: none; }
+}
 
 /* ─── Cards / grid ──────────────────────────────────────────────── */
 .cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 14px; padding: 22px 0; }
@@ -618,21 +629,71 @@ table.h2h td .sub { font-size: 11px; }
   .search { margin-left: 8px; }
   .search-input { width: 150px; }
 }
-/* sm/xs: two-row nav — brand row on top, icon-only items + search below */
+/* sm/xs: single-row nav — brand, toggle icons, and search bar aligned horizontally */
 @media (max-width: 767px) {
-  :root { --nav-h: 96px; }
-  .nav { overflow-x: visible; height: auto; flex-wrap: wrap; padding: 8px 16px; gap: 4px 12px; }
-  .nav .brand { flex: 0 0 100%; }
-  .navgroup-link span, .navgroup-btn span { display: none; }
+  :root { --nav-h: 60px; }
+  .nav {
+    overflow-x: visible;
+    height: var(--nav-h);
+    flex-wrap: nowrap;
+    justify-content: space-between;
+    padding: 0 16px;
+    gap: 8px;
+  }
+  .nav .brand {
+    flex: 0 1 auto;
+  }
+  .navgroups {
+    margin-left: 0;
+    gap: 2px;
+  }
+  .navgroup-link span, .navgroup-btn span {
+    display: none;
+  }
+  .navgroup-btn svg:last-child {
+    display: none;
+  }
+  .search {
+    margin-left: 0;
+    flex: 1 1 auto;
+    display: flex;
+    justify-content: flex-end;
+    min-width: 0;
+  }
+  .search-input {
+    width: 100%;
+    max-width: 130px;
+    min-width: 60px;
+  }
   /* pin dropdown to viewport so it never clips off the right edge */
-  .dropdown { position: fixed; left: 12px; right: 12px; top: calc(var(--nav-h) + 4px); min-width: 0; }
+  .dropdown {
+    position: fixed;
+    left: 12px;
+    right: 12px;
+    top: calc(var(--nav-h) + 4px);
+    min-width: 0;
+  }
 }
 @media (max-width: 479px) {
-  :root { --nav-h: 96px; }
-  .nav { gap: 4px 8px; padding: 8px 12px; }
-  .nav .brand { font-size: 17px; }
-  .navgroup-link, .navgroup-btn { padding: 8px 7px; font-size: 12px; }
-  .search-input { width: 110px; max-width: 28vw; }
+  :root { --nav-h: 56px; }
+  .nav {
+    padding: 0 8px;
+    gap: 4px;
+  }
+  .nav .brand {
+    font-size: 15px;
+  }
+  .brand-line2 {
+    font-size: 9px;
+  }
+  .navgroup-link, .navgroup-btn {
+    padding: 6px 6px;
+  }
+  .search-input {
+    max-width: 95px;
+    padding: 6px 8px;
+    font-size: 12px;
+  }
 }
 
 /* --- Last Used Info Button & Popover (mirrored from PH site) --- */

@@ -537,8 +537,7 @@ export default function CurrentTeamDashboard({ teamKey, scope, season, initial }
                   <div style={{ fontFamily: 'var(--font-mono)', fontSize: 12, color: 'var(--muted)' }}>// no comparison data</div>
                 ) : (
                   <div style={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
-                  <div style={{ minWidth: 480 }}>
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 150px 1fr', gap: 8, marginBottom: 16, alignItems: 'center' }}>
+                    <div className="cmp-grid" style={{ marginBottom: 16 }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                         <TeamLogo src={t.team_logo_dark} fallbackSrc={img.team(t.team_code)} alt="" className="avatar sq" style={{ width: 32, height: 32, objectFit: 'contain' }} />
                         <span style={{ fontFamily: 'var(--font-display)', fontSize: 20, fontWeight: 800 }}>{t.team_code}</span>
@@ -558,16 +557,16 @@ export default function CurrentTeamDashboard({ teamKey, scope, season, initial }
                       const max = Math.max(aValid ? a : 0, bValid ? b : 0, 0.0001);
                       const mo = { fontFamily: 'var(--font-mono)' };
                       return (
-                        <div key={s.key} style={{ display: 'grid', gridTemplateColumns: '1fr 150px 1fr', gap: 8, alignItems: 'center', padding: '5px 0', borderBottom: '1px solid rgba(255,255,255,.05)' }}>
+                        <div key={s.key} className="cmp-grid" style={{ padding: '5px 0', borderBottom: '1px solid rgba(255,255,255,.05)' }}>
                           <div style={{ display: 'flex', alignItems: 'center', gap: 8, justifyContent: 'flex-end' }}>
                             <span style={{ ...mo, fontSize: 13, fontWeight: aBetter ? 800 : 600, color: aBetter ? 'var(--accent)' : 'var(--text)' }}>{fmt(a, s.kind)}</span>
-                            <div style={{ width: 90, height: 5, background: 'rgba(255,255,255,.06)', borderRadius: 2, overflow: 'hidden' }}>
+                            <div className="cmp-bar" style={{ width: 90, height: 5, background: 'rgba(255,255,255,.06)', borderRadius: 2, overflow: 'hidden' }}>
                               <div style={{ height: '100%', width: `${aValid ? (a / max) * 100 : 0}%`, marginLeft: 'auto', background: aBetter ? 'var(--accent)' : 'rgba(255,255,255,.3)', float: 'right' }} />
                             </div>
                           </div>
                           <div style={{ ...mo, textAlign: 'center', fontSize: 10, color: 'var(--muted)', letterSpacing: '.05em' }}>{s.label}</div>
                           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                            <div style={{ width: 90, height: 5, background: 'rgba(255,255,255,.06)', borderRadius: 2, overflow: 'hidden' }}>
+                            <div className="cmp-bar" style={{ width: 90, height: 5, background: 'rgba(255,255,255,.06)', borderRadius: 2, overflow: 'hidden' }}>
                               <div style={{ height: '100%', width: `${bValid ? (b / max) * 100 : 0}%`, background: bBetter ? 'var(--accent)' : 'rgba(255,255,255,.3)' }} />
                             </div>
                             <span style={{ ...mo, fontSize: 13, fontWeight: bBetter ? 800 : 600, color: bBetter ? 'var(--accent)' : 'var(--text)' }}>{fmt(b, s.kind)}</span>
@@ -575,7 +574,6 @@ export default function CurrentTeamDashboard({ teamKey, scope, season, initial }
                         </div>
                       );
                     })}
-                  </div>
                   </div>
                 )}
               </div>
