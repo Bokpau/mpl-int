@@ -240,7 +240,7 @@ export default function MatchCard({ info, games, match_mvp, teamByKey = {}, roun
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, minWidth: 0 }}>
           <TeamMark meta={aMeta} era={aEra} />
           <div style={{ minWidth: 0 }}>
-            <div style={{ fontFamily: 'var(--font-display)', fontSize: 22, lineHeight: 1, color: 'var(--text)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+            <div style={{ fontFamily: 'var(--font-display)', fontSize: 22, lineHeight: 1, color: 'var(--text)', whiteSpace: 'nowrap' }}>
               {aKey ? <Link href={`/teams/${encodeURIComponent(aKey)}`} style={{ color: 'inherit' }}>{aEra}</Link> : aEra}
             </div>
             <div style={{ fontFamily: 'var(--font-mono)', fontSize: 8, fontWeight: 700, color: BLUE_CLR, letterSpacing: '.12em', marginTop: 3, visibility: aWon ? 'visible' : 'hidden' }}>● WINNER</div>
@@ -255,7 +255,7 @@ export default function MatchCard({ info, games, match_mvp, teamByKey = {}, roun
 
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, justifyContent: 'flex-end', minWidth: 0 }}>
           <div style={{ textAlign: 'right', minWidth: 0 }}>
-            <div style={{ fontFamily: 'var(--font-display)', fontSize: 22, lineHeight: 1, color: 'var(--text)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+            <div style={{ fontFamily: 'var(--font-display)', fontSize: 22, lineHeight: 1, color: 'var(--text)', whiteSpace: 'nowrap' }}>
               {bKey ? <Link href={`/teams/${encodeURIComponent(bKey)}`} style={{ color: 'inherit' }}>{bEra}</Link> : bEra}
             </div>
             <div style={{ fontFamily: 'var(--font-mono)', fontSize: 8, fontWeight: 700, color: RED_CLR, letterSpacing: '.12em', marginTop: 3, visibility: bWon ? 'visible' : 'hidden' }}>● WINNER</div>

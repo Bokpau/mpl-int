@@ -106,7 +106,7 @@ export async function MatchBreakdown({ battleId, isCurrent = true }) {
             {camp1?.is_winner && (
               <span style={{ fontFamily: 'var(--font-mono)', fontSize: 9, fontWeight: 800, color: 'var(--win)', letterSpacing: '.12em', border: '1px solid var(--win)', padding: '2px 6px', flexShrink: 0 }}>WIN</span>
             )}
-            <span style={{ fontFamily: 'var(--font-display)', fontSize: 28, textTransform: 'uppercase', color: 'var(--text)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{camp1?.team_code}</span>
+            <span style={{ fontFamily: 'var(--font-display)', fontSize: 28, textTransform: 'uppercase', color: 'var(--text)', whiteSpace: 'nowrap' }}>{camp1?.team_code}</span>
             <Flag campid={1} />
             <Logo campid={1} />
           </div>
@@ -118,7 +118,7 @@ export async function MatchBreakdown({ battleId, isCurrent = true }) {
           <div className="masthead-side away">
             <Logo campid={2} />
             <Flag campid={2} />
-            <span style={{ fontFamily: 'var(--font-display)', fontSize: 28, textTransform: 'uppercase', color: 'var(--text)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{camp2?.team_code}</span>
+            <span style={{ fontFamily: 'var(--font-display)', fontSize: 28, textTransform: 'uppercase', color: 'var(--text)', whiteSpace: 'nowrap' }}>{camp2?.team_code}</span>
             {camp2?.is_winner && (
               <span style={{ fontFamily: 'var(--font-mono)', fontSize: 9, fontWeight: 800, color: 'var(--win)', letterSpacing: '.12em', border: '1px solid var(--win)', padding: '2px 6px', flexShrink: 0 }}>WIN</span>
             )}
