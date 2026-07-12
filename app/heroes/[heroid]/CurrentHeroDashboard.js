@@ -768,7 +768,7 @@ export default function CurrentHeroDashboard({ heroid, scope, season, initialOve
                       <tr key={t.opp_team}>
                         <td className="sticky-col-player">
                           <Link href={`/teams/${t.opp_team}`} style={{ display: 'flex', alignItems: 'center', gap: 8, color: 'var(--text)' }}>
-                            <TeamImg code={t.opp_team} size={28} />
+                            <TeamLogo src={t.opp_team_logo_dark} fallbackSrc={img.team(t.opp_team)} alt={t.opp_team} style={{ width: 28, height: 28, objectFit: 'contain' }} />
                             <span style={{ fontWeight: 600 }}>{t.opp_team}</span>
                           </Link>
                         </td>

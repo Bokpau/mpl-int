@@ -629,7 +629,7 @@ export default function CurrentTeamDashboard({ teamKey, scope, season, initial }
                             <tr key={r.opp_code} style={{ borderBottom: '1px solid rgba(255,255,255,.05)' }}>
                               <td style={{ padding: '8px 10px', whiteSpace: 'nowrap' }}>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                                  <TeamLogo src={img.team(r.opp_code)} fallbackSrc="" alt="" className="avatar sq" style={{ width: 22, height: 22, objectFit: 'contain' }} />
+                                  <TeamLogo src={r.opp_logo_dark} fallbackSrc={img.team(r.opp_code)} alt={r.opp_code} className="avatar sq" style={{ width: 22, height: 22, objectFit: 'contain' }} />
                                   <span style={{ fontWeight: 700, fontSize: 13 }}>{r.opp_code}</span>
                                 </div>
                               </td>
@@ -672,7 +672,7 @@ export default function CurrentTeamDashboard({ teamKey, scope, season, initial }
                   <tr key={opp} style={{ borderBottom: '1px solid var(--border)', verticalAlign: 'middle' }}>
                     <td style={{ padding: '12px 10px', whiteSpace: 'nowrap' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                        <TeamLogo src={img.team(opp)} fallbackSrc="" alt="" className="avatar sq" style={{ width: 24, height: 24, objectFit: 'contain' }} />
+                        <TeamLogo src={oppSeries[0]?.opp_logo_dark} fallbackSrc={img.team(opp)} alt={opp} className="avatar sq" style={{ width: 24, height: 24, objectFit: 'contain' }} />
                         <span style={{ fontWeight: 700, fontSize: 14, color: 'var(--text)' }}>{opp}</span>
                       </div>
                     </td>
