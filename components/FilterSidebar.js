@@ -75,7 +75,6 @@ export default function FilterSidebar({
   // clears those extras alongside the built-in ones.
   extrasActive, resetExtras,
 }) {
-  const [mobileOpen, setMobileOpen] = useState(false);
   const sectionClass = layout === 'bar' ? 'filter-group' : 'filter-section';
 
   const isFiltered = phase !== 'overall' || (segment && segment !== 'all') || !!extrasActive || !!(patch && patch !== 'all') || (side && side !== 'overall') || (result && result !== 'all');
@@ -430,25 +429,8 @@ export default function FilterSidebar({
   }
 
   return (
-    <>
-      {/* Mobile toggle button */}
-      <button
-        className="filter-toggle-btn"
-        onClick={() => setMobileOpen(o => !o)}
-        aria-expanded={mobileOpen}
-        aria-controls="filter-sidebar"
-      >
-        <svg width={14} height={14} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
-          <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/>
-          <line x1="3" y1="18" x2="21" y2="18"/>
-        </svg>
-        Filters
-      </button>
-
-      {/* Desktop sidebar + mobile sheet */}
-      <aside id="filter-sidebar" className={`filter-sidebar${mobileOpen ? ' open' : ''}`} role="navigation" aria-label="Stat filters">
-        {body}
-      </aside>
-    </>
+    <aside id="filter-sidebar" className="filter-sidebar" role="navigation" aria-label="Stat filters">
+      {body}
+    </aside>
   );
 }
