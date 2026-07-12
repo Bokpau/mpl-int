@@ -180,6 +180,11 @@ main { padding-bottom: 80px; }
   color: var(--text); padding: 8px 12px; font-size: 13px; min-width: 150px;
 }
 
+/* FilterSidebar layout="bar" — same .filterbar/.filter-group shell as FilterBar,
+   reused for stat-dashboard filters (Stage/Patch/Side/W-L/Role) so they run in
+   one wrapping row instead of a tall sticky rail. */
+.hero-filterbar { margin-bottom: 24px; }
+
 /* ─── Cards / grid ──────────────────────────────────────────────── */
 .cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 14px; padding: 22px 0; }
 .card {
@@ -894,14 +899,15 @@ table.h2h td .sub { font-size: 11px; }
 }
 
 @media (max-width: 767px) {
-  /* Restack instead of squeeze: num+time+detail on row 1, each team's picks
-     get their own full-width row below — nobody fights for horizontal space. */
+  /* Row 1: G# tag + time + detail link (compact, plenty of room).
+     Row 2: both teams' picks together, home and away side by side — the WIN
+     badge stays attached to whichever team won and sits in normal flow right
+     at the seam between the two halves, reading as picks / indicator / picks. */
   .game-row {
-    grid-template-columns: 28px 1fr auto;
+    grid-template-columns: repeat(12, 1fr);
     grid-template-areas:
-      "num center detail"
-      "home home home"
-      "away away away";
+      "num num center center center center center center detail detail detail detail"
+      "home home home home home home away away away away away away";
     row-gap: 8px;
     padding: 10px 12px;
     min-height: 0;
@@ -913,14 +919,37 @@ table.h2h td .sub { font-size: 11px; }
     width: auto;
     height: auto;
     position: static;
+    min-width: 0;
   }
-  .game-row__picks-container.home { grid-area: home; }
-  .game-row__picks-container.away { grid-area: away; margin-left: 0; }
+  .game-row__picks-container.home {
+    grid-area: home;
+    justify-content: flex-end;
+  }
+  .game-row__picks-container.away {
+    grid-area: away;
+    justify-content: flex-start;
+    margin-left: 0;
+  }
+  .game-row__picks {
+    gap: 2px;
+  }
+  .game-row__hero-pick {
+    width: 20px !important;
+    height: 20px !important;
+  }
+  .game-row__hero-pick-img {
+    width: 20px !important;
+    height: 20px !important;
+  }
   .game-row__win-badge {
     position: static;
     transform: none;
-    margin: 0 6px;
+    flex-shrink: 0;
+    font-size: 7px;
+    padding: 1px 4px;
   }
+  .game-row__picks-container.home .game-row__win-badge { margin-left: 3px; }
+  .game-row__picks-container.away .game-row__win-badge { margin-right: 3px; }
   .game-row__prio {
     display: none;
   }
@@ -1190,6 +1219,30 @@ table.h2h td .sub { font-size: 11px; }
 }
 @media (max-width: 479px) {
   .team-vs-team-header { grid-template-columns: 1fr; justify-items: center; text-align: center; gap: 12px; }
+}
+
+/* CurrentHeroDashboard — Draft Synergy, 3 tables side by side, wraps below 780px */
+.hero-synergy-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 24px;
+  margin-bottom: 32px;
+}
+
+/* CurrentHeroDashboard — 4-stat bordered strip. Border dividers driven by
+   nth-child instead of a JS index so the 2x2 wrap at xs still looks intentional
+   (no orphaned right-border on the last column of each row). */
+.hero-headline-stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  border: 1px solid var(--border);
+}
+.hero-headline-stats > div { border-right: 1px solid var(--border); }
+.hero-headline-stats > div:last-child { border-right: none; }
+@media (max-width: 479px) {
+  .hero-headline-stats { grid-template-columns: repeat(2, 1fr); }
+  .hero-headline-stats > div:nth-child(2n) { border-right: none; }
+  .hero-headline-stats > div:nth-child(n+3) { border-top: 1px solid var(--border); }
 }
 
 /* MatchBreakdown — masthead team rows. min-width:0 lets team-code text ellipsis

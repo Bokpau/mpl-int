@@ -513,16 +513,15 @@ export default function CurrentHeroDashboard({ heroid, scope, season, initialOve
 
       {/* ── 4 Headline Stats ── */}
       {total > 0 && (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', border: '1px solid var(--border)', marginBottom: 24 }}>
+        <div className="hero-headline-stats" style={{ marginBottom: 24 }}>
           {[
             { label: 'Games', value: total },
             { label: 'Win Rate', value: winP + '%', color: winP >= 50 ? 'var(--win)' : 'var(--loss)' },
             { label: 'Pick Rate', value: draftData?.pick_rate != null ? draftData.pick_rate + '%' : '—' },
             { label: 'Ban Rate', value: draftData?.ban_rate != null ? draftData.ban_rate + '%' : '—' },
-          ].map((stat, i) => (
+          ].map((stat) => (
             <div key={stat.label} style={{
               padding: '16px 20px',
-              borderRight: i < 3 ? '1px solid var(--border)' : 'none',
               background: 'var(--surface)',
             }}>
               <div style={{ fontFamily: 'var(--font-mono)', fontSize: 10, color: 'var(--muted2)', letterSpacing: '.08em', textTransform: 'uppercase', marginBottom: 6 }}>{stat.label}</div>
@@ -532,20 +531,18 @@ export default function CurrentHeroDashboard({ heroid, scope, season, initialOve
         </div>
       )}
 
-      <div className="page-layout">
-        {/* ── Left Sidebar ── */}
-        <FilterSidebar
-          phase={phase} setPhase={setPhase}
-          side={side} setSide={setSide}
-          result={result} setResult={setResult}
-          patch={patch} setPatch={setPatch} patches={patches}
-          roleFilter={heroBaseRoles.length > 1 ? roleFilter : undefined}
-          setRoleFilter={heroBaseRoles.length > 1 ? setRoleFilter : undefined}
-        />
+      {/* ── Filters ── */}
+      <FilterSidebar
+        layout="bar"
+        phase={phase} setPhase={setPhase}
+        side={side} setSide={setSide}
+        result={result} setResult={setResult}
+        patch={patch} setPatch={setPatch} patches={patches}
+        roleFilter={heroBaseRoles.length > 1 ? roleFilter : undefined}
+        setRoleFilter={heroBaseRoles.length > 1 ? setRoleFilter : undefined}
+      />
 
-        {/* ── Main Content ── */}
-        <div className="sidebar-content">
-          {/* ── Performance Overview ── */}
+      {/* ── Performance Overview ── */}
           <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
             <div className="section-header" style={{ marginBottom: 0 }}>Performance Overview</div>
             <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
@@ -628,7 +625,7 @@ export default function CurrentHeroDashboard({ heroid, scope, season, initialOve
             // Phase, patch &amp; side filters apply
           </p>
           {synergyLoad ? <div className="loading" style={{ marginBottom: 32 }} /> : (
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 24, marginBottom: 32 }}>
+            <div className="hero-synergy-grid">
               <div>
                 <div style={{ fontFamily: 'var(--font-mono)', fontSize: 10, color: 'var(--win)', letterSpacing: '.08em', marginBottom: 10, fontWeight: 700 }}>
                   PLAYED WITH ({synergy?.played_with?.length || 0} heroes)
@@ -1046,8 +1043,6 @@ export default function CurrentHeroDashboard({ heroid, scope, season, initialOve
               )}
             </div>
           </details>
-        </div>
-      </div>
     </div>
   );
 }

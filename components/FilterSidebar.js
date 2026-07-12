@@ -46,6 +46,10 @@ const selStyle = {
  * All filter props are optional — omit them to hide that section.
  */
 export default function FilterSidebar({
+  // 'sidebar' (default): sticky 200px left rail, sections stack vertically.
+  // 'bar': horizontal wrapping row above the content — for pages with few
+  // enough filter groups that a sidebar wastes vertical space.
+  layout = 'sidebar',
   // Section rendered above Season (e.g. tab switcher — the broadest filter)
   topSection,
   // Season / phase
@@ -72,6 +76,7 @@ export default function FilterSidebar({
   extrasActive, resetExtras,
 }) {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const sectionClass = layout === 'bar' ? 'filter-group' : 'filter-section';
 
   const isFiltered = phase !== 'overall' || (segment && segment !== 'all') || !!extrasActive || !!(patch && patch !== 'all') || (side && side !== 'overall') || (result && result !== 'all');
   const resetFilters = () => {
@@ -92,7 +97,7 @@ export default function FilterSidebar({
     <>
       {/* TOP SECTION (broadest filter, e.g. tab switcher) */}
       {topSection && (
-        <div className="filter-section" style={{ background: 'transparent', border: 'none', padding: 0, borderBottom: '1px solid var(--border)', marginBottom: 16, paddingBottom: 12, borderRadius: 0 }}>
+        <div className={sectionClass} style={{ background: 'transparent', border: 'none', padding: 0, borderBottom: '1px solid var(--border)', marginBottom: 16, paddingBottom: 12, borderRadius: 0 }}>
           {topSection}
         </div>
       )}
@@ -125,7 +130,7 @@ export default function FilterSidebar({
 
       {/* SEASON */}
       {setPhase && (
-        <div className="filter-section">
+        <div className={sectionClass}>
           <div className="filter-section-label">Stage</div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 4 }}>
             {[
@@ -154,7 +159,7 @@ export default function FilterSidebar({
 
       {/* SEGMENT / WEEK */}
       {setSegment && (
-        <div className="filter-section">
+        <div className={sectionClass}>
           <div className="filter-section-label">Segment</div>
           <select value={segment} onChange={e => setSegment(e.target.value)} style={selStyle}>
             <option value="all">All Games</option>
@@ -229,7 +234,7 @@ export default function FilterSidebar({
 
       {/* PATCH */}
       {setPatch && patches && patches.length > 0 && (
-        <div className="filter-section">
+        <div className={sectionClass}>
           <div className="filter-section-label">Patch</div>
           <div style={{ display: 'flex', gap: 4, overflowX: 'auto', scrollbarWidth: 'none', paddingBottom: 2 }}>
             <button
@@ -273,7 +278,7 @@ export default function FilterSidebar({
 
       {/* SIDE */}
       {setSide && (
-        <div className="filter-section">
+        <div className={sectionClass}>
           <div className="filter-section-label">Side</div>
           <div style={{ display: 'flex', gap: 4 }}>
             {[
@@ -302,7 +307,7 @@ export default function FilterSidebar({
 
       {/* W/L */}
       {setResult && (
-        <div className="filter-section">
+        <div className={sectionClass}>
           <div className="filter-section-label">W/L</div>
           <div style={{ display: 'flex', gap: 4 }}>
             {[
@@ -331,7 +336,7 @@ export default function FilterSidebar({
 
       {/* ROLE */}
       {setRoleFilter && (
-        <div className="filter-section">
+        <div className={sectionClass}>
           <div className="filter-section-label">Role</div>
           <div style={{ display: 'flex', gap: 4 }}>
             <button className={`filter-pill${roleFilter === 'ALL' ? ' active' : ''}`}
@@ -371,7 +376,7 @@ export default function FilterSidebar({
 
       {/* TEAM */}
       {teams && setTeamFilter && (
-        <div className="filter-section">
+        <div className={sectionClass}>
           <div className="filter-section-label">Team</div>
           <div style={{ display: 'flex', gap: 4, overflowX: 'auto', scrollbarWidth: 'none', paddingBottom: 2 }}>
             <button className={`filter-pill${teamFilter === 'ALL' ? ' active' : ''}`}
@@ -413,6 +418,16 @@ export default function FilterSidebar({
       {extras}
     </>
   );
+
+  if (layout === 'bar') {
+    // Horizontal row, wraps naturally at narrow widths — no sticky rail, no
+    // mobile off-canvas sheet needed since it's already compact and in-flow.
+    return (
+      <div className="filterbar hero-filterbar" role="navigation" aria-label="Stat filters">
+        {body}
+      </div>
+    );
+  }
 
   return (
     <>
