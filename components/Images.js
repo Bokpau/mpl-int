@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import { img, PLACEHOLDER_HERO, PLACEHOLDER_ITEM, cdnify } from '../lib/images';
 
 // Stopgap for 2 MSC 2026 players whose player_era_photo row isn't seeded yet
@@ -16,7 +17,7 @@ const PHOTO_FALLBACK = {
 // by IGN, which doesn't cover MSC 2026 players — so PlayerAvatar shows the hero /
 // an initial placeholder instead (a per-era photo can be wired in later).
 
-function ImgWithFallback({ src, fallback, alt, style, className }) {
+function ImgWithFallback({ src, fallback, alt, style, className, loading = 'lazy', ...props }) {
   return (
     <img
       src={src}
@@ -24,51 +25,54 @@ function ImgWithFallback({ src, fallback, alt, style, className }) {
       style={style}
       className={className}
       referrerPolicy="no-referrer"
+      loading={loading}
+      decoding="async"
       onError={(e) => { if (fallback && e.target.src !== fallback) { e.target.src = fallback; } e.target.onerror = null; }}
+      {...props}
     />
   );
 }
 
-export function HeroImg({ heroid, size = 40, style = {}, alt }) {
+export function HeroImg({ heroid, size = 40, style = {}, alt, ...props }) {
   if (!heroid) return <div style={{ width: size, height: size, borderRadius: '50%', background: 'var(--surface2)', ...style }} />;
   return <ImgWithFallback src={img.hero(heroid)} fallback={PLACEHOLDER_HERO} alt={alt ?? `Hero ${heroid}`}
-    style={{ width: size, height: size, borderRadius: '50%', objectFit: 'cover', ...style }} />;
+    style={{ width: size, height: size, borderRadius: '50%', objectFit: 'cover', ...style }} {...props} />;
 }
 
-export function HeroBanImg({ heroid, size = 40, style = {}, alt }) {
+export function HeroBanImg({ heroid, size = 40, style = {}, alt, ...props }) {
   if (!heroid) return <div style={{ width: size, height: size, background: 'var(--surface2)', ...style }} />;
   return <ImgWithFallback src={img.heroBan(heroid)} fallback={PLACEHOLDER_HERO} alt={alt ?? `Ban ${heroid}`}
-    style={{ width: size, height: size, objectFit: 'cover', ...style }} />;
+    style={{ width: size, height: size, objectFit: 'cover', ...style }} {...props} />;
 }
 
-export function TeamImg({ code, size = 32, style = {}, alt }) {
+export function TeamImg({ code, size = 32, style = {}, alt, ...props }) {
   if (!code) return <div style={{ width: size, height: size, background: 'var(--surface2)', ...style }} />;
   return <ImgWithFallback src={img.team(code)} fallback="" alt={alt ?? `Team ${code}`}
-    style={{ width: size, height: size, objectFit: 'contain', ...style }} />;
+    style={{ width: size, height: size, objectFit: 'contain', ...style }} {...props} />;
 }
 
-export function RoleImg({ role, size = 20, style = {}, alt }) {
+export function RoleImg({ role, size = 20, style = {}, alt, ...props }) {
   if (!role) return null;
   return <ImgWithFallback src={img.role(role)} fallback="" alt={alt ?? role}
-    style={{ width: size, height: size, objectFit: 'contain', ...style }} />;
+    style={{ width: size, height: size, objectFit: 'contain', ...style }} {...props} />;
 }
 
-export function ItemImg({ equipId, size = 28, style = {}, alt }) {
+export function ItemImg({ equipId, size = 28, style = {}, alt, ...props }) {
   if (!equipId) return <div style={{ width: size, height: size, background: 'var(--surface2)', ...style }} />;
   return <ImgWithFallback src={img.item(equipId)} fallback={PLACEHOLDER_ITEM} alt={alt ?? `Item ${equipId}`}
-    style={{ width: size, height: size, objectFit: 'cover', ...style }} />;
+    style={{ width: size, height: size, objectFit: 'cover', ...style }} {...props} />;
 }
 
-export function SkillImg({ skillid, size = 28, style = {}, alt }) {
+export function SkillImg({ skillid, size = 28, style = {}, alt, ...props }) {
   if (!skillid) return null;
   return <ImgWithFallback src={img.skill(skillid)} fallback="" alt={alt ?? `Spell ${skillid}`}
-    style={{ width: size, height: size, borderRadius: 4, objectFit: 'cover', ...style }} />;
+    style={{ width: size, height: size, borderRadius: 4, objectFit: 'cover', ...style }} {...props} />;
 }
 
-export function RuneImg({ runeMap, size = 24, style = {}, alt }) {
+export function RuneImg({ runeMap, size = 24, style = {}, alt, ...props }) {
   if (!runeMap) return null;
   return <ImgWithFallback src={img.rune(runeMap)} fallback="" alt={alt ?? `Rune ${runeMap}`}
-    style={{ width: size, height: size, objectFit: 'contain', ...style }} />;
+    style={{ width: size, height: size, objectFit: 'contain', ...style }} {...props} />;
 }
 
 // Initials fallback when there's no photo.
@@ -95,6 +99,8 @@ export function PlayerPhoto({ photoUrl, name, size = 32, zoom = 1.4, style = {},
   // Extract image-specific styles passed to the container's style prop (like objectPosition)
   const { objectPosition, objectFit, borderRadius = '50%', ...containerStyle } = style;
 
+  const numSize = parseInt(size, 10) || 32;
+
   return (
     <div
       className={className}
@@ -107,11 +113,14 @@ export function PlayerPhoto({ photoUrl, name, size = 32, zoom = 1.4, style = {},
     >
       {initial}
       {src && (
-        <img
+        <Image
           src={src}
           alt={name || ''}
+          width={numSize * 2} // Retina-friendly double resolution
+          height={numSize * 2}
+          priority={numSize >= 88} // Large detail/masthead photos load eagerly
           referrerPolicy="no-referrer"
-          onError={(e) => { e.target.style.display = 'none'; }}
+          onError={(e) => { e.currentTarget.style.display = 'none'; }}
           style={{
             position: 'absolute', inset: 0, width: '100%', height: '100%',
             objectFit: objectFit || 'cover',

@@ -37,6 +37,22 @@ const securityHeaders = [
 ];
 
 const nextConfig = {
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'cdn.jsdelivr.net',
+      },
+      {
+        protocol: 'https',
+        hostname: 'raw.githubusercontent.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'media.aerena.gg',
+      },
+    ],
+  },
   async headers() {
     return [{ source: '/:path*', headers: securityHeaders }];
   },

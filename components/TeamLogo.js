@@ -15,6 +15,7 @@ export default function TeamLogo({
   alt = '',
   style = {},
   className = '',
+  loading = 'lazy',
   ...props
 }) {
   // Route any raw.githubusercontent URL (incl. DB-stored team_logo_dark) through
@@ -44,6 +45,8 @@ export default function TeamLogo({
         display: currentSrc ? (style.display || 'inline-block') : 'none',
       }}
       referrerPolicy="no-referrer"
+      loading={loading}
+      decoding="async"
       onError={() => {
         // If we are currently trying the primary `src` and it fails, attempt `fallbackSrc`
         if (!hasFailedPrimary && fallbackSrc && currentSrc !== fallbackSrc) {
