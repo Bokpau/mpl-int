@@ -13,7 +13,7 @@ export default async function MatchesPage({ searchParams }) {
       <Suspense fallback={<div className="filterbar" />}>
         <FilterBar editions={sel.editions} featured={sel.featured} showEvent={false} showEdition={false} />
       </Suspense>
-      <MatchesListView q={sel.q} label={sel.label} />
+      <MatchesListView q={sel.q} label={sel.label} isHistory={false} activeStage={sel.eff.stage} />
     </>
   );
 }

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
+import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import MatchCard from '../MatchCard';
 import MatchResultsGrid from '../MatchResultsGrid';
 import PageHead from '../PageHead';
@@ -50,13 +51,20 @@ const STAGES = [
   { k: 'main', l: 'Main' },
 ];
 
-export default function MatchesListView({ q = '', label = '' }) {
+export default function MatchesListView({ q = '', label = '', isHistory = false, activeStage = '' }) {
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+
   const [games, setGames] = useState([]);
   const [teams, setTeams] = useState([]);
   const [schedule, setSchedule] = useState([]);
   const [eraTeams, setEraTeams] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [stage, setStage] = useState('all');
+
+  // Derive stage filter from prop/URL, defaulting to 'all'
+  const stage = activeStage || 'all';
+
   const [week, setWeek] = useState(null);
   const [histPhase, setHistPhase] = useState(null); // DB stage name filter for history editions
   const [view, setView] = useState('list');
@@ -161,8 +169,8 @@ export default function MatchesListView({ q = '', label = '' }) {
   const season = useMemo(() => games[0]?.season ?? null, [games]);
   const hasWildCard = wildCardGames.length > 0;
 
-  // History mode: no week data in DB. Use per-stage phase chips instead of WC/Main/Week.
-  const isHistoryMode = !loading && games.length > 0 && weeks.length === 0;
+  // History mode: explicitly controlled by prop
+  const isHistoryMode = isHistory;
 
   // Ordered list of DB stages for history phase chips, chronological.
   // Stages with merged_into are folded into their parent — no separate chip.
@@ -183,12 +191,30 @@ export default function MatchesListView({ q = '', label = '' }) {
     return ordered;
   }, [isHistoryMode, games, season]);
 
+  const setStageReset = (k) => {
+    const params = new URLSearchParams(searchParams.toString());
+    if (k && k !== 'all') {
+      params.set('stage', k);
+    } else {
+      params.delete('stage');
+    }
+    setWeek(null);
+    setHistPhase(null);
+    router.push(`${pathname}?${params.toString()}`);
+  };
+
   // Reset stage to 'all' when switching to an edition that has no qualifier games.
   useEffect(() => {
-    if (!loading && !hasWildCard && stage === 'qualifier') setStage('all');
+    if (!loading && !hasWildCard && stage === 'qualifier') {
+      setStageReset('all');
+    }
   }, [loading, hasWildCard, stage]);
 
-  const setStageReset = (k) => { setStage(k); setWeek(null); };
+  // Reset week and histPhase whenever stage changes (either via top FilterBar or bottom chips)
+  useEffect(() => {
+    setWeek(null);
+    setHistPhase(null);
+  }, [stage]);
 
   // History-mode: group series by stage → day for the list view render.
   const histGroups = useMemo(() => {
