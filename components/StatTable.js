@@ -282,12 +282,26 @@ function Cell({ col, row, rankIndex, stickyClass = '' }) {
 
     case 'hero': {
       const portrait = img.hero(row[col.idKey]);
+      const href = col.hrefBase
+        ? (col.query
+            ? `${col.hrefBase}${encodeURIComponent(row[col.hrefKey])}?${new URLSearchParams(col.query).toString()}`
+            : `${col.hrefBase}${encodeURIComponent(row[col.hrefKey])}`)
+        : null;
+      const content = (
+        <span className="idcell">
+          {portrait ? <img className="avatar" src={portrait} alt="" /> : null}
+          <span className="name">{row[col.nameKey] || '—'}</span>
+        </span>
+      );
       return (
         <td className={`l ${stickyClass}`.trim()}>
-          <span className="idcell">
-            {portrait ? <img className="avatar" src={portrait} alt="" /> : null}
-            <span className="name">{row[col.nameKey] || '—'}</span>
-          </span>
+          {href ? (
+            <Link href={href} onClick={(e) => e.stopPropagation()}>
+              {content}
+            </Link>
+          ) : (
+            content
+          )}
         </td>
       );
     }
