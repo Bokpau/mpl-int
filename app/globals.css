@@ -228,7 +228,7 @@ main { padding-bottom: 80px; }
 table { width: 100%; border-collapse: collapse; font-size: 14px; }
 thead th {
   text-align: right; padding: 12px 14px; font-size: 11px; text-transform: uppercase;
-  letter-spacing: 0.5px; color: var(--muted2); background: var(--surface2);
+  font-family: var(--font-mono); font-weight: 600; letter-spacing: 0.12em; color: var(--muted2); background: var(--surface2);
   border-bottom: 1px solid var(--border); white-space: nowrap; position: sticky; top: 0; z-index: 2;
 }
 thead th.l, tbody td.l { text-align: left; }
@@ -1625,10 +1625,16 @@ table.h2h td .sub { font-size: 11px; }
   margin-left: 4px;
 }
 
-.tbl.no-sort th {
+.tbl.no-sort th,
+.tbl th.no-sort {
   cursor: default;
 }
-.tbl.no-sort th::after {
+.tbl.no-sort th:hover,
+.tbl th.no-sort:hover {
+  color: var(--muted2);
+}
+.tbl.no-sort th::after,
+.tbl th.no-sort::after {
   content: none !important;
 }
 

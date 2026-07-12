@@ -5,55 +5,13 @@ import Link from 'next/link';
 import { HeroImg, RoleImg, PlayerAvatar, PlayerPhoto } from '../Images';
 import TeamLogo from '../TeamLogo';
 import PageHead from '../PageHead';
+import SynergyTable from '../SynergyTable';
 import { img } from '../../lib/images';
 
 const dash = (v) => (v !== null && v !== undefined && v !== 0) ? v : '—';
 const ROLE_ORDER = ['EXP LANE', 'JUNGLE', 'MID LANE', 'ROAM', 'GOLD LANE'];
 
-// Reusable synergy/matchup table
-function HeroTable({ rows, emptyMsg }) {
-  if (!rows || !rows.length) return (
-    <div style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--muted2)', padding: '12px 0' }}>
-      {emptyMsg || '// No data'}
-    </div>
-  );
-  return (
-    <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12 }}>
-      <thead>
-        <tr style={{ borderBottom: '1px solid var(--border)' }}>
-          {['#', 'Hero', 'GP', 'W', 'L', 'WR%'].map(col => (
-            <th key={col} style={{
-              textAlign: col === '#' || col === 'Hero' ? 'left' : 'center',
-              padding: '6px 8px', fontFamily: 'var(--font-mono)', fontSize: 9, color: 'var(--muted2)',
-              borderBottom: '1px solid var(--border)', background: 'transparent', position: 'static'
-            }}>{col}</th>
-          ))}
-        </tr>
-      </thead>
-      <tbody>
-        {rows.map((hero, i) => {
-          const wr = hero.win_rate;
-          const wpClr = wr >= 50 ? 'var(--win)' : 'var(--loss)';
-          return (
-            <tr key={hero.heroid} style={{ borderBottom: '1px solid var(--border)' }}>
-              <td style={{ padding: '6px 8px', fontFamily: 'var(--font-mono)', fontSize: 10, color: 'var(--muted2)' }}>{i + 1}</td>
-              <td style={{ padding: '6px 8px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                  <HeroImg heroid={hero.heroid} size={24} />
-                  <span style={{ fontWeight: 600 }}>{hero.hero_name}</span>
-                </div>
-              </td>
-              <td style={{ textAlign: 'center', padding: '6px 8px', fontFamily: 'var(--font-mono)', fontWeight: 700 }}>{hero.games}</td>
-              <td style={{ textAlign: 'center', padding: '6px 8px', fontFamily: 'var(--font-mono)', color: 'var(--win)' }}>{hero.wins}</td>
-              <td style={{ textAlign: 'center', padding: '6px 8px', fontFamily: 'var(--font-mono)', color: 'var(--loss)' }}>{hero.losses}</td>
-              <td style={{ textAlign: 'center', padding: '6px 8px', fontFamily: 'var(--font-mono)', fontWeight: 700, color: wpClr }}>{wr}%</td>
-            </tr>
-          );
-        })}
-      </tbody>
-    </table>
-  );
-}
+
 
 export default function DraftStatsView({ featured, eff, label }) {
   const scope = eff.scope || featured?.tournament_code || 'MSC';
@@ -624,7 +582,7 @@ export default function DraftStatsView({ featured, eff, label }) {
                         <div style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--win)', letterSpacing: '.08em', marginBottom: 12, fontWeight: 700, textTransform: 'uppercase' }}>
                           Played With ({synergy?.played_with?.length || 0} heroes)
                         </div>
-                        <HeroTable rows={synergy?.played_with} emptyMsg="// No team synergy data" />
+                        <SynergyTable rows={synergy?.played_with} emptyMsg="// No team synergy data" />
                       </div>
 
                       {/* Played Against */}
@@ -632,7 +590,7 @@ export default function DraftStatsView({ featured, eff, label }) {
                         <div style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--loss)', letterSpacing: '.08em', marginBottom: 12, fontWeight: 700, textTransform: 'uppercase' }}>
                           Played Against ({synergy?.played_against?.length || 0} heroes)
                         </div>
-                        <HeroTable rows={synergy?.played_against} emptyMsg="// No matchup data" />
+                        <SynergyTable rows={synergy?.played_against} emptyMsg="// No matchup data" />
                       </div>
 
                       {/* Role vs Role Matchup */}
@@ -645,7 +603,7 @@ export default function DraftStatsView({ featured, eff, label }) {
                             // Win% = {selectedHero.hero_name}'s team wins
                           </p>
                         )}
-                        <HeroTable
+                        <SynergyTable
                           rows={matchup?.matchups}
                           emptyMsg="// No role matchup data"
                         />

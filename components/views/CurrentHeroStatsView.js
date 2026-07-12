@@ -7,6 +7,7 @@ import FilterSidebar from '../FilterSidebar';
 import HeroCard from '../HeroCard';
 import HeroScatterChart from '../HeroScatterChart';
 import { SkeletonHeroGrid, SkeletonTable } from '../LoadingSkeleton';
+import SynergyTable from '../SynergyTable';
 
 const ROLES = ['EXP LANE', 'JUNGLE', 'MID LANE', 'ROAM', 'GOLD LANE'];
 
@@ -51,50 +52,7 @@ function RoleDistribution({ h }) {
   );
 }
 
-// Reusable synergy/matchup table for hero detail
-function HeroTable({ rows, emptyMsg }) {
-  if (!rows || !rows.length) return (
-    <div style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--muted2)', padding: '12px 0' }}>
-      {emptyMsg || '// No data'}
-    </div>
-  );
-  return (
-    <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12 }}>
-      <thead>
-        <tr style={{ borderBottom: '1px solid var(--border)' }}>
-          {['#', 'Hero', 'GP', 'W', 'L', 'WR%'].map(col => (
-            <th key={col} style={{
-              textAlign: col === '#' || col === 'Hero' ? 'left' : 'center',
-              padding: '6px 8px', fontFamily: 'var(--font-mono)', fontSize: 9, color: 'var(--muted2)',
-              borderBottom: '1px solid var(--border)', background: 'transparent', position: 'static'
-            }}>{col}</th>
-          ))}
-        </tr>
-      </thead>
-      <tbody>
-        {rows.map((hero, i) => {
-          const wr = hero.win_rate;
-          const wpClr = wr >= 50 ? 'var(--win)' : 'var(--loss)';
-          return (
-            <tr key={hero.heroid} style={{ borderBottom: '1px solid var(--border)' }}>
-              <td style={{ padding: '6px 8px', fontFamily: 'var(--font-mono)', fontSize: 10, color: 'var(--muted2)' }}>{i + 1}</td>
-              <td style={{ padding: '6px 8px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                  <HeroImg heroid={hero.heroid} size={24} />
-                  <span style={{ fontWeight: 600 }}>{hero.hero_name}</span>
-                </div>
-              </td>
-              <td style={{ textAlign: 'center', padding: '6px 8px', fontFamily: 'var(--font-mono)', fontWeight: 700 }}>{hero.games}</td>
-              <td style={{ textAlign: 'center', padding: '6px 8px', fontFamily: 'var(--font-mono)', color: 'var(--win)' }}>{hero.wins}</td>
-              <td style={{ textAlign: 'center', padding: '6px 8px', fontFamily: 'var(--font-mono)', color: 'var(--loss)' }}>{hero.losses}</td>
-              <td style={{ textAlign: 'center', padding: '6px 8px', fontFamily: 'var(--font-mono)', fontWeight: 700, color: wpClr }}>{wr}%</td>
-            </tr>
-          );
-        })}
-      </tbody>
-    </table>
-  );
-}
+
 
 export default function CurrentHeroStatsView({ featured, eff, label }) {
   const router = useRouter();
@@ -321,7 +279,7 @@ export default function CurrentHeroStatsView({ featured, eff, label }) {
     return (
       <th
         aria-sort={sortOrder}
-        className={isSorted ? (asc ? 'sort-asc' : 'sort-desc') : ''}
+        className={`center ${isSorted ? (asc ? 'sort-asc' : 'sort-desc') : ''}`.trim()}
         style={{ whiteSpace: 'nowrap', padding: 0 }}
       >
         <button
@@ -561,10 +519,10 @@ export default function CurrentHeroStatsView({ featured, eff, label }) {
                       <caption className="sr-only">Hero statistics — {filterLabel()}</caption>
                       <thead>
                         <tr>
-                          <th className="sticky-col-player" style={{ textAlign: 'left', cursor: 'default' }}>Hero</th>
-                          <th style={{ textAlign: 'left' }}>Role</th>
-                          <th className="center" style={{ color: 'var(--accent)', fontSize: 10 }}>O.#</th>
-                          <th className="center" style={{ color: 'var(--accent)', fontSize: 10 }}>{roleFilter !== 'ALL' ? `${roleFilter} #` : 'Role #'}</th>
+                          <th className="sticky-col-player no-sort" style={{ textAlign: 'left' }}>Hero</th>
+                          <th className="no-sort" style={{ textAlign: 'left' }}>Role</th>
+                          <th className="center no-sort" style={{ color: 'var(--accent)', fontSize: 10 }}>O.#</th>
+                          <th className="center no-sort" style={{ color: 'var(--accent)', fontSize: 10 }}>{roleFilter !== 'ALL' ? `${roleFilter} #` : 'Role #'}</th>
                           <Th col="games" label="GP" title="Games" />
                           <Th col="wins" label="W" title="Wins" />
                           <Th col="win_pct" label="Win%" title="Win rate" />
@@ -588,7 +546,7 @@ export default function CurrentHeroStatsView({ featured, eff, label }) {
                           <Th col="total_mvps" label="MVPs" title="MVPs" />
                           <Th col="total_savages" label="Savages" title="Savages" />
                           <Th col="players_played" label="Players" title="Unique players" />
-                          <th className="sticky-col-right" style={{ cursor: 'default' }} />
+                          <th className="sticky-col-right no-sort" />
                         </tr>
                       </thead>
                       <tbody>
@@ -716,7 +674,7 @@ export default function CurrentHeroStatsView({ featured, eff, label }) {
                         <div style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--win)', letterSpacing: '.08em', marginBottom: 12, fontWeight: 700, textTransform: 'uppercase' }}>
                           Played With ({synergy?.played_with?.length || 0} heroes)
                         </div>
-                        <HeroTable rows={synergy?.played_with} emptyMsg="// No team synergy data" />
+                        <SynergyTable rows={synergy?.played_with} emptyMsg="// No team synergy data" />
                       </div>
 
                       {/* Played Against */}
@@ -724,7 +682,7 @@ export default function CurrentHeroStatsView({ featured, eff, label }) {
                         <div style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--loss)', letterSpacing: '.08em', marginBottom: 12, fontWeight: 700, textTransform: 'uppercase' }}>
                           Played Against ({synergy?.played_against?.length || 0} heroes)
                         </div>
-                        <HeroTable rows={synergy?.played_against} emptyMsg="// No matchup data" />
+                        <SynergyTable rows={synergy?.played_against} emptyMsg="// No matchup data" />
                       </div>
 
                       {/* Role vs Role Matchup */}
@@ -737,7 +695,7 @@ export default function CurrentHeroStatsView({ featured, eff, label }) {
                             // Win% = {selectedHero.hero_name}'s team wins
                           </p>
                         )}
-                        <HeroTable
+                        <SynergyTable
                           rows={matchup?.matchups}
                           emptyMsg="// No role matchup data"
                         />

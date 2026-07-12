@@ -66,7 +66,7 @@ export function VsTeamsTable({ vsTeams, vsLoading }) {
         <div className="loading" style={{ margin: '20px 0' }} />
       ) : (
         <div className="tbl-wrap" style={{ border: '1px solid var(--border)' }}>
-          <table className="tbl">
+          <table className="tbl no-sort">
             <caption className="sr-only">Stats vs each opponent team</caption>
             <thead>
               <tr>

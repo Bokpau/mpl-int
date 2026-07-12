@@ -11,6 +11,7 @@ import ErrorBox from '../../../components/ErrorBox';
 import { TeamStatsTimeline } from '../../../components/TeamStatsTimeline';
 import { ObjectiveTimingChart } from '../../../components/ObjectiveTimingChart';
 import { TeamKdaDistribution } from '../../../components/TeamKdaDistribution';
+import SynergyTable from '../../../components/SynergyTable';
 
 const ROLE_ORDER = ['EXP LANE', 'JUNGLE', 'MID LANE', 'ROAM', 'GOLD LANE'];
 
@@ -38,39 +39,7 @@ function StatCard({ label, value, rank, color, sub }) {
   );
 }
 
-function SynTable({ rows, caption }) {
-  const mo = { fontFamily: 'var(--font-mono)' };
-  if (!rows || !rows.length) return <div style={{ ...mo, fontSize: 11, color: 'rgba(255,255,255,.4)', padding: '8px 0' }}>// No data</div>;
-  return (
-    <table style={{ borderCollapse: 'collapse', fontSize: 12, width: '100%' }}>
-      {caption && <caption className="sr-only">{caption}</caption>}
-      <thead>
-        <tr style={{ borderBottom: '1px solid rgba(255,255,255,.08)' }}>
-          {['#', 'Hero', 'GP', 'W', 'L', 'WR%'].map(c => (
-            <th key={c} style={{ ...mo, fontSize: 9, color: 'rgba(255,255,255,.4)', padding: '4px 6px', textAlign: c === 'Hero' ? 'left' : 'center' }}>{c}</th>
-          ))}
-        </tr>
-      </thead>
-      <tbody>
-        {rows.map((h, i) => (
-          <tr key={h.heroid} style={{ borderBottom: '1px solid rgba(255,255,255,.04)' }}>
-            <td style={{ ...mo, fontSize: 10, color: 'rgba(255,255,255,.35)', padding: '5px 6px' }}>{i + 1}</td>
-            <td style={{ padding: '5px 8px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                <HeroImg heroid={h.heroid} size={22} />
-                <span style={{ fontWeight: 600, fontSize: 12 }}>{h.hero_name}</span>
-              </div>
-            </td>
-            <td style={{ ...mo, textAlign: 'center', fontWeight: 700, padding: '5px 6px' }}>{h.games}</td>
-            <td style={{ ...mo, textAlign: 'center', color: 'var(--win)', padding: '5px 6px' }}>{h.wins}</td>
-            <td style={{ ...mo, textAlign: 'center', color: 'var(--loss)', padding: '5px 6px' }}>{h.losses}</td>
-            <td style={{ ...mo, textAlign: 'center', fontWeight: 700, color: h.win_rate >= 50 ? 'var(--win)' : 'var(--loss)', padding: '5px 6px' }}>{h.win_rate}%</td>
-          </tr>
-        ))}
-      </tbody>
-    </table>
-  );
-}
+
 
 export default function CurrentTeamDashboard({ teamKey, scope, season, initial }) {
   // Filters state (matches PlayerStatsView.js)
@@ -979,20 +948,20 @@ export default function CurrentTeamDashboard({ teamKey, scope, season, initial }
                             <div style={{ ...mo, fontSize: 10, color: 'var(--win)', fontWeight: 700, letterSpacing: '.08em', marginBottom: 8 }}>
                               PLAYED WITH ({draftSyn?.played_with?.length || 0} heroes)
                             </div>
-                            <SynTable rows={draftSyn?.played_with} caption="Synergy: Win rates when drafted together" />
+                            <SynergyTable rows={draftSyn?.played_with} caption="Synergy: Win rates when drafted together" />
                           </div>
                           <div>
                             <div style={{ ...mo, fontSize: 10, color: 'var(--loss)', fontWeight: 700, letterSpacing: '.08em', marginBottom: 8 }}>
                               PLAYED AGAINST ({draftSyn?.played_against?.length || 0} heroes)
                             </div>
-                            <SynTable rows={draftSyn?.played_against} caption="Matchup: Win rates when drafted against" />
+                            <SynergyTable rows={draftSyn?.played_against} caption="Matchup: Win rates when drafted against" />
                           </div>
                           <div>
                             <div style={{ ...mo, fontSize: 10, color: 'var(--accent)', fontWeight: 700, letterSpacing: '.08em', marginBottom: 4 }}>
                               ROLE VS ROLE {draftMu?.role ? '(' + draftMu.role + ')' : ''}
                             </div>
                             {draftMu && <p style={{ ...mo, fontSize: 9, color: 'rgba(255,255,255,.4)', marginBottom: 8 }}>// Win% = {draftHero.hero_name} team wins</p>}
-                            <SynTable rows={draftMu?.matchups} caption="Role-specific matchup statistics" />
+                            <SynergyTable rows={draftMu?.matchups} caption="Role-specific matchup statistics" />
                           </div>
                         </div>
                       </div>

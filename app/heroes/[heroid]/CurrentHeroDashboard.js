@@ -7,6 +7,7 @@ import TeamLogo from '../../../components/TeamLogo';
 import StatTable from '../../../components/StatTable';
 import { PLAYER_COLUMNS, STAT_GROUPS } from '../../../lib/columns';
 import { img } from '../../../lib/images';
+import SynergyTable from '../../../components/SynergyTable';
 
 const API = '';
 
@@ -67,42 +68,7 @@ function RoleDistribution({ s, total }) {
   );
 }
 
-function HeroSynergyTable({ rows, emptyMsg }) {
-  if (!rows?.length) return (
-    <div style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--muted)', padding: '12px 0' }}>{emptyMsg || '// No data'}</div>
-  );
-  return (
-    <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12 }}>
-      <thead>
-        <tr style={{ borderBottom: '1px solid var(--border)' }}>
-          {['#', 'Hero', 'GP', 'W', 'L', 'WR%'].map(col => (
-            <th key={col} style={{ textAlign: col === '#' || col === 'Hero' ? 'left' : 'center', padding: '4px 6px', fontFamily: 'var(--font-mono)', fontSize: 9, color: 'var(--muted)' }}>{col}</th>
-          ))}
-        </tr>
-      </thead>
-      <tbody>
-        {rows.map((h, i) => {
-          const wpClr = h.win_rate >= 50 ? 'var(--win)' : 'var(--loss)';
-          return (
-            <tr key={h.heroid || h.hero_id || h.hero_name} style={{ borderBottom: '1px solid rgba(255,255,255,.04)' }}>
-              <td style={{ padding: '5px 8px', fontFamily: 'var(--font-mono)', fontSize: 10, color: 'var(--muted)' }}>{i + 1}</td>
-              <td style={{ padding: '5px 8px' }}>
-                <Link href={`/heroes/${h.heroid || h.hero_id}`} style={{ display: 'flex', alignItems: 'center', gap: 6, textDecoration: 'none' }}>
-                  <HeroImg heroid={h.heroid || h.hero_id} size={24} />
-                  <span style={{ fontWeight: 600, color: 'var(--text)' }}>{h.hero_name}</span>
-                </Link>
-              </td>
-              <td style={{ textAlign: 'center', padding: '5px 6px', fontFamily: 'var(--font-mono)', fontWeight: 700 }}>{h.games}</td>
-              <td style={{ textAlign: 'center', padding: '5px 6px', fontFamily: 'var(--font-mono)', color: 'var(--win)' }}>{h.wins}</td>
-              <td style={{ textAlign: 'center', padding: '5px 6px', fontFamily: 'var(--font-mono)', color: 'var(--loss)' }}>{h.losses || (h.games - h.wins)}</td>
-              <td style={{ textAlign: 'center', padding: '5px 6px', fontFamily: 'var(--font-mono)', fontWeight: 700, color: wpClr }}>{h.win_rate || pct(h.wins, h.games)}%</td>
-            </tr>
-          );
-        })}
-      </tbody>
-    </table>
-  );
-}
+
 
 function DraftCard({ label, value, sub, color, dimmed }) {
   return (
@@ -630,14 +596,14 @@ export default function CurrentHeroDashboard({ heroid, scope, season, initialOve
                 <div style={{ fontFamily: 'var(--font-mono)', fontSize: 10, color: 'var(--win)', letterSpacing: '.08em', marginBottom: 10, fontWeight: 700 }}>
                   PLAYED WITH ({synergy?.played_with?.length || 0} heroes)
                 </div>
-                <HeroSynergyTable rows={synergy?.played_with} emptyMsg="// No data" />
+                <SynergyTable rows={synergy?.played_with} emptyMsg="// No data" />
               </div>
 
               <div>
                 <div style={{ fontFamily: 'var(--font-mono)', fontSize: 10, color: 'var(--loss)', letterSpacing: '.08em', marginBottom: 10, fontWeight: 700 }}>
                   PLAYED AGAINST ({synergy?.played_against?.length || 0} heroes)
                 </div>
-                <HeroSynergyTable rows={synergy?.played_against} emptyMsg="// No data" />
+                <SynergyTable rows={synergy?.played_against} emptyMsg="// No data" />
               </div>
 
               <div>
@@ -649,7 +615,7 @@ export default function CurrentHeroDashboard({ heroid, scope, season, initialOve
                     // Win% = {s.hero_name} team wins
                   </p>
                 )}
-                <HeroSynergyTable rows={matchup?.matchups} emptyMsg="// No role matchup data" />
+                <SynergyTable rows={matchup?.matchups} emptyMsg="// No role matchup data" />
               </div>
             </div>
           )}
@@ -715,7 +681,7 @@ export default function CurrentHeroDashboard({ heroid, scope, season, initialOve
             const rankLabel = compareRole || 'overall';
             return (
               <div className="tbl-wrap" style={{ marginBottom: 32 }}>
-                <table className="tbl">
+                <table className="tbl no-sort">
                   <thead>
                     <tr>
                       <th style={{ textAlign: 'right', width: '38%' }}>
@@ -783,10 +749,10 @@ export default function CurrentHeroDashboard({ heroid, scope, season, initialOve
           <div className="section-header">Stats vs Teams</div>
           {vsLoading ? <div className="loading" style={{ marginBottom: 32 }} /> : (
             <div className="tbl-wrap" style={{ marginBottom: 32 }}>
-              <table className="tbl">
+              <table className="tbl no-sort">
                 <thead>
                   <tr>
-                    <th style={{ position: 'sticky', top: 0, left: 0, zIndex: 3, background: 'var(--bg)' }}>Opponent</th>
+                    <th className="sticky-col-player no-sort">Opponent</th>
                     <th className="center">GP</th>
                     <th className="center">W</th>
                     <th className="center">Win%</th>
@@ -800,7 +766,7 @@ export default function CurrentHeroDashboard({ heroid, scope, season, initialOve
                     const wp = t.games > 0 ? Math.round(t.wins / t.games * 100) : 0;
                     return (
                       <tr key={t.opp_team}>
-                        <td style={{ position: 'sticky', left: 0, zIndex: 2, background: 'var(--bg)' }}>
+                        <td className="sticky-col-player">
                           <Link href={`/teams/${t.opp_team}`} style={{ display: 'flex', alignItems: 'center', gap: 8, color: 'var(--text)' }}>
                             <TeamImg code={t.opp_team} size={28} />
                             <span style={{ fontWeight: 600 }}>{t.opp_team}</span>
@@ -829,7 +795,7 @@ export default function CurrentHeroDashboard({ heroid, scope, season, initialOve
             if (!W && !L) return <div className="empty" style={{ marginBottom: 32 }}>// No games for this filter</div>;
             return (
               <div className="tbl-wrap" style={{ marginBottom: 32 }}>
-                <table className="tbl">
+                <table className="tbl no-sort">
                   <thead>
                     <tr>
                       <th style={{ textAlign: 'right', width: '38%' }}>
@@ -879,11 +845,11 @@ export default function CurrentHeroDashboard({ heroid, scope, season, initialOve
             <div className="collapsible-body">
               {gamesLoad ? <div className="loading" /> : (
                 <div className="tbl-wrap">
-                  <table className="tbl">
+                  <table className="tbl no-sort">
                     <thead>
                       <tr>
-                        <th style={{ position: 'sticky', top: 0, left: 0, zIndex: 3, background: 'var(--bg)' }}>Match</th>
-                        <th style={{ position: 'sticky', top: 0, left: 120, zIndex: 3, background: 'var(--bg)' }}>Player</th>
+                        <th className="sticky-col-match no-sort" style={{ top: 0 }}>Match</th>
+                        <th className="sticky-col-hero no-sort" style={{ top: 0 }}>Player</th>
                         <th className="center" style={{ whiteSpace: 'nowrap' }}>Skill · Emblem</th>
                         <th className="center">Items</th>
                         <th className="center">Role</th>
@@ -941,7 +907,7 @@ export default function CurrentHeroDashboard({ heroid, scope, season, initialOve
                         const p1 = v => v != null ? v + '%' : '--';
                         return (
                           <tr key={g.battle_id + '-' + g.roleid} style={{ background: g.is_winner ? undefined : 'rgba(255,60,60,.02)' }}>
-                            <td style={{ position: 'sticky', left: 0, zIndex: 2, background: '#080810' }}>
+                            <td className="sticky-col-match">
                               <Link href={`/matches/${g.battle_id}`} style={{ color: 'var(--text)' }}>
                                 <div style={{ fontWeight: 600, fontSize: 13 }}>{g.series_name || g.room_name || '--'}</div>
                                 <div style={{ fontFamily: 'var(--font-mono)', fontSize: 10, color: 'var(--muted)' }}>
@@ -949,7 +915,7 @@ export default function CurrentHeroDashboard({ heroid, scope, season, initialOve
                                 </div>
                               </Link>
                             </td>
-                            <td style={{ position: 'sticky', left: 120, zIndex: 2, background: '#080810' }}>
+                            <td className="sticky-col-hero">
                               <Link href={`/players/${encodeURIComponent(g.player_name)}`} style={{ display: 'flex', alignItems: 'center', gap: 6, textDecoration: 'none' }}>
                                 <PlayerPhoto photoUrl={g.photo_url} name={g.player_name} size={36} />
                                 <div>

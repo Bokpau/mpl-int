@@ -360,7 +360,7 @@ export default function CurrentPlayerDashboard({ playerKey, scope, season, initi
             <div className="section-header">Hero Pool</div>
             <div className="tbl-wrap tbl-sticky" style={{ border: '1px solid var(--border)' }}>
               {heroPoolLoading ? <div className="loading" style={{ margin: '20px 0' }} /> : (
-                <table className="tbl">
+                <table className="tbl no-sort">
                   <thead>
                     <tr>
                       <th>Hero</th>
@@ -653,7 +653,7 @@ export default function CurrentPlayerDashboard({ playerKey, scope, season, initi
               <summary><span className="section-header" style={{ marginBottom: 0 }}><span className="disclosure">▶</span>Game Log</span></summary>
               <div className="collapsible-body">
                 <div className="tbl-wrap" style={{ border: '1px solid var(--border)' }}>
-                  <table className="tbl">
+                  <table className="tbl no-sort">
                     <thead>
                       <tr>
                         <th className="sticky-col-match" style={{ top: 0 }}>Match</th>
