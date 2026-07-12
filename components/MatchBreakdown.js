@@ -101,26 +101,26 @@ export async function MatchBreakdown({ battleId, isCurrent = true }) {
           {match.match_code ? ` · ${match.match_code}` : ''}
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 24, margin: '8px 0' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12, flex: '1', justifyContent: 'flex-end' }}>
+        <div className="masthead-teams">
+          <div className="masthead-side home">
             {camp1?.is_winner && (
-              <span style={{ fontFamily: 'var(--font-mono)', fontSize: 9, fontWeight: 800, color: 'var(--win)', letterSpacing: '.12em', border: '1px solid var(--win)', padding: '2px 6px' }}>WIN</span>
+              <span style={{ fontFamily: 'var(--font-mono)', fontSize: 9, fontWeight: 800, color: 'var(--win)', letterSpacing: '.12em', border: '1px solid var(--win)', padding: '2px 6px', flexShrink: 0 }}>WIN</span>
             )}
-            <span style={{ fontFamily: 'var(--font-display)', fontSize: 28, textTransform: 'uppercase', color: 'var(--text)' }}>{camp1?.team_code}</span>
+            <span style={{ fontFamily: 'var(--font-display)', fontSize: 28, textTransform: 'uppercase', color: 'var(--text)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{camp1?.team_code}</span>
             <Flag campid={1} />
             <Logo campid={1} />
           </div>
-          <div style={{ fontFamily: 'var(--font-display)', fontSize: 28, display: 'flex', gap: 8, letterSpacing: '0.1em' }}>
+          <div style={{ fontFamily: 'var(--font-display)', fontSize: 28, display: 'flex', gap: 8, letterSpacing: '0.1em', flexShrink: 0 }}>
             <span style={{ color: 'var(--text)' }}>{camp1?.total_kills}</span>
             <span style={{ color: 'var(--muted2)' }}>–</span>
             <span style={{ color: 'var(--text)' }}>{camp2?.total_kills}</span>
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12, flex: '1', justifyContent: 'flex-start' }}>
+          <div className="masthead-side away">
             <Logo campid={2} />
             <Flag campid={2} />
-            <span style={{ fontFamily: 'var(--font-display)', fontSize: 28, textTransform: 'uppercase', color: 'var(--text)' }}>{camp2?.team_code}</span>
+            <span style={{ fontFamily: 'var(--font-display)', fontSize: 28, textTransform: 'uppercase', color: 'var(--text)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{camp2?.team_code}</span>
             {camp2?.is_winner && (
-              <span style={{ fontFamily: 'var(--font-mono)', fontSize: 9, fontWeight: 800, color: 'var(--win)', letterSpacing: '.12em', border: '1px solid var(--win)', padding: '2px 6px' }}>WIN</span>
+              <span style={{ fontFamily: 'var(--font-mono)', fontSize: 9, fontWeight: 800, color: 'var(--win)', letterSpacing: '.12em', border: '1px solid var(--win)', padding: '2px 6px', flexShrink: 0 }}>WIN</span>
             )}
           </div>
         </div>
@@ -170,7 +170,7 @@ export async function MatchBreakdown({ battleId, isCurrent = true }) {
           {draft.length > 0 && (
             <div>
               <div className="section-header" style={{ marginTop: (gameMvp?.roleid || matchMvp?.roleid) ? 12 : 0 }}>Draft</div>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+              <div className="draft-teams-grid">
                 {[camp1, camp2].map(t => {
                   if (!t) return null;
                   const isBlue = t.campid === 1;

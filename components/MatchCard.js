@@ -223,9 +223,10 @@ export default function MatchCard({ info, games, match_mvp, teamByKey = {}, roun
         </div>
       )}
 
-      {/* Score + game rows: need ~420px min on phones; scroll horizontally */}
-      <div style={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
-      <div style={{ minWidth: 420 }}>
+      {/* Score + game rows: desktop 5-col .game-row needs ~480px min; .game-row
+          restacks to 3 rows at sm/xs (see globals.css) so no scroll is needed there. */}
+      <div className="match-card-scroll">
+      <div className="match-card-inner">
       {/* ── Score row ──────────────────────────────────────── */}
       <div style={{
         display: 'grid',
@@ -236,10 +237,10 @@ export default function MatchCard({ info, games, match_mvp, teamByKey = {}, roun
         gap: 12,
         background: `linear-gradient(135deg, ${winColor}06, transparent 60%)`,
       }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, minWidth: 0 }}>
           <TeamMark meta={aMeta} era={aEra} />
-          <div>
-            <div style={{ fontFamily: 'var(--font-display)', fontSize: 22, lineHeight: 1, color: 'var(--text)' }}>
+          <div style={{ minWidth: 0 }}>
+            <div style={{ fontFamily: 'var(--font-display)', fontSize: 22, lineHeight: 1, color: 'var(--text)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
               {aKey ? <Link href={`/teams/${encodeURIComponent(aKey)}`} style={{ color: 'inherit' }}>{aEra}</Link> : aEra}
             </div>
             <div style={{ fontFamily: 'var(--font-mono)', fontSize: 8, fontWeight: 700, color: BLUE_CLR, letterSpacing: '.12em', marginTop: 3, visibility: aWon ? 'visible' : 'hidden' }}>● WINNER</div>
@@ -252,9 +253,9 @@ export default function MatchCard({ info, games, match_mvp, teamByKey = {}, roun
           <span style={{ fontFamily: 'var(--font-display)', fontSize: 40, lineHeight: 1, color: bWon ? RED_CLR : 'var(--muted)' }}>{bWins}</span>
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12, justifyContent: 'flex-end' }}>
-          <div style={{ textAlign: 'right' }}>
-            <div style={{ fontFamily: 'var(--font-display)', fontSize: 22, lineHeight: 1, color: 'var(--text)' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, justifyContent: 'flex-end', minWidth: 0 }}>
+          <div style={{ textAlign: 'right', minWidth: 0 }}>
+            <div style={{ fontFamily: 'var(--font-display)', fontSize: 22, lineHeight: 1, color: 'var(--text)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
               {bKey ? <Link href={`/teams/${encodeURIComponent(bKey)}`} style={{ color: 'inherit' }}>{bEra}</Link> : bEra}
             </div>
             <div style={{ fontFamily: 'var(--font-mono)', fontSize: 8, fontWeight: 700, color: RED_CLR, letterSpacing: '.12em', marginTop: 3, visibility: bWon ? 'visible' : 'hidden' }}>● WINNER</div>

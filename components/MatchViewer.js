@@ -37,7 +37,8 @@ function TeamStatsView({ frame, players, camp1, camp2, inspectedRoleIds }) {
   const allKills = frame.reduce((s, p) => s + (p.kill_num || 0), 0);
 
   return (
-    <div>
+    <div style={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
+    <div style={{ minWidth: 420 }}>
       {/* Sticky column headers */}
       <div style={{
         display: 'grid', gridTemplateColumns: TS_COLS, gap: '0 4px',
@@ -141,6 +142,7 @@ function TeamStatsView({ frame, players, camp1, camp2, inspectedRoleIds }) {
           </div>
         );
       })}
+    </div>
     </div>
   );
 }
@@ -573,7 +575,7 @@ export function MatchViewer({ battleId, mapId, camp1Code, camp2Code, matchEvents
   const panelH = leftH > 0 ? leftH : undefined;
 
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 460px) 200px minmax(0, 1fr)', gap: 12, alignItems: 'start' }}>
+    <div className="match-viewer-grid">
 
       {/* ── LEFT: Map ── */}
       <div ref={leftColRef}>
@@ -598,7 +600,7 @@ export function MatchViewer({ battleId, mapId, camp1Code, camp2Code, matchEvents
       </div>
 
       {/* ── MIDDLE: Events panel ── */}
-      <div style={{
+      <div className="match-viewer-panel" style={{
         border: '1px solid var(--border)', background: 'var(--surface)',
         display: 'flex', flexDirection: 'column',
         overflow: 'hidden',
@@ -642,7 +644,7 @@ export function MatchViewer({ battleId, mapId, camp1Code, camp2Code, matchEvents
       </div>
 
       {/* ── RIGHT: Player stats panel ── */}
-      <div style={{
+      <div className="match-viewer-panel" style={{
         border: '1px solid var(--border)', background: 'var(--surface)',
         display: 'flex', flexDirection: 'column',
         overflow: 'hidden',

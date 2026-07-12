@@ -353,7 +353,7 @@ function TeamVsTeam({ camp1, camp2 }) {
   return (
     <div>
       {/* Team header */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 160px 1fr', gap: 8, alignItems: 'center', marginBottom: 20 }}>
+      <div className="team-vs-team-header">
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           <TeamImg code={camp1.team_code} size={32} />
           <div>

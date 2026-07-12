@@ -894,53 +894,35 @@ table.h2h td .sub { font-size: 11px; }
 }
 
 @media (max-width: 767px) {
+  /* Restack instead of squeeze: num+time+detail on row 1, each team's picks
+     get their own full-width row below — nobody fights for horizontal space. */
   .game-row {
-    grid-template-columns: 32px 1fr auto 1fr 50px;
-    padding: 8px 8px;
-    gap: 4px;
-    min-height: 48px;
+    grid-template-columns: 28px 1fr auto;
+    grid-template-areas:
+      "num center detail"
+      "home home home"
+      "away away away";
+    row-gap: 8px;
+    padding: 10px 12px;
+    min-height: 0;
   }
+  .game-row__num { grid-area: num; }
+  .game-row__center { grid-area: center; min-width: 0; }
+  .game-row__detail-btn { grid-area: detail; }
   .game-row__picks-container {
     width: auto;
     height: auto;
+    position: static;
   }
-  .game-row__hero-pick {
-    width: 20px !important;
-    height: 20px !important;
-  }
-  .game-row__hero-pick-img {
-    width: 20px !important;
-    height: 20px !important;
-  }
-  .game-row__picks {
-    gap: 2px;
-  }
-  .game-row__picks-container.home .game-row__win-badge {
-    left: auto;
-    right: -6px;
-    background: var(--bg);
-    border-radius: 2px;
-  }
-  .game-row__picks-container.away .game-row__win-badge {
-    right: auto;
-    left: -6px;
-    background: var(--bg);
-    border-radius: 2px;
-  }
-  .game-row__center {
-    min-width: 70px;
-  }
-  .game-row__time {
-    font-size: 9px;
-    padding: 1px 6px;
+  .game-row__picks-container.home { grid-area: home; }
+  .game-row__picks-container.away { grid-area: away; margin-left: 0; }
+  .game-row__win-badge {
+    position: static;
+    transform: none;
+    margin: 0 6px;
   }
   .game-row__prio {
     display: none;
-  }
-  .game-row__detail-btn {
-    padding: 4px 4px;
-    font-size: 8px;
-    letter-spacing: 0;
   }
 }
 
@@ -1172,6 +1154,103 @@ table.h2h td .sub { font-size: 11px; }
   .match-summary-grid {
     grid-template-columns: 1fr 1fr;
   }
+}
+
+/* MatchViewer — map + events + player-stats panel. Stacks to 1 col below
+   1024px; side panels drop their JS-synced fixed height (matched to the map)
+   in favor of a fixed max-height, since there's no map to match anymore. */
+.match-viewer-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 460px) 200px minmax(0, 1fr);
+  gap: 12px;
+  align-items: start;
+}
+@media (max-width: 1023px) {
+  .match-viewer-grid { grid-template-columns: 1fr; }
+  .match-viewer-panel { height: auto !important; max-height: 420px; }
+}
+
+/* ItemTimings — two team columns, stack at sm/xs */
+.item-timings-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 32px;
+}
+@media (max-width: 767px) {
+  .item-timings-grid { grid-template-columns: 1fr; gap: 24px; }
+}
+
+/* MatchAnalysis — Team vs Team masthead, stack at xs */
+.team-vs-team-header {
+  display: grid;
+  grid-template-columns: 1fr 160px 1fr;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 20px;
+}
+@media (max-width: 479px) {
+  .team-vs-team-header { grid-template-columns: 1fr; justify-items: center; text-align: center; gap: 12px; }
+}
+
+/* MatchBreakdown — masthead team rows. min-width:0 lets team-code text ellipsis
+   instead of forcing the row wider than its container; stacks to 3 rows at xs
+   so there's no squeeze at all. */
+.masthead-teams {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 24px;
+  margin: 8px 0;
+}
+.masthead-side {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1 1 0;
+  min-width: 0;
+}
+.masthead-side.home { justify-content: flex-end; }
+.masthead-side.away { justify-content: flex-start; }
+@media (max-width: 479px) {
+  .masthead-teams { flex-direction: column; gap: 12px; }
+  .masthead-side { flex: 0 0 auto; justify-content: center !important; }
+}
+
+/* MatchBreakdown — Draft picks/bans, two teams side by side, stack at xs */
+.draft-teams-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+@media (max-width: 479px) {
+  .draft-teams-grid { grid-template-columns: 1fr; }
+}
+
+/* Match details modal (MatchResultsGrid popover) */
+.match-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+.match-modal-box { max-height: 90dvh; }
+.match-modal-body { padding: 12px; }
+@media (max-width: 479px) {
+  .match-modal-backdrop { padding: 8px; }
+  .match-modal-body { padding: 8px; }
+}
+
+/* MatchCard game-row scroll guard — only needed at md+, where the desktop
+   5-column .game-row layout has a real min-width. At sm/xs .game-row restacks
+   (see the max-width:767px block above) so no horizontal scroll is needed. */
+.match-card-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+.match-card-inner { min-width: 480px; }
+@media (max-width: 767px) {
+  .match-card-inner { min-width: 0; }
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════

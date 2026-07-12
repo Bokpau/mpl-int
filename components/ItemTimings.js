@@ -127,7 +127,7 @@ export function ItemTimings({ battleId, camp1Code, camp2Code }) {
         <span style={{ marginLeft: 'auto' }}>ordered by purchase time →</span>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 32 }}>
+      <div className="item-timings-grid">
         <TeamSection players={camp1Players} campid={1} teamCode={camp1Code} />
         <TeamSection players={camp2Players} campid={2} teamCode={camp2Code} />
       </div>

@@ -204,18 +204,18 @@ export default function MatchResultsGrid({
     return (
       <div
         onClick={() => setActive(null)}
-        style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}
+        className="match-modal-backdrop"
       >
         <div
           onClick={(e) => e.stopPropagation()}
-          className="modal-box"
+          className="modal-box match-modal-box"
           style={{ width: 'min(680px, 100%)' }}
         >
           <div className="match-popover-header">
             <span className="match-popover-title">// MATCH DETAILS</span>
             <button className="match-popover-close" onClick={() => setActive(null)} aria-label="Close">&times;</button>
           </div>
-          <div style={{ padding: 12, overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
+          <div className="match-modal-body">
             <MatchCard
               info={s.info}
               games={s.games}
