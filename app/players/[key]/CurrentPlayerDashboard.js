@@ -276,7 +276,7 @@ export default function CurrentPlayerDashboard({ playerKey, scope, season, initi
         {/* ── Masthead ── */}
         <div style={{
           background: 'linear-gradient(90deg, rgba(26,26,46,0.9) 0%, rgba(18,18,32,0.9) 100%)',
-          borderLeft: '4px solid var(--accent)', border: '1px solid var(--border)', borderRadius: 6,
+          border: '1px solid var(--border)', borderRadius: 6,
           padding: '20px 24px', marginBottom: 24, display: 'flex', flexDirection: 'column', gap: 16,
         }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -428,7 +428,7 @@ export default function CurrentPlayerDashboard({ playerKey, scope, season, initi
             <div className="section-header">Player Comparison</div>
             <div style={{ display: 'flex', alignItems: 'center', marginBottom: 20, border: '1px solid var(--border)', background: 'var(--surface)', maxWidth: 480 }}>
               <span style={{ fontFamily: 'var(--font-mono)', fontSize: 10, fontWeight: 700, color: 'var(--accent)', letterSpacing: '.1em', padding: '0 12px', borderRight: '1px solid var(--border)', whiteSpace: 'nowrap', alignSelf: 'stretch', display: 'flex', alignItems: 'center' }}>COMPARE VS</span>
-              <select value={compareRoleid} onChange={e => setCompareRoleid(e.target.value)} style={{ flex: 1, background: 'transparent', border: 'none', color: 'var(--text)', fontFamily: 'var(--font-mono)', fontSize: 12, padding: '10px 12px', cursor: 'pointer', outline: 'none' }}>
+              <select value={compareRoleid} onChange={e => setCompareRoleid(e.target.value)} style={{ flex: 1, minWidth: 0, background: 'transparent', border: 'none', color: 'var(--text)', fontFamily: 'var(--font-mono)', fontSize: 12, padding: '10px 12px', cursor: 'pointer', outline: 'none' }}>
                 <option value="">— Select a {playerRole} —</option>
                 {allEnriched.filter(p => p.role_lane === playerRole && String(p.roleid) !== String(roleid)).sort((a, b) => a.player_name.localeCompare(b.player_name)).map(p => (
                   <option key={p.roleid} value={p.roleid}>{p.player_name} ({p.team_code})</option>
@@ -507,7 +507,8 @@ export default function CurrentPlayerDashboard({ playerKey, scope, season, initi
 
                   <div style={{ fontFamily: 'var(--font-mono)', fontSize: 10, fontWeight: 700, color: 'var(--muted2)', letterSpacing: '.1em', marginBottom: 10 }}>// UNIQUE &amp; SHARED HEROES</div>
                   {compareHeroLoading ? <div className="loading" style={{ marginBottom: 32 }} /> : (
-                    <div style={{ marginBottom: 32, border: '1px solid var(--border)', background: 'var(--surface)' }}>
+                    <div style={{ marginBottom: 32, border: '1px solid var(--border)', background: 'var(--surface)', overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
+                      <div style={{ minWidth: 420 }}>
                       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.4fr 1fr', borderBottom: '1px solid var(--border)' }}>
                         {[
                           { label: `${me.player_name} only`, count: myUnique.length, align: 'right' },
@@ -569,6 +570,7 @@ export default function CurrentPlayerDashboard({ playerKey, scope, season, initi
                           </div>
                         </div>
                       </div>
+                      </div>
                     </div>
                   )}
                 </>
@@ -590,7 +592,7 @@ export default function CurrentPlayerDashboard({ playerKey, scope, season, initi
               return (
                 <div style={{ marginBottom: 32 }}>
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr auto 1fr', marginBottom: 16, border: '1px solid var(--border)' }}>
-                    <div style={{ background: 'var(--surface)', borderRight: '1px solid var(--border)', padding: '14px 20px', borderLeft: '3px solid var(--win)', textAlign: 'center' }}>
+                    <div style={{ background: 'var(--surface)', borderRight: '1px solid var(--border)', borderTop: '2px solid var(--win)', padding: '14px 20px', textAlign: 'center' }}>
                       <div style={{ fontFamily: 'var(--font-mono)', fontSize: 10, fontWeight: 700, color: 'var(--win)', letterSpacing: '.1em', marginBottom: 6 }}>WIN</div>
                       <div style={{ fontFamily: 'var(--font-display)', fontSize: 28, fontWeight: 900, color: 'var(--win)', lineHeight: 1 }}>{wGames}</div>
                       <div style={{ fontFamily: 'var(--font-mono)', fontSize: 10, color: 'rgba(255,255,255,.4)', marginTop: 4 }}>games</div>
@@ -603,7 +605,7 @@ export default function CurrentPlayerDashboard({ playerKey, scope, season, initi
                       </div>
                       <div style={{ fontFamily: 'var(--font-mono)', fontSize: 9, color: 'rgba(255,255,255,.35)', marginTop: 4 }}>{wPctBar}% WR</div>
                     </div>
-                    <div style={{ background: 'var(--surface)', borderLeft: '1px solid var(--border)', padding: '14px 20px', borderRight: '3px solid var(--loss)', textAlign: 'center' }}>
+                    <div style={{ background: 'var(--surface)', borderLeft: '1px solid var(--border)', borderTop: '2px solid var(--loss)', padding: '14px 20px', textAlign: 'center' }}>
                       <div style={{ fontFamily: 'var(--font-mono)', fontSize: 10, fontWeight: 700, color: 'var(--loss)', letterSpacing: '.1em', marginBottom: 6 }}>LOSS</div>
                       <div style={{ fontFamily: 'var(--font-display)', fontSize: 28, fontWeight: 900, color: 'var(--loss)', lineHeight: 1 }}>{lGames}</div>
                       <div style={{ fontFamily: 'var(--font-mono)', fontSize: 10, color: 'rgba(255,255,255,.4)', marginTop: 4 }}>games</div>
@@ -619,16 +621,16 @@ export default function CurrentPlayerDashboard({ playerKey, scope, season, initi
                       const wBarPct = tot > 0 ? Math.round((isNaN(wv) ? 0 : wv) / tot * 100) : 50;
                       return (
                         <div key={stat.label} style={{ borderBottom: si < WL_STATS.length - 1 ? '1px solid rgba(255,255,255,.04)' : 'none' }}>
-                          <div style={{ display: 'grid', gridTemplateColumns: '1fr 140px 1fr', alignItems: 'center', padding: '8px 0' }}>
-                            <div style={{ textAlign: 'right', paddingRight: 20, paddingLeft: 8 }}>
-                              <div style={{ fontFamily: 'var(--font-display)', fontSize: 18, fontWeight: 800, color: wBetter ? 'var(--win)' : 'rgba(255,255,255,.6)', display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: 6 }}>
-                                {wBetter && <span style={{ fontSize: 10, color: 'var(--win)' }}>▲</span>}{stat.fmt(W?.[stat.key])}
+                          <div className="wl-stat-row" style={{ alignItems: 'center', padding: '8px 0' }}>
+                            <div style={{ textAlign: 'right', paddingRight: 10, paddingLeft: 8, minWidth: 0 }}>
+                              <div style={{ fontFamily: 'var(--font-display)', fontSize: 18, fontWeight: 800, color: wBetter ? 'var(--win)' : 'rgba(255,255,255,.6)', display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: 6, minWidth: 0 }}>
+                                {wBetter && <span style={{ fontSize: 10, color: 'var(--win)', flexShrink: 0 }}>▲</span>}<span style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>{stat.fmt(W?.[stat.key])}</span>
                               </div>
                             </div>
                             <div style={{ textAlign: 'center', fontFamily: 'var(--font-mono)', fontSize: 10, fontWeight: 600, color: 'rgba(255,255,255,.4)', letterSpacing: '.06em' }}>{stat.label}</div>
-                            <div style={{ paddingLeft: 20, paddingRight: 8 }}>
-                              <div style={{ fontFamily: 'var(--font-display)', fontSize: 18, fontWeight: 800, color: lBetter ? 'var(--loss)' : 'rgba(255,255,255,.4)', display: 'flex', alignItems: 'center', gap: 6 }}>
-                                {stat.fmt(L?.[stat.key])}{lBetter && <span style={{ fontSize: 10, color: 'var(--loss)' }}>▲</span>}
+                            <div style={{ paddingLeft: 10, paddingRight: 8, minWidth: 0 }}>
+                              <div style={{ fontFamily: 'var(--font-display)', fontSize: 18, fontWeight: 800, color: lBetter ? 'var(--loss)' : 'rgba(255,255,255,.4)', display: 'flex', alignItems: 'center', gap: 6, minWidth: 0 }}>
+                                <span style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>{stat.fmt(L?.[stat.key])}</span>{lBetter && <span style={{ fontSize: 10, color: 'var(--loss)', flexShrink: 0 }}>▲</span>}
                               </div>
                             </div>
                           </div>
@@ -712,13 +714,12 @@ export default function CurrentPlayerDashboard({ playerKey, scope, season, initi
                         const itemNames = [g.equip_1_name, g.equip_2_name, g.equip_3_name, g.equip_4_name, g.equip_5_name, g.equip_6_name, g.equip_7_name];
                         const talents = [[g.rune_map_1, g.rune_map_1_name], [g.rune_map_2, g.rune_map_2_name], [g.rune_map_3, g.rune_map_3_name]].filter(t => t[0]);
                         const p1 = v => v != null ? v + '%' : '--';
-                        const rowAccent = g.is_winner ? 'var(--win)' : 'var(--loss)';
                         const rowBg = isGMVP ? 'rgba(255,215,0,.04)' : isMMVP ? 'rgba(232,184,0,.03)' : undefined;
                         const stickyBg = isGMVP ? 'rgba(20,18,10,.95)' : isMMVP ? 'rgba(18,14,8,.95)' : 'var(--surface)';
                         const seriesParts = (g.series_name || '').split(' vs ');
                         const oppTeamCode = seriesParts.find(p => p.trim() !== player.team_code)?.trim();
                         return (
-                          <tr key={g.battle_id} style={{ background: rowBg, borderLeft: `3px solid ${rowAccent}` }}>
+                          <tr key={g.battle_id} style={{ background: rowBg }}>
                             <td className="sticky-col-match" style={{ background: stickyBg }}>
                               <Link href={`/matches/${g.battle_id}`} style={{ color: 'var(--text)', textDecoration: 'none', display: 'flex', flexDirection: 'column', gap: 4 }}>
                                 {g.opp_team_code && (

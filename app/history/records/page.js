@@ -230,7 +230,7 @@ export default async function HistoryRecordsPage({ searchParams }) {
         {!catData || !catData.rows || catData.rows.length === 0 ? (
           <div className="empty">No record rows found for this category.</div>
         ) : (
-          <div style={{ overflowX: 'auto', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)' }}>
+          <div className="tbl-sticky" style={{ overflowX: 'auto', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)' }}>
             <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '14px' }}>
               <thead>
                 <tr style={{ background: 'var(--surface)', color: 'var(--muted2)' }}>

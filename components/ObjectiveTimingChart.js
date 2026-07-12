@@ -481,6 +481,8 @@ export function ObjectiveTimingChart({ teamKey, teamCode, buildQ, totalGames }) 
                 </span>
               </div>
 
+              <div style={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
+              <div style={{ minWidth: 340 }}>
               <div style={{
                 display: 'grid', gridTemplateColumns: `${s.key === 'tower' ? '90px' : '54px'} 22px 40px 36px 36px 1fr 1fr`,
                 gap: 4, marginBottom: 4, paddingBottom: 4,
@@ -544,6 +546,8 @@ export function ObjectiveTimingChart({ teamKey, teamCode, buildQ, totalGames }) 
                   </div>
                 );
               })}
+              </div>
+              </div>
             </div>
           );
         })}

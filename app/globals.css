@@ -185,6 +185,16 @@ main { padding-bottom: 80px; }
    one wrapping row instead of a tall sticky rail. */
 .hero-filterbar { margin-bottom: 24px; }
 
+/* Win vs Loss stat row (CurrentPlayerDashboard) — center label column narrows
+   at xs so the two number columns get enough room and stop overflowing. */
+.wl-stat-row {
+  display: grid;
+  grid-template-columns: 1fr 140px 1fr;
+}
+@media (max-width: 479px) {
+  .wl-stat-row { grid-template-columns: 1fr 84px 1fr; }
+}
+
 /* ─── Cards / grid ──────────────────────────────────────────────── */
 .cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 14px; padding: 22px 0; }
 .card {

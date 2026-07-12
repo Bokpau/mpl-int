@@ -56,7 +56,7 @@ export default async function RegionsView({ q, label }) {
           <p className="sub note-tight">
             Top {top.length} regions by games. Cell = row region&apos;s wins over the column region (win% shaded).
           </p>
-          <div className="table-wrap">
+          <div className="table-wrap tbl-sticky">
             <table className="h2h">
               <thead>
                 <tr>
