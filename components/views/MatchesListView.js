@@ -77,12 +77,18 @@ export default function MatchesListView({ q = '', label = '', isHistory = false,
   useEffect(() => {
     let alive = true;
     setLoading(true);
-    const sep = q ? '&' : '?';
+    
+    // Strip 'stage' parameter from query string so that we fetch all stages
+    // of the edition and filter them client-side. This keeps hasWildCard stable.
+    const params = new URLSearchParams(q);
+    params.delete('stage');
+    const apiQ = params.toString() ? `?${params.toString()}` : '';
+
     Promise.all([
-      fetch(`/api/intl/matches/rich${q}`).then(r => r.json()).catch(() => []),
-      fetch(`/api/intl/teams${q}`).then(r => r.json()).catch(() => []),
-      fetch(`/api/intl/schedule${q}`).then(r => r.json()).catch(() => []),
-      fetch(`/api/intl/era-teams${q}`).then(r => r.json()).catch(() => []),
+      fetch(`/api/intl/matches/rich${apiQ}`).then(r => r.json()).catch(() => []),
+      fetch(`/api/intl/teams${apiQ}`).then(r => r.json()).catch(() => []),
+      fetch(`/api/intl/schedule${apiQ}`).then(r => r.json()).catch(() => []),
+      fetch(`/api/intl/era-teams${apiQ}`).then(r => r.json()).catch(() => []),
     ]).then(([g, t, s, e]) => {
       if (!alive) return;
       setGames(Array.isArray(g) ? g : []);
