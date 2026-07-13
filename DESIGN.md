@@ -142,7 +142,9 @@ The application is flat-by-default, utilizing flat surfaces and clean borders to
 
 ### Data Tables
 - **Rows:** Alternate background shading using Abyss Surface (#14141F) and Midnight Void (#0F0F1A).
-- **Headers:** SF Mono uppercase label style with a solid Deep Slate Border bottom boundary.
+- **Headers:** SF Mono uppercase label style with a solid Deep Slate Border bottom boundary. Background is set to `var(--surface2)` (#1B1B2B) for high contrast and visual alignment.
+- **Sorting Indicators:** Interactive header columns must use the `.th-sort` button styling with a nested `.sort-ind` element that dynamically renders `▲` or `▼` depending on the active sort state. Raw text symbols or CSS pseudo-elements (like ` ↕`) are prohibited to avoid visual noise.
+- **Sticky Columns:** High-priority columns (such as ranks, player names, and heroes) are pinned using the `.sticky-col-...` or `.tbl-sticky` primitive. They use a flat style with `border-right: 2px solid var(--border-strong)` instead of soft drop shadows, and transition seamlessly to `var(--surface)` (#14141F) on hover.
 
 ## 6. Do's and Don't's
 
