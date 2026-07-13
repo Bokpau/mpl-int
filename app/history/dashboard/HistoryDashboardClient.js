@@ -89,6 +89,7 @@ export default function HistoryDashboardClient({
   teams     = [],
   eraTeams  = [],
   players   = [],
+  bansBySeason = {},
 }) {
   const [activeTab,           setActiveTab]           = useState('tournaments');
   const [teamsSearch,         setTeamsSearch]         = useState('');
@@ -274,18 +275,20 @@ export default function HistoryDashboardClient({
               <table style={{ width: '100%' }}>
                 <thead>
                   <tr>
-                    <th className="l" style={{ width: '24%', minWidth: '160px' }}>Tournament</th>
-                    <th className="l" style={{ width: '13%', minWidth: '110px' }}>Date</th>
-                    <th className="l" style={{ width: '13%', minWidth: '100px' }}>Location</th>
-                    <th className="l" style={{ width: '17%', minWidth: '130px' }}>Champion</th>
-                    <th className="l" style={{ width: '17%', minWidth: '130px' }}>Runner-up</th>
-                    <th className="l" style={{ width: '16%', minWidth: '110px' }}>Finals MVP</th>
+                    <th className="l" style={{ width: '20%', minWidth: '140px' }}>Tournament</th>
+                    <th className="l" style={{ width: '11%', minWidth: '95px' }}>Date</th>
+                    <th className="l" style={{ width: '11%', minWidth: '90px' }}>Location</th>
+                    <th className="l" style={{ width: '15%', minWidth: '110px' }}>Champion</th>
+                    <th className="l" style={{ width: '15%', minWidth: '110px' }}>Runner-up</th>
+                    <th className="l" style={{ width: '14%', minWidth: '100px' }}>Finals MVP</th>
+                    <th className="l" style={{ width: '14%', minWidth: '100px' }}>Most Banned</th>
                   </tr>
                 </thead>
                 <tbody>
                   {resolvedTournaments.map(e => {
                     const logoUrl = getTournamentLogo(e.season);
                     const displayName = e.official_name || e.season;
+                    const bans = bansBySeason[e.season] || [];
                     return (
                       <tr key={`${e.tournament_code}-${e.season}`}>
                         {/* Tournament */}
@@ -354,6 +357,31 @@ export default function HistoryDashboardClient({
                                 {e.finalsMvp.recipient}
                               </span>
                             </span>
+                          ) : (
+                            <span style={{ color: 'var(--muted2)' }}>—</span>
+                          )}
+                        </td>
+
+                        {/* Most Banned */}
+                        <td className="l">
+                          {bans.length > 0 ? (
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                              {bans.slice(0, 3).map((b) => (
+                                <img
+                                  key={b.heroid}
+                                  src={img.hero(b.heroid)}
+                                  alt={b.hero_name}
+                                  title={`${b.hero_name} (${b.bans} bans)`}
+                                  style={{
+                                    width: '22px',
+                                    height: '22px',
+                                    borderRadius: '50%',
+                                    border: '1px solid var(--border)',
+                                    objectFit: 'cover'
+                                  }}
+                                />
+                              ))}
+                            </div>
                           ) : (
                             <span style={{ color: 'var(--muted2)' }}>—</span>
                           )}

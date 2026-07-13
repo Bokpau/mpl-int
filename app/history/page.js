@@ -66,19 +66,31 @@ export default async function HistoryOverview() {
   let teams = [];
   let eraTeams = [];
   let players = [];
+  let bansBySeason = {};
   let error = null;
   try {
     editions = await api.editions();
     const liveEd = editions.find(e => String(e.status).toLowerCase() === 'live');
     const eraQ = liveEd ? `?season=${encodeURIComponent(liveEd.season)}` : '';
-    [accolades, overview, standings, teams, eraTeams, players] = await Promise.all([
+    const [accs, ov, stds, tms, eTms, pls, ...bansList] = await Promise.all([
       api.accolades(),
       api.overview(),
       api.standings(),
       api.teams(),
       api.eraTeams(eraQ),
-      api.leaderboard()
+      api.leaderboard(),
+      ...editions.map(e => api.heroBansSummary(`?season=${encodeURIComponent(e.season)}`).catch(() => []))
     ]);
+    accolades = accs;
+    overview = ov;
+    standings = stds;
+    teams = tms;
+    eraTeams = eTms;
+    players = pls;
+
+    editions.forEach((e, idx) => {
+      bansBySeason[e.season] = bansList[idx] || [];
+    });
   } catch (e) {
     error = e.message;
   }
@@ -231,6 +243,7 @@ export default async function HistoryOverview() {
         teams={teams}
         eraTeams={eraTeams}
         players={players}
+        bansBySeason={bansBySeason}
       />
 
       {/* ── International Overview ── */}

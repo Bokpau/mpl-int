@@ -421,9 +421,48 @@ export default async function DashboardView({ q, label, eff, editions = [], feat
             <div className="v">{bans.length || byRole.length ? int(heroesBannedCount) : '—'}</div>
           </div>
         </div>
+        {bans.length > 0 && (
+          <div style={{
+            marginTop: '16px',
+            padding: '12px 14px',
+            border: '1px solid var(--border)',
+            background: 'var(--surface2)',
+            borderRadius: 'var(--radius-sm)',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '12px',
+            flexWrap: 'wrap'
+          }}>
+            <div style={{
+              fontFamily: 'var(--font-mono)',
+              fontSize: '11px',
+              color: 'var(--muted2)',
+              textTransform: 'uppercase',
+              letterSpacing: '.06em',
+              fontWeight: 600
+            }}>
+              Most Banned:
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '16px', flexWrap: 'wrap' }}>
+              {bans.slice(0, 5).map((b, i) => (
+                <div key={b.heroid || i} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  {img.hero(b.heroid) ? (
+                    <img
+                      src={img.hero(b.heroid)}
+                      alt={b.hero_name}
+                      style={{ width: '20px', height: '20px', borderRadius: '50%', border: '1px solid var(--border)', objectFit: 'cover' }}
+                    />
+                  ) : null}
+                  <span style={{ fontSize: '13px', fontWeight: 600 }}>{b.hero_name}</span>
+                  <span style={{ fontSize: '11px', fontFamily: 'var(--font-mono)', color: 'var(--muted2)' }}>({b.bans})</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
         {!bans.length ? (
           <div style={{ fontSize: 11, color: 'var(--muted2)', fontFamily: 'var(--font-mono)' }}>
-            Ban data is only tracked for rich-collected games (MSC 2026 onward) — shows once enough games are fetched.
+            Ban data is only tracked for tournaments with available draft logs (MSC 2023 / M4 onward).
           </div>
         ) : null}
       </div>
