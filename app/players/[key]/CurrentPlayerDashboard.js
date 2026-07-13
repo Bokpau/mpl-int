@@ -292,9 +292,11 @@ export default function CurrentPlayerDashboard({ playerKey, scope, season, initi
             <div style={{ flex: 1, minWidth: 200 }}>
               <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 32, fontWeight: 900, color: 'var(--text)', lineHeight: 1.1, margin: 0, textTransform: 'uppercase', letterSpacing: '0.02em' }}>{player.player_name}</h1>
               <div style={{ fontFamily: 'var(--font-mono)', fontSize: 12, color: 'var(--muted)', marginTop: 8, display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-                <span style={{ color: 'var(--accent)', fontWeight: 700 }}>{player.role_lane}</span>
-                <span>·</span><span>{player.team_code}</span>
-                <span>·</span><span style={{ color: 'var(--muted2)' }}>Active Filter: {filterLabel()}</span>
+                {player.role_lane && <span style={{ color: 'var(--accent)', fontWeight: 700 }}>{player.role_lane}</span>}
+                {player.role_lane && player.team_code && <span>·</span>}
+                {player.team_code && <span>{player.team_code}</span>}
+                {(player.role_lane || player.team_code) && <span>·</span>}
+                <span style={{ color: 'var(--muted2)' }}>Active Filter: {filterLabel()}</span>
               </div>
             </div>
             <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
