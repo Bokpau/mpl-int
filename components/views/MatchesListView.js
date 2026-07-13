@@ -65,7 +65,6 @@ export default function MatchesListView({ q = '', label = '', isHistory = false,
   // Derive stage filter from prop/URL, defaulting to 'all'
   const stage = activeStage || 'all';
 
-  const [week, setWeek] = useState(null);
   const [histPhase, setHistPhase] = useState(null); // DB stage name filter for history editions
   const [view, setView] = useState('list');
 
@@ -126,22 +125,11 @@ export default function MatchesListView({ q = '', label = '', isHistory = false,
   // stage, so it needs every Main game regardless of the week chip.
   const mainGames = useMemo(() => games.filter(g => g.stage_type !== 'qualifier'), [games]);
 
-  // Weeks present in the (stage-filtered) data, for the week chips.
-  const weeks = useMemo(() => {
-    const set = new Set();
-    for (const g of games) {
-      if (stage !== 'all' && g.stage_type !== stage) continue;
-      if (g.week_number) set.add(g.week_number);
-    }
-    return [...set].sort((a, b) => a - b);
-  }, [games, stage]);
-
-  // Roll games up into series (by match_code), applying stage + week filters.
+  // Roll games up into series (by match_code), applying stage filters.
   const series = useMemo(() => {
     const grouped = {};
     for (const g of games) {
       if (stage !== 'all' && g.stage_type !== stage) continue;
-      if (week !== null && g.week_number !== week) continue;
       const key = g.match_code || g.battle_id;
       if (!grouped[key]) grouped[key] = { info: g, games: [], match_mvp: null };
       grouped[key].games.push(g);
@@ -153,7 +141,7 @@ export default function MatchesListView({ q = '', label = '', isHistory = false,
       const ma = a.info.match_number || 0, mb = b.info.match_number || 0;
       return wb - wa || db - da || mb - ma;
     });
-  }, [games, stage, week]);
+  }, [games, stage]);
 
   const stats = useMemo(() => {
     const matchesPlayed = series.length;
@@ -198,7 +186,6 @@ export default function MatchesListView({ q = '', label = '', isHistory = false,
     } else {
       params.delete('stage');
     }
-    setWeek(null);
     setHistPhase(null);
     router.push(`${pathname}?${params.toString()}`);
   };
@@ -210,9 +197,8 @@ export default function MatchesListView({ q = '', label = '', isHistory = false,
     }
   }, [loading, hasWildCard, stage]);
 
-  // Reset week and histPhase whenever stage changes (either via top FilterBar or bottom chips)
+  // Reset histPhase whenever stage changes (either via top FilterBar or bottom chips)
   useEffect(() => {
-    setWeek(null);
     setHistPhase(null);
   }, [stage]);
 
@@ -334,18 +320,6 @@ export default function MatchesListView({ q = '', label = '', isHistory = false,
             </div>
           )}
         </div>
-
-        {!isHistoryMode && weeks.length > 0 && (
-          <div className="matches-weeks-group">
-            <div className="matches-separator" />
-            <div className="matches-weeks-chips">
-              <button onClick={() => setWeek(null)} className={`filter-btn ${week === null ? 'active' : ''}`}>All</button>
-              {weeks.map(w => (
-                <button key={w} onClick={() => setWeek(w)} className={`filter-btn ${week === w ? 'active' : ''}`}>W{w}</button>
-              ))}
-            </div>
-          </div>
-        )}
 
         <div className="matches-view-toggle-wrap">
           <div className="view-toggle">

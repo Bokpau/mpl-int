@@ -272,6 +272,35 @@ export default function MatchResultsGrid({
     );
   };
 
+  // ── Wild Card structure ─────────────────────────────────────────────────
+  const wc = useMemo(() => {
+    if (season !== 'MSC 2026') return null;
+    const all = buildSeries(wildCardGames);
+    const groupSeries = all.filter((s) => s.games <= 1);
+    const bo3 = all.filter((s) => s.games > 1).sort((a, b) =>
+      String(a.played_at || '').localeCompare(String(b.played_at || '')) ||
+      String(a.match_code).localeCompare(String(b.match_code)));
+    const gauntlet = bo3.slice(0, GAUNTLET_SERIES);
+    const byDay = {};
+    for (const s of groupSeries) {
+      const d = s.day_number || 99;
+      (byDay[d] = byDay[d] || []).push(s);
+    }
+    const groupDays = Object.entries(byDay)
+      .map(([d, arr]) => ({ day: Number(d), matches: arr.sort((a, b) => (a.match_number || 0) - (b.match_number || 0)) }))
+      .sort((a, b) => a.day - b.day);
+    return { groupDays, gauntletR1: gauntlet.slice(0, 2), gauntletR2: gauntlet.slice(2, 4), ...computeDecider(all) };
+  }, [wildCardGames, season]);
+
+  // ── Main stage: two double-elimination group brackets ───────────────────
+  // Resolved by team pairing off ALL Main games (mainGames), so the bracket spans
+  // the whole stage and advances regardless of the schedule's match_code numbering.
+  const mainGroups = useMemo(() => {
+    if (season !== 'MSC 2026' || isWildCard) return null;
+    const all = buildSeries(mainGames);
+    return { A: resolveMainGroup('A', all), B: resolveMainGroup('B', all) };
+  }, [mainGames, isWildCard, season]);
+
   // Route all non-MSC-2026 editions to generic match-row view.
   if (season !== 'MSC 2026') {
     const allSeries = buildSeries([...wildCardGames, ...mainGames]);
@@ -293,34 +322,6 @@ export default function MatchResultsGrid({
       aCode={s.team_a} bCode={s.team_b} aScore={s.a_wins} bScore={s.b_wins} winner={s.winner_code}
       matchCode={s.match_code} open={active === s.match_code} onToggle={() => toggle(s.match_code)} />
   );
-
-  // ── Wild Card structure ─────────────────────────────────────────────────
-  const wc = useMemo(() => {
-    const all = buildSeries(wildCardGames);
-    const groupSeries = all.filter((s) => s.games <= 1);
-    const bo3 = all.filter((s) => s.games > 1).sort((a, b) =>
-      String(a.played_at || '').localeCompare(String(b.played_at || '')) ||
-      String(a.match_code).localeCompare(String(b.match_code)));
-    const gauntlet = bo3.slice(0, GAUNTLET_SERIES);
-    const byDay = {};
-    for (const s of groupSeries) {
-      const d = s.day_number || 99;
-      (byDay[d] = byDay[d] || []).push(s);
-    }
-    const groupDays = Object.entries(byDay)
-      .map(([d, arr]) => ({ day: Number(d), matches: arr.sort((a, b) => (a.match_number || 0) - (b.match_number || 0)) }))
-      .sort((a, b) => a.day - b.day);
-    return { groupDays, gauntletR1: gauntlet.slice(0, 2), gauntletR2: gauntlet.slice(2, 4), ...computeDecider(all) };
-  }, [wildCardGames]);
-
-  // ── Main stage: two double-elimination group brackets ───────────────────
-  // Resolved by team pairing off ALL Main games (mainGames), so the bracket spans
-  // the whole stage and advances regardless of the schedule's match_code numbering.
-  const mainGroups = useMemo(() => {
-    if (isWildCard) return null;
-    const all = buildSeries(mainGames);
-    return { A: resolveMainGroup('A', all), B: resolveMainGroup('B', all) };
-  }, [mainGames, isWildCard]);
 
   // A single M1–M10 bracket node → SeriesBox. Scaffolds show the feeder label
   // (e.g. "W M1") until the upstream result flows in.
