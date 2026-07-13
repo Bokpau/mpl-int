@@ -346,8 +346,29 @@ tbody tr:hover td.sticky-col-right {
 
 /* At xs, cap the entity column so stat cols remain visible */
 @media (max-width: 479px) {
-  .sticky-col-entity { max-width: 120px; }
-  td.sticky-col-entity .sub { display: none; }
+  .sticky-col-entity {
+    max-width: 135px;
+    width: 135px;
+    min-width: 135px;
+    padding-left: 10px !important;
+    padding-right: 8px !important;
+  }
+  td.sticky-col-entity .sub {
+    display: none !important;
+  }
+  /* Style overrides to fit player names naturally without ellipsis */
+  .sticky-col-entity .idcell {
+    gap: 6px !important;
+  }
+  .sticky-col-entity .idcell > :first-child {
+    width: 28px !important;
+    height: 28px !important;
+    font-size: 11.76px !important;
+  }
+  .sticky-col-entity .name {
+    font-size: 12.5px;
+    white-space: nowrap;
+  }
 }
 
 /* Match-log sticky Match column (left: 0) */
