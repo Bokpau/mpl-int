@@ -31,7 +31,7 @@ function groupByFamily(editions) {
   for (const code of Object.keys(groups)) {
     groups[code].sort((a, b) => (Number(b.season_id) || 0) - (Number(a.season_id) || 0));
   }
-  const order = ['MSC', 'MWC'];
+  const order = ['MSC', 'MWC', 'MWI'];
   return Object.keys(groups)
     .sort((a, b) => {
       const ia = order.indexOf(a), ib = order.indexOf(b);

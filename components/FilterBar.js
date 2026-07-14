@@ -41,7 +41,7 @@ export default function FilterBar({ editions = [], featured = null, showEvent = 
 
   // The Event segment is built from the families that actually exist, plus "All".
   const FAMILIES = [{ val: '', label: 'All' }];
-  for (const code of ['MSC', 'MWC']) {
+  for (const code of ['MSC', 'MWC', 'MWI']) {
     if (editions.some((e) => e.tournament_code === code)) {
       FAMILIES.push({ val: code, label: familyLabel(code) });
     }
