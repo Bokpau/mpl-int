@@ -1,8 +1,8 @@
 'use client';
 
 import Link from 'next/link';
-import { useState, useRef, useEffect } from 'react';
-import { usePathname } from 'next/navigation';
+import { useState, useRef, useEffect, Suspense } from 'react';
+import { usePathname, useSearchParams, useRouter } from 'next/navigation';
 import Search from './Search';
 
 /* ── Grouped navigation, mirroring the PH site's shell. Only pages backed by
@@ -65,6 +65,51 @@ const ChevronIcon = () => (
   </svg>
 );
 const ICONS = { Dashboard: HomeIcon, Matches: SwordsIcon, Stats: StatsIcon, History: HistoryIcon };
+
+function DivisionToggle() {
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const router = useRouter();
+
+  const division = searchParams.get('division') === 'women' ? 'women' : 'open';
+
+  const handleToggleDivision = (newDiv) => {
+    const params = new URLSearchParams(searchParams.toString());
+    if (newDiv === 'women') {
+      params.set('division', 'women');
+      const scope = params.get('scope');
+      if (scope && scope !== 'MWI') params.delete('scope');
+      const season = params.get('season');
+      if (season && !season.startsWith('MWI')) params.delete('season');
+    } else {
+      params.delete('division');
+      const scope = params.get('scope');
+      if (scope === 'MWI') params.delete('scope');
+      const season = params.get('season');
+      if (season && season.startsWith('MWI')) params.delete('season');
+    }
+    router.push(`${pathname}?${params.toString()}`);
+  };
+
+  return (
+    <div className="division-toggle">
+      <button
+        type="button"
+        className={`toggle-btn ${division === 'open' ? 'active' : ''}`}
+        onClick={() => handleToggleDivision('open')}
+      >
+        OPEN
+      </button>
+      <button
+        type="button"
+        className={`toggle-btn ${division === 'women' ? 'active' : ''}`}
+        onClick={() => handleToggleDivision('women')}
+      >
+        WOMEN
+      </button>
+    </div>
+  );
+}
 
 export default function Nav({ siteName, siteNameSub }) {
   const pathname = usePathname();
@@ -129,6 +174,13 @@ export default function Nav({ siteName, siteNameSub }) {
             );
           })}
         </div>
+
+        <Suspense fallback={<div className="division-toggle" style={{ opacity: 0.5 }}>
+          <button type="button" className="toggle-btn active">OPEN</button>
+          <button type="button" className="toggle-btn">WOMEN</button>
+        </div>}>
+          <DivisionToggle />
+        </Suspense>
 
         <Search />
     </nav>

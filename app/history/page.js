@@ -58,7 +58,11 @@ const tdWithLink = {
   borderBottom: '1px solid var(--border)' 
 };
 
-export default async function HistoryOverview() {
+export default async function HistoryOverview({ searchParams }) {
+  const sp = await searchParams;
+  const division = sp?.division === 'women' ? 'female' : 'open';
+  const queryStr = `?division=${division}`;
+
   let editions = [];
   let accolades = [];
   let overview = null;
@@ -69,17 +73,17 @@ export default async function HistoryOverview() {
   let bansBySeason = {};
   let error = null;
   try {
-    editions = await api.editions();
+    editions = await api.editions(queryStr);
     const liveEd = editions.find(e => String(e.status).toLowerCase() === 'live');
-    const eraQ = liveEd ? `?season=${encodeURIComponent(liveEd.season)}` : '';
+    const eraQ = liveEd ? `?season=${encodeURIComponent(liveEd.season)}&division=${division}` : `?division=${division}`;
     const [accs, ov, stds, tms, eTms, pls, ...bansList] = await Promise.all([
-      api.accolades(),
-      api.overview(),
-      api.standings(),
-      api.teams(),
+      api.accolades(queryStr),
+      api.overview(queryStr),
+      api.standings(queryStr),
+      api.teams(queryStr),
       api.eraTeams(eraQ),
-      api.leaderboard(),
-      ...editions.map(e => api.heroBansSummary(`?season=${encodeURIComponent(e.season)}`).catch(() => []))
+      api.leaderboard(queryStr),
+      ...editions.map(e => api.heroBansSummary(`?season=${encodeURIComponent(e.season)}&division=${division}`).catch(() => []))
     ]);
     accolades = accs;
     overview = ov;
@@ -121,8 +125,13 @@ export default async function HistoryOverview() {
     .filter(e => e.tournament_code === 'MWC')
     .sort((a, b) => (Number(a.season_id) || 0) - (Number(b.season_id) || 0));
 
+  const mwiSeasons = editions
+    .filter(e => e.tournament_code === 'MWI')
+    .sort((a, b) => (Number(a.season_id) || 0) - (Number(b.season_id) || 0));
+
   const mscCount = mscSeasons.length;
   const mwcCount = mwcSeasons.length;
+  const mwiCount = mwiSeasons.length;
 
   const featured = pickFeatured(editions, featuredPin());
   const isFeatured = (e) =>
@@ -138,7 +147,7 @@ export default async function HistoryOverview() {
       <div className="section-title" style={{ marginTop: '32px', marginBottom: '16px', fontSize: '18px' }}>Champion Timelines</div>
       
       {/* MSC Timeline */}
-      {mscSeasons.length > 0 && (
+      {division !== 'female' && mscSeasons.length > 0 && (
         <div style={{ marginBottom: '24px' }}>
           <div style={{ fontSize: '10px', color: 'var(--muted2)', textTransform: 'uppercase', letterSpacing: '1.2px', marginBottom: '8px', fontWeight: 600, fontFamily: 'var(--font-mono)' }}>
             Mid-Season Cup (MSC)
@@ -187,7 +196,7 @@ export default async function HistoryOverview() {
       )}
 
       {/* M-Series Timeline */}
-      {mwcSeasons.length > 0 && (
+      {division !== 'female' && mwcSeasons.length > 0 && (
         <div style={{ marginBottom: '32px' }}>
           <div style={{ fontSize: '10px', color: 'var(--muted2)', textTransform: 'uppercase', letterSpacing: '1.2px', marginBottom: '8px', fontWeight: 600, fontFamily: 'var(--font-mono)' }}>
             M-Series World Championship
@@ -195,6 +204,55 @@ export default async function HistoryOverview() {
           <div style={{ display: 'flex', overflowX: 'auto', gap: '8px', paddingBottom: '8px' }}>
             {mwcSeasons.map(e => {
               const href = `/?scope=${encodeURIComponent(e.tournament_code)}&season=${encodeURIComponent(e.season)}`;
+              const acc = accoladesBySeason[e.season] || {};
+              const ch = acc.champion;
+              const logo = ch?.logo_dark || ch?.logo_light;
+              const teamCode = ch?.team_code || ch?.recipient || '—';
+              return (
+                <Link key={e.season} href={href}
+                  className="edition-card"
+                  style={{
+                    minWidth: '120px', padding: '12px 10px',
+                    background: 'var(--surface)',
+                    border: '1px solid var(--border)',
+                    textAlign: 'center',
+                    color: 'var(--text)', flexShrink: 0,
+                    transition: 'border-color 0.15s, transform 0.15s',
+                    borderRadius: 'var(--radius-sm)'
+                  }}>
+                  <div style={{ fontSize: '11px', fontWeight: 700, color: 'var(--accent)', fontFamily: 'var(--font-mono)' }}>
+                    {e.season}
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', margin: '6px 0', height: '36px' }}>
+                    {(logo || img.team(teamCode))
+                      ? <TeamLogo src={logo} fallbackSrc={img.team(teamCode)} alt={teamCode} style={{ maxHeight: '32px', maxWidth: '32px', objectFit: 'contain' }} />
+                      : <span style={{ fontSize: '18px', color: 'var(--muted2)' }}>—</span>}
+                  </div>
+                  <div style={{
+                    fontSize: '10px', color: 'var(--text)', fontWeight: 600,
+                    overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                    textTransform: 'uppercase', fontFamily: 'var(--font-mono)', letterSpacing: '0.5px',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px'
+                  }}>
+                    {ch?.flag_emoji && <span className="flag-sm">{ch.flag_emoji}</span>}
+                    {teamCode}
+                  </div>
+                </Link>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* MWI Timeline */}
+      {division === 'female' && mwiSeasons.length > 0 && (
+        <div style={{ marginBottom: '24px' }}>
+          <div style={{ fontSize: '10px', color: 'var(--muted2)', textTransform: 'uppercase', letterSpacing: '1.2px', marginBottom: '8px', fontWeight: 600, fontFamily: 'var(--font-mono)' }}>
+            MLBB Women's Invitational (MWI)
+          </div>
+          <div style={{ display: 'flex', overflowX: 'auto', gap: '8px', paddingBottom: '8px' }}>
+            {mwiSeasons.map(e => {
+              const href = `/?scope=${encodeURIComponent(e.tournament_code)}&season=${encodeURIComponent(e.season)}&division=women`;
               const acc = accoladesBySeason[e.season] || {};
               const ch = acc.champion;
               const logo = ch?.logo_dark || ch?.logo_light;
@@ -262,9 +320,14 @@ export default async function HistoryOverview() {
           return `${h.season} — ${int(Math.round(Number(h.value) / 60))} mins`;
         };
 
-        const STATS = [
-          { label: 'MSC Seasons', val: int(mscCount), avg: null, high: null },
-          { label: 'M-Series Seasons', val: int(mwcCount), avg: null, high: null },
+        const STATS = [];
+        if (division === 'female') {
+          STATS.push({ label: 'MWI Seasons', val: int(mwiCount), avg: null, high: null });
+        } else {
+          STATS.push({ label: 'MSC Seasons', val: int(mscCount), avg: null, high: null });
+          STATS.push({ label: 'M-Series Seasons', val: int(mwcCount), avg: null, high: null });
+        }
+        STATS.push(
           { label: 'Matches', val: int(T.matches), avg: null, high: sh('matches') },
           { label: 'Games', val: int(T.games), avg: null, high: sh('games') },
           { label: 'Game Time', val: `${int(Math.round(Number(T.game_time_s) / 60))} mins`, avg: fmtDuration(P.game_time_s), high: shTime('game_time_s') },
@@ -278,8 +341,8 @@ export default async function HistoryOverview() {
           { label: 'Turtles', val: int(T.turtles), avg: null, high: sh('turtles') },
           { label: 'Lords', val: int(T.lords), avg: null, high: sh('lords') },
           { label: 'Turrets', val: int(T.turrets), avg: null, high: sh('turrets') },
-          { label: 'Unique Heroes', val: int(T.unique_heroes), avg: null, high: sh('unique_heroes') },
-        ];
+          { label: 'Unique Heroes', val: int(T.unique_heroes), avg: null, high: sh('unique_heroes') }
+        );
 
         return (
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(175px, 1fr))', gap: '8px', marginTop: '10px' }}>

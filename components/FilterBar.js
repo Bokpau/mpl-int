@@ -39,16 +39,23 @@ export default function FilterBar({ editions = [], featured = null, showEvent = 
   const spObj = Object.fromEntries(sp.entries());
   const eff = effectiveFilters(spObj, featured);
 
+  // Filter editions by division
+  const division = eff.division || 'open';
+  const filteredEditions = editions.filter(e => {
+    const isMwi = e.tournament_code === 'MWI';
+    return division === 'female' ? isMwi : !isMwi;
+  });
+
   // The Event segment is built from the families that actually exist, plus "All".
   const FAMILIES = [{ val: '', label: 'All' }];
   for (const code of ['MSC', 'MWC', 'MWI']) {
-    if (editions.some((e) => e.tournament_code === code)) {
+    if (filteredEditions.some((e) => e.tournament_code === code)) {
       FAMILIES.push({ val: code, label: familyLabel(code) });
     }
   }
 
   // Editions listed under the current family (all of them when family = All).
-  const scopeEditions = editions.filter((e) => !eff.scope || e.tournament_code === eff.scope);
+  const scopeEditions = filteredEditions.filter((e) => !eff.scope || e.tournament_code === eff.scope);
 
   function push(next) {
     const params = new URLSearchParams(sp.toString());
@@ -65,7 +72,7 @@ export default function FilterBar({ editions = [], featured = null, showEvent = 
     // drop to that family's aggregate (All editions) so the view stays coherent.
     const keep =
       val && !eff.isAll && eff.season &&
-      editions.some((e) => e.season === eff.season && e.tournament_code === val);
+      filteredEditions.some((e) => e.season === eff.season && e.tournament_code === val);
     push({ scope: val, season: keep ? eff.season : ALL });
   }
 
@@ -77,24 +84,26 @@ export default function FilterBar({ editions = [], featured = null, showEvent = 
   // an edition chip drops both season and scope, returning to the featured default.
   const chips = [];
   if (showEdition) {
-  if (eff.isAll) {
-    chips.push({
-      k: 'season',
-      label: eff.scope ? `All ${familyLabel(eff.scope)} editions` : 'All editions',
-      clear: { season: '', scope: '' },
-    });
-  } else if (eff.season && (!featured || eff.season !== String(featured.season))) {
-    const e = editions.find((x) => x.season === eff.season && (!eff.scope || x.tournament_code === eff.scope));
-    chips.push({ k: 'season', label: e ? editionOptionLabel(e) : eff.season, clear: { season: '', scope: '' } });
-  }
+    if (eff.isAll) {
+      chips.push({
+        k: 'season',
+        label: eff.scope ? `All ${familyLabel(eff.scope)} editions` : 'All editions',
+        clear: { season: '', scope: '' },
+      });
+    } else if (eff.season && (!featured || eff.season !== String(featured.season))) {
+      const e = filteredEditions.find((x) => x.season === eff.season && (!eff.scope || x.tournament_code === eff.scope));
+      chips.push({ k: 'season', label: e ? editionOptionLabel(e) : eff.season, clear: { season: '', scope: '' } });
+    }
   }
   if (eff.stage) chips.push({ k: 'stage', label: eff.stage === 'qualifier' ? 'Wildcard' : 'Main', clear: { stage: '' } });
   if (eff.min_games) chips.push({ k: 'min_games', label: `${eff.min_games}+ games`, clear: { min_games: '' } });
 
+  const finalShowEvent = showEvent && FAMILIES.length > 2;
+
   return (
     <div className="filterbar-wrap" aria-busy={isPending}>
       <div className="filterbar" data-pending={isPending ? '' : undefined}>
-        {showEvent ? (
+        {finalShowEvent ? (
           <div className="filter-group">
             <label>Event</label>
             <div className="seg">
