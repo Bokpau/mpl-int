@@ -133,7 +133,7 @@ export default async function HistoryOverview({ searchParams }) {
   const mwcCount = mwcSeasons.length;
   const mwiCount = mwiSeasons.length;
 
-  const featured = pickFeatured(editions, featuredPin());
+  const featured = pickFeatured(editions, featuredPin(), division);
   const isFeatured = (e) =>
     featured && e.tournament_code === featured.tournament_code && String(e.season) === String(featured.season);
 

@@ -14,13 +14,15 @@ export async function generateMetadata({ params }) {
 // the featured edition. If the player has no rows in the current edition, we redirect
 // to their historical career profile — the two pages are otherwise independent (no
 // shared layout, no cross-links). See plans/recreate-player-page-plan.md.
-export default async function CurrentPlayerPage({ params }) {
+export default async function CurrentPlayerPage({ params, searchParams }) {
   const { key } = await params;
+  const sp = (await searchParams) || {};
+  const division = sp.division === 'women' ? 'female' : 'open';
 
-  const featured = await getFeatured();
+  const featured = await getFeatured(division);
   // No featured edition resolvable -> there is no "current" context to show; send the
   // visitor to the standalone history profile.
-  if (!featured) redirect(`/history/players/${encodeURIComponent(key)}`);
+  if (!featured) redirect(`/history/players/${encodeURIComponent(key)}${division === 'female' ? '?division=women' : ''}`);
 
   const scope = featured.tournament_code;
   const season = featured.season;
@@ -39,7 +41,7 @@ export default async function CurrentPlayerPage({ params }) {
     else error = e.message;
   }
 
-  if (notCurrent) redirect(`/history/players/${encodeURIComponent(key)}`);
+  if (notCurrent) redirect(`/history/players/${encodeURIComponent(key)}${division === 'female' ? '?division=women' : ''}`);
 
   if (error) {
     return (
