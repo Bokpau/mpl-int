@@ -33,9 +33,10 @@ function Stat({ k, v, cls }) {
 
 export default async function TeamDetail({ params, searchParams }) {
   const { key } = await params;
-  const sp = await searchParams;
+  const sp = (await searchParams) || {};
   const isCurrent = sp.context !== 'history';
-  const crumbLink = isCurrent ? '/teams' : '/history/teams';
+  const divisionUrlParam = (sp.division === 'female' || sp.division === 'women') ? '?division=women' : '';
+  const crumbLink = (isCurrent ? '/teams' : '/history/teams') + divisionUrlParam;
 
   if (isCurrent) {
     const sel = await resolveCurrent(sp);
@@ -73,6 +74,7 @@ export default async function TeamDetail({ params, searchParams }) {
         scope={sel.eff.scope || 'MSC'}
         season={sel.eff.season || '2026'}
         initial={initial}
+        division={sel.eff.division}
       />
     );
   }
@@ -169,10 +171,10 @@ export default async function TeamDetail({ params, searchParams }) {
 
       <div className="section-title">Roster</div>
       <StatTable
-        columns={ROSTER_COLUMNS}
+        columns={ROSTER_COLUMNS.map(c => c.type === 'player' ? { ...c, query: { division: sp.division } } : c)}
         rows={data.roster}
         rowKey="player_key"
-        rowHref={{ base: '/players/', key: 'player_key' }}
+        rowHref={{ base: '/players/', key: 'player_key', query: { division: sp.division } }}
       />
 
       <div className="section-title">Most Picked Heroes</div>

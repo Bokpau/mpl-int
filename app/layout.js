@@ -1,3 +1,4 @@
+import { Suspense } from 'react';
 import './globals.css';
 import Nav from '../components/Nav';
 
@@ -24,7 +25,9 @@ export default function RootLayout({ children }) {
     <html lang="en">
       <body>
         <a href="#main" className="skip-link">Skip to main content</a>
-        <Nav siteName={SITE} siteNameSub={SITE_SUB} />
+        <Suspense fallback={<div style={{ height: 60, background: 'var(--bg-nav)' }} />}>
+          <Nav siteName={SITE} siteNameSub={SITE_SUB} />
+        </Suspense>
         <main id="main">{children}</main>
         {isDev && (
           <>

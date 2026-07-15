@@ -51,7 +51,7 @@ const STAGES = [
   { k: 'main', l: 'Main' },
 ];
 
-export default function MatchesListView({ q = '', label = '', isHistory = false, activeStage = '' }) {
+export default function MatchesListView({ q = '', label = '', isHistory = false, activeStage = '', division }) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -346,6 +346,7 @@ export default function MatchesListView({ q = '', label = '', isHistory = false,
           stage={stage}
           season={season}
           isHistory={isHistoryMode}
+          division={division}
         />
       ) : isHistoryMode ? (
         /* History list: Phase → Day headers → MatchCards with round tags */
@@ -377,6 +378,7 @@ export default function MatchesListView({ q = '', label = '', isHistory = false,
                             teamByKey={teamByKey}
                             roundTag={roundTag}
                             isHistory
+                            division={division}
                           />
                         );
                       })}
@@ -400,6 +402,7 @@ export default function MatchesListView({ q = '', label = '', isHistory = false,
               games={gs}
               match_mvp={match_mvp}
               teamByKey={teamByKey}
+              division={division}
             />
           ))}
           {series.length === 0 && (

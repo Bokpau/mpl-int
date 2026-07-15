@@ -19,13 +19,14 @@ export default function PlayerStatsView({ eff, label, initialRows, context = 'cu
   const season = eff.season || '2026';
 
   const configuredColumns = useMemo(() => {
+    const division = eff?.division === 'female' ? 'women' : 'open';
     return columns.map(c => {
       if (c.type === 'player' || c.type === 'team') {
-        return { ...c, query: { context } };
+        return { ...c, query: { context, division } };
       }
       return c;
     });
-  }, [columns, context]);
+  }, [columns, context, eff?.division]);
 
   // Server-side filter matches (refetched via API)
   const [stage, setStage] = useState(eff.stage || ''); // Overall = '', Wild Card = 'qualifier', Main = 'main'
@@ -297,7 +298,11 @@ export default function PlayerStatsView({ eff, label, initialRows, context = 'cu
           groups={STAT_GROUPS}
           rows={filteredRows}
           rowKey="player_key"
-          rowHref={{ base: context === 'history' ? '/history/players/' : '/players/', key: 'player_key' }}
+          rowHref={{
+            base: context === 'history' ? '/history/players/' : '/players/',
+            key: 'player_key',
+            query: { division: eff?.division === 'female' ? 'women' : 'open' }
+          }}
           defaultLimit={20}
         />
       )}

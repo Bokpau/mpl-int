@@ -88,7 +88,8 @@ const WL_STATS = [
   { label: 'CC Time (sec)', key: 'avg_cc_sec', fmt: v => n(v), lb: false },
 ];
 
-export default function CurrentPlayerDashboard({ playerKey, scope, season, initial }) {
+export default function CurrentPlayerDashboard({ playerKey, scope, season, initial, division }) {
+  const divisionUrlParam = (division === 'female' || division === 'women') ? '?division=women' : '';
   const roleid = initial?.player?.roleid ?? null;
 
   const [data, setData] = useState(initial);
@@ -280,8 +281,8 @@ export default function CurrentPlayerDashboard({ playerKey, scope, season, initi
           padding: '20px 24px', marginBottom: 24, display: 'flex', flexDirection: 'column', gap: 16,
         }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <Link href="/players" style={{ fontFamily: 'var(--font-mono)', fontSize: 10, color: 'var(--accent)', textDecoration: 'none', letterSpacing: '.08em', textTransform: 'uppercase' }}>← Back to Players</Link>
-            <Link href={`/teams/${player.team_code}`} style={{ display: 'flex', alignItems: 'center', gap: 8, textDecoration: 'none', background: 'rgba(255,255,255,0.03)', border: '1px solid var(--border)', borderRadius: 4, padding: '4px 10px' }}>
+            <Link href={`/players${divisionUrlParam}`} style={{ fontFamily: 'var(--font-mono)', fontSize: 10, color: 'var(--accent)', textDecoration: 'none', letterSpacing: '.08em', textTransform: 'uppercase' }}>← Back to Players</Link>
+            <Link href={`/teams/${player.team_code}${divisionUrlParam}`} style={{ display: 'flex', alignItems: 'center', gap: 8, textDecoration: 'none', background: 'rgba(255,255,255,0.03)', border: '1px solid var(--border)', borderRadius: 4, padding: '4px 10px' }}>
               <TeamLogo src={player.team_logo_dark} fallbackSrc={img.team(player.team_code)} alt={player.team_code} style={{ width: 20, height: 20, objectFit: 'contain' }} />
               <span style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--text)', fontWeight: 700 }}>{player.team_code} PROFILE</span>
             </Link>
@@ -721,7 +722,7 @@ export default function CurrentPlayerDashboard({ playerKey, scope, season, initi
                         return (
                           <tr key={g.battle_id} style={{ background: rowBg }}>
                             <td className="sticky-col-match" style={{ background: stickyBg }}>
-                              <Link href={`/matches/${g.battle_id}`} style={{ color: 'var(--text)', textDecoration: 'none', display: 'flex', flexDirection: 'column', gap: 4 }}>
+                              <Link href={`/matches/${g.battle_id}${divisionUrlParam}`} style={{ color: 'var(--text)', textDecoration: 'none', display: 'flex', flexDirection: 'column', gap: 4 }}>
                                 {g.opp_team_code && (
                                   <TeamLogo
                                     src={g.opp_team_logo_dark}

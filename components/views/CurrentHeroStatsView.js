@@ -56,6 +56,8 @@ function RoleDistribution({ h }) {
 
 export default function CurrentHeroStatsView({ featured, eff, label }) {
   const router = useRouter();
+  const division = eff?.division === 'female' ? 'women' : 'open';
+  const getHeroHref = (heroId) => `/heroes/${heroId}${division === 'women' ? '?division=women' : ''}`;
 
   const scope = eff.scope || featured?.tournament_code || 'MSC';
   const season = eff.season || featured?.season || '2026';
@@ -504,7 +506,7 @@ export default function CurrentHeroStatsView({ featured, eff, label }) {
                     : (
                       <div className="hero-grid">
                         {gridHeroes.map((h, i) => (
-                          <HeroCard key={h.hero_id} hero={h} rank={i + 1} onClick={() => router.push(`/heroes/${h.hero_id}`)} />
+                          <HeroCard key={h.hero_id} hero={h} rank={i + 1} onClick={() => router.push(getHeroHref(h.hero_id))} />
                         ))}
                       </div>
                     )
@@ -557,10 +559,10 @@ export default function CurrentHeroStatsView({ featured, eff, label }) {
                         {tableWithRanks.map(h => {
                           const wp = h.win_pct ?? 0;
                           return (
-                            <tr key={h.hero_id} className="clickable" onClick={() => router.push(`/heroes/${h.hero_id}`)}>
+                            <tr key={h.hero_id} className="clickable" onClick={() => router.push(getHeroHref(h.hero_id))}>
                               <td className="sticky-col-player">
                                 <Link
-                                  href={`/heroes/${h.hero_id}`}
+                                  href={getHeroHref(h.hero_id)}
                                   onClick={(e) => e.stopPropagation()}
                                   style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 150, textDecoration: 'none', color: 'var(--text)' }}
                                 >

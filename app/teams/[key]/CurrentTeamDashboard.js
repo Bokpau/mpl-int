@@ -41,7 +41,8 @@ function StatCard({ label, value, rank, color, sub }) {
 
 
 
-export default function CurrentTeamDashboard({ teamKey, scope, season, initial }) {
+export default function CurrentTeamDashboard({ teamKey, scope, season, initial, division }) {
+  const divisionUrlParam = (division === 'female' || division === 'women') ? '?division=women' : '';
   // Filters state (matches PlayerStatsView.js)
   const [stage, setStage] = useState('');
   const [side, setSide] = useState('');
@@ -239,7 +240,7 @@ export default function CurrentTeamDashboard({ teamKey, scope, season, initial }
   return (
     <div className="container">
       {/* ── Crumb & Title ── */}
-      <div className="crumb"><Link href="/teams">← Teams</Link></div>
+      <div className="crumb"><Link href={`/teams${divisionUrlParam}`}>← Teams</Link></div>
 
       {/* ── Premium Masthead ── */}
       <div style={{
@@ -412,7 +413,7 @@ export default function CurrentTeamDashboard({ teamKey, scope, season, initial }
                       <RoleImg role={p.role_lane} size={20} />
                     </span>
                     <PlayerPhoto photoUrl={p.photo_url} name={p.player} size={48} />
-                    <Link href={`/players/${p.player_key}`} style={{ fontWeight: 700, fontSize: 14, color: 'var(--text)', textDecoration: 'none' }}>
+                    <Link href={`/players/${p.player_key}${divisionUrlParam}`} style={{ fontWeight: 700, fontSize: 14, color: 'var(--text)', textDecoration: 'none' }}>
                       {p.player}
                     </Link>
                   </div>
@@ -686,7 +687,7 @@ export default function CurrentTeamDashboard({ teamKey, scope, season, initial }
                               <span style={{ fontFamily: 'var(--font-display)', fontSize: 14, fontWeight: 800 }}>{s.wins}–{s.losses}</span>
                               <div style={{ display: 'flex', gap: 4 }}>
                                 {s.games.map((g, gi) => (
-                                  <Link key={gi} href={`/matches/${g.battle_id}`} style={{
+                                  <Link key={gi} href={`/matches/${g.battle_id}${divisionUrlParam}`} style={{
                                     fontFamily: 'var(--font-mono)', fontSize: 10, fontWeight: 600,
                                     color: g.team_won ? 'var(--win)' : 'var(--loss)',
                                     background: g.team_won ? 'rgba(0,230,118,.1)' : 'rgba(255,60,90,.1)',

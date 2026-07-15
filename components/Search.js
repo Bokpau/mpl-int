@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { img } from '../lib/images';
 
 // Global typeahead. On first focus it pulls the player/team/hero lists through the
@@ -58,6 +58,8 @@ function rank(index, q) {
 
 export default function Search() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const division = searchParams.get('division');
   const [q, setQ] = useState('');
   const [open, setOpen] = useState(false);
   const [active, setActive] = useState(0);
@@ -92,7 +94,8 @@ export default function Search() {
     if (!r) return;
     setOpen(false);
     setQ('');
-    router.push(r.href);
+    const href = division ? `${r.href}${r.href.includes('?') ? '&' : '?'}division=${division}` : r.href;
+    router.push(href);
   }
 
   function onKeyDown(e) {

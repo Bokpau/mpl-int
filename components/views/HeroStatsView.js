@@ -6,7 +6,7 @@ import StatLegend from '../StatLegend';
 import { HERO_COLUMNS as COLUMNS, STAT_GROUPS } from '../../lib/columns';
 
 // Hero leaderboard for one selection. Selection-agnostic — the caller resolves `q`/`label`.
-export default async function HeroStatsView({ q, label }) {
+export default async function HeroStatsView({ q, label, eff }) {
   let rows = null;
   let error = null;
   try {
@@ -14,6 +14,11 @@ export default async function HeroStatsView({ q, label }) {
   } catch (e) {
     error = e.message;
   }
+
+  const division = eff?.division === 'female' ? 'women' : 'open';
+  const configuredColumns = COLUMNS.map(c =>
+    c.type === 'hero' ? { ...c, query: { division } } : c
+  );
 
   return (
     <div className="container">
@@ -27,12 +32,12 @@ export default async function HeroStatsView({ q, label }) {
         <div className="empty">No hero data for this selection.</div>
       ) : (
         <StatTable
-          columns={COLUMNS}
+          columns={configuredColumns}
           groups={STAT_GROUPS}
           rows={rows}
           rowKey="hero_id"
           defaultLimit={20}
-          rowHref={{ base: '/heroes/', key: 'hero_id' }}
+          rowHref={{ base: '/heroes/', key: 'hero_id', query: { division } }}
         />
       )}
 

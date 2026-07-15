@@ -43,10 +43,12 @@ export default async function CurrentPlayerPage({ params, searchParams }) {
 
   if (notCurrent) redirect(`/history/players/${encodeURIComponent(key)}${division === 'female' ? '?division=women' : ''}`);
 
+  const divisionUrlParam = division === 'female' ? '?division=women' : '';
+
   if (error) {
     return (
       <div className="container">
-        <div className="crumb"><Link href="/players">← Players</Link></div>
+        <div className="crumb"><Link href={`/players${divisionUrlParam}`}>← Players</Link></div>
         <ErrorBox error={error} />
       </div>
     );
@@ -58,6 +60,7 @@ export default async function CurrentPlayerPage({ params, searchParams }) {
       scope={scope}
       season={season}
       initial={initial}
+      division={division}
     />
   );
 }

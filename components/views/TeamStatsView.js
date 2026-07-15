@@ -22,8 +22,9 @@ export default async function TeamStatsView({ q, label, eff, context = 'current'
 
   // Era code/name for Current + season-filtered; franchise for all-time aggregate.
   const keys = teamFieldKeys(identityMode(context, eff), 'team');
+  const division = eff?.division === 'female' ? 'women' : 'open';
   let configuredColumns = COLUMNS.map(c =>
-    c.key === 'team' ? { ...c, ...keys, query: { context } } : c
+    c.key === 'team' ? { ...c, ...keys, query: { context, division } } : c
   );
 
   if (rows && rows.length && eff.season) {
@@ -90,7 +91,7 @@ export default async function TeamStatsView({ q, label, eff, context = 'current'
           groups={STAT_GROUPS}
           rows={rows}
           rowKey="team_key"
-          rowHref={{ base: '/teams/', key: 'team_key', query: { context } }}
+          rowHref={{ base: '/teams/', key: 'team_key', query: { context, division } }}
           defaultLimit={20}
         />
       )}

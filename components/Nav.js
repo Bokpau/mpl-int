@@ -113,8 +113,16 @@ function DivisionToggle() {
 
 export default function Nav({ siteName, siteNameSub }) {
   const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const division = searchParams.get('division');
   const [openMenu, setOpenMenu] = useState(null); // label of the open dropdown
   const navRef = useRef(null);
+
+  const getHref = (href) => {
+    if (!division) return href;
+    const separator = href.includes('?') ? '&' : '?';
+    return `${href}${separator}division=${division}`;
+  };
 
   // Close any open dropdown on navigation, outside-click, or Escape.
   useEffect(() => { setOpenMenu(null); }, [pathname]);
@@ -133,7 +141,7 @@ export default function Nav({ siteName, siteNameSub }) {
 
   return (
     <nav className="nav" ref={navRef}>
-        <Link href="/" className="brand">
+        <Link href={getHref("/")} className="brand">
           <span>{siteName}<span className="dot">.</span></span>
           {siteNameSub && <span className="brand-line2">{siteNameSub}</span>}
         </Link>
@@ -144,7 +152,7 @@ export default function Nav({ siteName, siteNameSub }) {
             const active = groupActive(item);
             if (item.href) {
               return (
-                <Link key={item.label} href={item.href} className={`navgroup-link${active ? ' active' : ''}`}>
+                <Link key={item.label} href={getHref(item.href)} className={`navgroup-link${active ? ' active' : ''}`}>
                   {Icon ? <Icon /> : null}<span>{item.label}</span>
                 </Link>
               );
@@ -164,7 +172,7 @@ export default function Nav({ siteName, siteNameSub }) {
                 {open ? (
                   <div className="dropdown" role="menu">
                     {item.children.map((c) => (
-                      <Link key={c.href} href={c.href} role="menuitem" className={isActive(c.href) ? 'active' : ''}>
+                      <Link key={c.href} href={getHref(c.href)} role="menuitem" className={isActive(c.href) ? 'active' : ''}>
                         {c.label}
                       </Link>
                     ))}

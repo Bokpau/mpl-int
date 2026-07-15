@@ -59,6 +59,7 @@ function SectionHeader({ children }) {
 // `featured` come from a selection resolver (resolveSelection for history,
 // resolveCurrent for the live edition) — the view itself is selection-agnostic.
 export default async function DashboardView({ q, label, eff, editions = [], featured = null, context = 'current' }) {
+  const divisionUrlParam = (eff?.division === 'female' || eff?.division === 'women') ? '?division=women' : '';
   let matches = [], schedule = [], players = [], teams = [], heroes = [], bans = [], byRole = [], eraTeams = [], standings = [], error = null;
   try {
     [matches, schedule, players, teams, heroes, bans, byRole, eraTeams, standings] = await Promise.all([
@@ -320,7 +321,7 @@ export default async function DashboardView({ q, label, eff, editions = [], feat
             ))}
             {!recentSeries.length && !upcoming.length ? <div className="empty">No schedule data for this selection.</div> : null}
           </div>
-          <Link href="/matches" className="db-view-more">
+          <Link href={`/matches${divisionUrlParam}`} className="db-view-more">
             View Full Schedule &amp; Matches →
           </Link>
         </div>

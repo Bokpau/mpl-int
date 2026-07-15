@@ -35,7 +35,8 @@ function HeroCircle({ heroid, campid, size = 36 }) {
   );
 }
 
-export async function MatchBreakdown({ battleId, isCurrent = true }) {
+export async function MatchBreakdown({ battleId, isCurrent = true, division }) {
+  const divisionUrlParam = (division === 'female' || division === 'women') ? '?division=women' : '';
   let data = null;
   try { data = await api.match(battleId); } catch { }
   if (!data) return <div className="empty">Match not found.</div>;
@@ -88,7 +89,7 @@ export async function MatchBreakdown({ battleId, isCurrent = true }) {
   return (
     <>
       <div style={{ marginBottom: 12 }}>
-        <Link href={isCurrent ? "/matches" : "/history/matches"} style={{ fontFamily: 'var(--font-mono)', fontSize: 10, color: 'var(--muted2)', letterSpacing: '.1em', textTransform: 'uppercase' }}>
+        <Link href={isCurrent ? `/matches${divisionUrlParam}` : `/history/matches${divisionUrlParam}`} style={{ fontFamily: 'var(--font-mono)', fontSize: 10, color: 'var(--muted2)', letterSpacing: '.1em', textTransform: 'uppercase' }}>
           ← Matches
         </Link>
       </div>
@@ -145,7 +146,7 @@ export async function MatchBreakdown({ battleId, isCurrent = true }) {
                   <div>
                     <div style={{ fontFamily: 'var(--font-mono)', fontSize: 8, color: 'var(--accent)', letterSpacing: '.12em', marginBottom: 2 }}>★ GAME MVP</div>
                     <div style={{ fontWeight: 700, fontSize: 14 }}>
-                      {gameMvp.player_key ? <Link href={`/players/${encodeURIComponent(gameMvp.player_key)}`} style={{ color: 'inherit' }}>{gameMvp.player_name}</Link> : gameMvp.player_name}
+                      {gameMvp.player_key ? <Link href={`/players/${encodeURIComponent(gameMvp.player_key)}${divisionUrlParam}`} style={{ color: 'inherit' }}>{gameMvp.player_name}</Link> : gameMvp.player_name}
                     </div>
                     <div style={{ fontFamily: 'var(--font-mono)', fontSize: 9, color: 'var(--muted)' }}>{gameMvpTeam}</div>
                   </div>
@@ -158,7 +159,7 @@ export async function MatchBreakdown({ battleId, isCurrent = true }) {
                   <div>
                     <div style={{ fontFamily: 'var(--font-mono)', fontSize: 8, color: '#e8b800', letterSpacing: '.12em', marginBottom: 2 }}>★ MATCH MVP</div>
                     <div style={{ fontWeight: 700, fontSize: 14 }}>
-                      {matchMvp.player_key ? <Link href={`/players/${encodeURIComponent(matchMvp.player_key)}`} style={{ color: 'inherit' }}>{matchMvp.player_name}</Link> : matchMvp.player_name}
+                      {matchMvp.player_key ? <Link href={`/players/${encodeURIComponent(matchMvp.player_key)}${divisionUrlParam}`} style={{ color: 'inherit' }}>{matchMvp.player_name}</Link> : matchMvp.player_name}
                     </div>
                     <div style={{ fontFamily: 'var(--font-mono)', fontSize: 9, color: 'var(--muted)' }}>{matchMvp.team_code}</div>
                   </div>

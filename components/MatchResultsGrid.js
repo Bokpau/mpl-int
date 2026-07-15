@@ -166,7 +166,7 @@ function GenericMatchesView({ series, season, renderMatchRow, teamByKey = {}, to
 
 export default function MatchResultsGrid({
   series = [], teamByKey = {}, metaByEra = {}, wildCardGames = [], mainGames = [], stage = 'all',
-  season = null, isHistory = false,
+  season = null, isHistory = false, division,
 }) {
   const [active, setActive] = useState(null); // open match_code
   const isWildCard = stage !== 'main';
@@ -223,6 +223,7 @@ export default function MatchResultsGrid({
               teamByKey={teamByKey}
               roundTag={getMatchMeta(season, active)?.round ?? null}
               isHistory={isHistory}
+              division={division}
             />
           </div>
         </div>
