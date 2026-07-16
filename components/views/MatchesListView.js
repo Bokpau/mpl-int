@@ -106,6 +106,45 @@ export default function MatchesListView({ q = '', label = '', isHistory = false,
     return m;
   }, [teams]);
 
+  // Schedule rows keyed by match_code, for home/away lookup.
+  const scheduleByCode = useMemo(() => {
+    const m = {};
+    for (const s of schedule) if (s.match_code) m[s.match_code] = s;
+    return m;
+  }, [schedule]);
+
+  // Schedule's home_team/away_team are admin-typed team codes, which may be
+  // either the era code or the current display code (see backend comment on
+  // /api/intl/schedule). Match against both before declaring a side "home".
+  function isHomeSlot(code, era, key) {
+    if (!code) return false;
+    if (code === era) return true;
+    const t = teamByKey[key];
+    return !!t && (code === t.team_code || code === t.team_code_era);
+  }
+
+  // Games carry team_a/team_b assigned by camp (blue/red) at ingest, which has
+  // no relation to which team is "home" — so re-derive team_a/team_b from the
+  // schedule's home_team/away_team here, once, before any grouping happens.
+  // Falls back to the camp-derived order when a match has no schedule row or
+  // the schedule's team code can't be resolved to either side.
+  const normGames = useMemo(() => {
+    return games.map(g => {
+      const sched = scheduleByCode[g.match_code];
+      if (!sched?.home_team) return g;
+      const homeIsA = isHomeSlot(sched.home_team, g.team_a_era, g.team_a_key);
+      const homeIsB = isHomeSlot(sched.home_team, g.team_b_era, g.team_b_key);
+      if (homeIsA || !homeIsB) return g;
+      return {
+        ...g,
+        team_a_era: g.team_b_era, team_b_era: g.team_a_era,
+        team_a_key: g.team_b_key, team_b_key: g.team_a_key,
+        team_a_flag: g.team_b_flag, team_b_flag: g.team_a_flag,
+        team_a_country: g.team_b_country, team_b_country: g.team_a_country,
+      };
+    });
+  }, [games, scheduleByCode, teamByKey]);
+
   // Era-code -> { logo, flag } lookup for the brackets (keyed by era code). Seeded
   // from team_era_name (covers teams with no games yet — needed for the Main Group
   // Stage bracket seeds), then overlaid with per-game data for played teams.
@@ -114,7 +153,7 @@ export default function MatchesListView({ q = '', label = '', isHistory = false,
     for (const t of eraTeams) {
       if (t.era_code) m[t.era_code] = { team_logo_dark: t.team_logo_dark, country_flag: t.country_flag };
     }
-    for (const g of games) {
+    for (const g of normGames) {
       for (const [era, key, flag] of [
         [g.team_a_era, g.team_a_key, g.team_a_flag],
         [g.team_b_era, g.team_b_key, g.team_b_flag],
@@ -123,18 +162,18 @@ export default function MatchesListView({ q = '', label = '', isHistory = false,
       }
     }
     return m;
-  }, [games, teamByKey, eraTeams]);
+  }, [normGames, teamByKey, eraTeams]);
 
   // All Wild Card games (unfiltered by week) — the Decider spans the whole stage.
-  const wildCardGames = useMemo(() => games.filter(g => g.stage_type === 'qualifier'), [games]);
+  const wildCardGames = useMemo(() => normGames.filter(g => g.stage_type === 'qualifier'), [normGames]);
   // All Main-stage games (unfiltered by week) — the group bracket spans the whole
   // stage, so it needs every Main game regardless of the week chip.
-  const mainGames = useMemo(() => games.filter(g => g.stage_type !== 'qualifier'), [games]);
+  const mainGames = useMemo(() => normGames.filter(g => g.stage_type !== 'qualifier'), [normGames]);
 
   // Roll games up into series (by match_code), applying stage filters.
   const series = useMemo(() => {
     const grouped = {};
-    for (const g of games) {
+    for (const g of normGames) {
       if (stage !== 'all' && g.stage_type !== stage) continue;
       const key = g.match_code || g.battle_id;
       if (!grouped[key]) grouped[key] = { info: g, games: [], match_mvp: null };
@@ -147,7 +186,7 @@ export default function MatchesListView({ q = '', label = '', isHistory = false,
       const ma = a.info.match_number || 0, mb = b.info.match_number || 0;
       return wb - wa || db - da || mb - ma;
     });
-  }, [games, stage]);
+  }, [normGames, stage]);
 
   const stats = useMemo(() => {
     const matchesPlayed = series.length;
