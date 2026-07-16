@@ -2,8 +2,12 @@ import { NextResponse } from 'next/server';
 
 // Catch-all proxy so client components can reach the shared backend without ever
 // seeing the internal API key. Mirrors the PH site's proxy: it validates the path,
-// canonicalizes the query string (collapses param-reorder cache-busting), attaches
-// x-api-key on the server, and forwards the backend's Cache-Control to the edge.
+// canonicalizes the query string (collapses param-reorder cache-busting), and
+// attaches x-api-key on the server. Freshness is controlled entirely by Next's
+// Data Cache (tags: ['intl'], purged on demand — see app/api/revalidate/route.js);
+// the backend's own Cache-Control is intentionally NOT forwarded to the browser,
+// since a second HTTP-cache layer at the edge/browser would keep serving stale
+// JSON after an on-demand purge until its own TTL expired, defeating the purge.
 const BACKEND = process.env.BACKEND_URL || 'https://mpl-ph-s17-backend.onrender.com';
 const API_KEY = process.env.INTERNAL_API_KEY;
 const MAX_SLUG_DEPTH = 8;
@@ -38,7 +42,7 @@ export async function GET(request, { params }) {
 
   const res = await fetch(url, {
     headers: API_KEY ? { 'x-api-key': API_KEY } : {},
-    next: { revalidate: 300 },
+    next: { revalidate: 300, tags: ['intl'] },
   });
 
   if (!res.ok) {
@@ -46,6 +50,5 @@ export async function GET(request, { params }) {
   }
 
   const data = await res.json();
-  const cacheControl = res.headers.get('cache-control');
-  return NextResponse.json(data, cacheControl ? { headers: { 'Cache-Control': cacheControl } } : undefined);
+  return NextResponse.json(data, { headers: { 'Cache-Control': 'no-store' } });
 }
