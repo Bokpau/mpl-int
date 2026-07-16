@@ -95,7 +95,7 @@ export default function PlayerStatsView({ eff, label, initialRows, context = 'cu
         setError(err.message);
         setLoading(false);
       });
-  }, [stage, side, result, patch]);
+  }, [scope, season, stage, side, result, patch]);
 
   // Client-side populated team list based on the active rows. Current pages are
   // era-locked, so the filter must key on the era code (FLCM), never the franchise
