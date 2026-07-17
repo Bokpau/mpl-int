@@ -24,7 +24,12 @@ out/
 .claude/
 .codex/
 .impeccable/
-graphify-out/
+
+# Generated knowledge graph — keep human-readable docs, not raw graph data
+graphify-out/*
+!graphify-out/wiki
+!graphify-out/wiki/**
+!graphify-out/GRAPH_REPORT.md
 
 # Logs
 *.log

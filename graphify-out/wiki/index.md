@@ -1,0 +1,56 @@
+# mpl-intl
+
+*731 nodes · 1057 edges · 47 communities (1 thin, see [[misc-communities|misc]])*
+
+## Hub communities
+- [[community-3-matchviewer-js|MatchViewer.js]] (40 nodes)
+- [[community-4-move-computation-to-the-backend-audit-pl|Move Computation to the Backend — Audit + Plan]] (38 nodes)
+- [[community-1-featured-js|featured.js]] (36 nodes)
+- [[community-10-design-system-mlbb-international|Design System: MLBB International]] (34 nodes)
+- [[community-46-page-js|page.js]] (33 nodes)
+- [[community-7-objectivetimingchart-js|ObjectiveTimingChart.js]] (31 nodes)
+- [[community-15-nav-js|Nav.js]] (28 nodes)
+- [[community-6-mlbb-international-ui-ux-upgrade-plan-pl|MLBB International — UI/UX Upgrade Plan (Plan-Only)]] (27 nodes)
+- [[community-41-matchcard-js|MatchCard.js]] (23 nodes)
+- [[community-11-currentherostatsview-js|CurrentHeroStatsView.js]] (21 nodes)
+- [[community-24-matchbreakdown-js|MatchBreakdown.js]] (20 nodes)
+- [[community-23-teamstatstimeline-js|TeamStatsTimeline.js]] (19 nodes)
+- [[community-13-nav-js|Nav.js]] (18 nodes)
+- [[community-12-currentherodashboard-js|CurrentHeroDashboard.js]] (18 nodes)
+- [[community-28-page-js|page.js]] (17 nodes)
+- [[community-5-matchresultsgrid-js|MatchResultsGrid.js]] (17 nodes)
+- [[community-14-plan-recreate-player-page-current-vs-his|Plan: Recreate Player Page (Current vs. History Split)]] (17 nodes)
+- [[community-2-api-js|api.js]] (16 nodes)
+- [[community-25-matchviewer-js|MatchViewer.js]] (16 nodes)
+- [[community-17-integrate-upcoming-tournaments-plan-stat|Integrate Upcoming Tournaments — Plan & Status]] (16 nodes)
+- [[community-19-matchanalysis-js|MatchAnalysis.js]] (15 nodes)
+- [[community-20-scripts|scripts]] (15 nodes)
+- [[community-21-separate-current-tournament-vs-history-a|Separate Current-Tournament vs History — Architecture Split]] (15 nodes)
+- [[community-37-pre-commit|pre-commit]] (15 nodes)
+- [[community-44-loadingskeleton-js|LoadingSkeleton.js]] (14 nodes)
+
+## God nodes (most-referenced symbols)
+- `DashboardView.js` — [[community-7-objectivetimingchart-js|ObjectiveTimingChart.js]] (36 refs)
+- `CurrentHeroDashboard.js` — [[community-28-page-js|page.js]] (30 refs)
+- `Images.js` — [[community-41-matchcard-js|MatchCard.js]] (30 refs)
+- `PlayerLegacy.js` — [[community-46-page-js|page.js]] (27 refs)
+- `MatchViewer.js` — [[community-3-matchviewer-js|MatchViewer.js]] (26 refs)
+- `CurrentPlayerDashboard.js` — [[community-25-matchviewer-js|MatchViewer.js]] (25 refs)
+- `CurrentTeamDashboard.js` — [[community-41-matchcard-js|MatchCard.js]] (23 refs)
+- `MatchBreakdown.js` — [[community-24-matchbreakdown-js|MatchBreakdown.js]] (23 refs)
+- `CurrentHeroStatsView.js` — [[community-5-matchresultsgrid-js|MatchResultsGrid.js]] (22 refs)
+- `PlayerTable.js` — [[community-19-matchanalysis-js|MatchAnalysis.js]] (21 refs)
+- `StatTable.js` — [[community-46-page-js|page.js]] (19 refs)
+- `TeamLogo.js` — [[community-41-matchcard-js|MatchCard.js]] (19 refs)
+- `TeamLogo()` — [[community-41-matchcard-js|MatchCard.js]] (19 refs)
+- `MatchAnalysis.js` — [[community-20-scripts|scripts]] (18 refs)
+- `ObjectiveTimingChart.js` — [[community-6-mlbb-international-ui-ux-upgrade-plan-pl|MLBB International — UI/UX Upgrade Plan (Plan-Only)]] (18 refs)
+- `MatchResultsGrid.js` — [[community-10-design-system-mlbb-international|Design System: MLBB International]] (17 refs)
+- `page.js` — [[community-16-current-vs-history-identity-enforcement-|Current-vs-History Identity Enforcement — Audit + Plan]] (16 refs)
+- `MapReview.js` — [[community-3-matchviewer-js|MatchViewer.js]] (16 refs)
+- `ErrorBox.js` — [[community-0-dashboardview-js|DashboardView.js]] (15 refs)
+- `ErrorBox()` — [[community-0-dashboardview-js|DashboardView.js]] (15 refs)
+
+<!-- graphify:notes -->
+## Notes
+
