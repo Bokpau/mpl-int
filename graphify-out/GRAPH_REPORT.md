@@ -1,13 +1,18 @@
-# Graph Report - mpl-intl  (2026-07-17)
+# Graph Report - mpl-intl  (2026-07-18)
 
 ## Corpus Check
-- 109 files · ~125,542 words
+- 109 files · ~126,007 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
 - 817 nodes · 1492 edges · 48 communities (44 shown, 4 thin omitted)
 - Extraction: 99% EXTRACTED · 1% INFERRED · 0% AMBIGUOUS · INFERRED: 15 edges (avg confidence: 0.58)
 - Token cost: 0 input · 0 output
+
+## Graph Freshness
+- Built from commit: `35d6e55d`
+- Run `git rev-parse HEAD` and compare to check if the graph is stale.
+- Run `graphify update .` after code changes (no API cost).
 
 ## Community Hubs (Navigation)
 - DashboardView.js
