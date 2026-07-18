@@ -208,6 +208,31 @@ export default function CurrentTeamDashboard({ teamKey, scope, season, initial, 
     });
   }, [roster]);
 
+  // Curated full roster (starters + subs + staff) from team_roster_member.
+  // Stats stay in the derived `roster` array; join them here by player_key.
+  const members = teamData?.roster_members || [];
+  const statsByKey = useMemo(() => new Map(roster.map(p => [p.player_key, p])), [roster]);
+  const grouped = useMemo(() => {
+    if (!members.length) return null; // edition not seeded -> flat fallback below
+    const memberKeys = new Set(members.map(m => m.player_key));
+    const laneSort = (a, b) => {
+      const idxA = ROLE_ORDER.indexOf(a.role_lane || '');
+      const idxB = ROLE_ORDER.indexOf(b.role_lane || '');
+      return ((idxA < 0 ? 9 : idxA) - (idxB < 0 ? 9 : idxB)) || ((a.sort_order || 0) - (b.sort_order || 0));
+    };
+    return {
+      starters: [
+        ...members.filter(m => m.member_role === 'starter').sort(laneSort),
+        // players with game data but no roster row -- never hide a player who played
+        ...roster.filter(p => !memberKeys.has(p.player_key)).map(p => ({ ...p, member_role: 'starter', unrostered: true })),
+      ],
+      subs: members.filter(m => m.member_role === 'sub').sort(laneSort),
+      staff: members
+        .filter(m => m.member_role !== 'starter' && m.member_role !== 'sub')
+        .sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0)),
+    };
+  }, [members, roster]);
+
   // Match results grouping by opponent
   const oppMatchesMap = useMemo(() => {
     const map = {};
@@ -403,25 +428,45 @@ export default function CurrentTeamDashboard({ teamKey, scope, season, initial, 
 
           {/* ── 2. ROSTER ── */}
           <div className="section-title">Roster</div>
-          <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', marginBottom: 32 }}>
-            {sortedRoster.map(p => {
+          {(() => {
+            const renderPlayerCard = (p) => {
+              const stats = statsByKey.get(p.player_key) || (p.games != null ? p : null);
               const heroes = (teamData?.player_heroes?.[p.player_key] || []).slice(0, 5);
+              // Zero-game players (unplayed subs) have no player page -- don't link.
+              const name = stats
+                ? (
+                  <Link href={`/players/${p.player_key}${divisionUrlParam}`} style={{ fontWeight: 700, fontSize: 14, color: 'var(--text)', textDecoration: 'none' }}>
+                    {p.player}
+                  </Link>
+                ) : (
+                  <span style={{ fontWeight: 700, fontSize: 14, color: 'var(--text)' }}>{p.player}</span>
+                );
               return (
                 <div key={p.player_key} className="card" style={{ padding: '14px 16px', flex: '1 1 200px', maxWidth: 280, display: 'flex', flexDirection: 'column', gap: 12 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                    <span title={p.role_lane} aria-label={p.role_lane} style={{ display: 'inline-flex' }}>
-                      <RoleImg role={p.role_lane} size={20} />
-                    </span>
+                    {p.role_lane && (
+                      <span title={p.role_lane} aria-label={p.role_lane} style={{ display: 'inline-flex' }}>
+                        <RoleImg role={p.role_lane} size={20} />
+                      </span>
+                    )}
                     <PlayerPhoto photoUrl={p.photo_url} name={p.player} size={48} />
-                    <Link href={`/players/${p.player_key}${divisionUrlParam}`} style={{ fontWeight: 700, fontSize: 14, color: 'var(--text)', textDecoration: 'none' }}>
-                      {p.player}
-                    </Link>
+                    {name}
+                    {p.unrostered && (
+                      <span title="Has game data but is not on the seeded roster"
+                            style={{ fontFamily: 'var(--font-mono)', fontSize: 9, color: 'var(--muted)', border: '1px solid rgba(255,255,255,.15)', borderRadius: 2, padding: '1px 4px' }}>
+                        UNLISTED
+                      </span>
+                    )}
                   </div>
-                  <div style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--muted)', display: 'flex', gap: 14 }}>
-                    <div>Games: <span style={{ color: 'var(--text)', fontWeight: 700 }}>{int(p.games)}</span></div>
-                    <div>Win%: <span style={{ color: wrClass(getPct(p.wins, p.games)), fontWeight: 700 }}>{getPct(p.wins, p.games)}%</span></div>
-                    <div>KDA: <span style={{ color: 'var(--accent)', fontWeight: 700 }}>{dec(p.kda)}</span></div>
-                  </div>
+                  {stats ? (
+                    <div style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--muted)', display: 'flex', gap: 14 }}>
+                      <div>Games: <span style={{ color: 'var(--text)', fontWeight: 700 }}>{int(stats.games)}</span></div>
+                      <div>Win%: <span style={{ color: wrClass(getPct(stats.wins, stats.games)), fontWeight: 700 }}>{getPct(stats.wins, stats.games)}%</span></div>
+                      <div>KDA: <span style={{ color: 'var(--accent)', fontWeight: 700 }}>{dec(stats.kda)}</span></div>
+                    </div>
+                  ) : (
+                    <div style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--muted)' }}>No games yet</div>
+                  )}
                   {heroes.length > 0 && (
                     <div style={{ borderTop: '1px solid rgba(255,255,255,.07)', paddingTop: 10 }}>
                       <div style={{ fontFamily: 'var(--font-mono)', fontSize: 10, fontWeight: 600, color: 'rgba(255,255,255,.5)', letterSpacing: '.06em', marginBottom: 6 }}>
@@ -450,8 +495,54 @@ export default function CurrentTeamDashboard({ teamKey, scope, season, initial, 
                   )}
                 </div>
               );
-            })}
-          </div>
+            };
+
+            const STAFF_LABELS = { coach: 'Head Coach', asst_coach: 'Assistant Coach', analyst: 'Analyst', manager: 'Manager' };
+            const subhead = { fontFamily: 'var(--font-mono)', fontSize: 10, fontWeight: 600, color: 'rgba(255,255,255,.5)', letterSpacing: '.06em', marginBottom: 8 };
+
+            if (!grouped) {
+              // Edition without a seeded roster -> original derived-only view.
+              return (
+                <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', marginBottom: 32 }}>
+                  {sortedRoster.map(renderPlayerCard)}
+                </div>
+              );
+            }
+            return (
+              <>
+                <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', marginBottom: 20 }}>
+                  {grouped.starters.map(renderPlayerCard)}
+                </div>
+                {grouped.subs.length > 0 && (
+                  <>
+                    <div style={subhead}>SUBSTITUTES</div>
+                    <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', marginBottom: 20 }}>
+                      {grouped.subs.map(renderPlayerCard)}
+                    </div>
+                  </>
+                )}
+                {grouped.staff.length > 0 && (
+                  <>
+                    <div style={subhead}>COACHING STAFF</div>
+                    <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', marginBottom: 32 }}>
+                      {grouped.staff.map(m => (
+                        <div key={m.player_key} className="card" style={{ padding: '12px 14px', display: 'flex', alignItems: 'center', gap: 10, flex: '0 1 220px' }}>
+                          <PlayerPhoto photoUrl={m.photo_url} name={m.player} size={40} />
+                          <div>
+                            <div style={{ fontWeight: 700, fontSize: 13, color: 'var(--text)' }}>{m.player}</div>
+                            <div style={{ fontFamily: 'var(--font-mono)', fontSize: 10, color: 'var(--muted)' }}>
+                              {STAFF_LABELS[m.member_role] || m.member_role}
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </>
+                )}
+                {grouped.subs.length === 0 && grouped.staff.length === 0 && <div style={{ marginBottom: 12 }} />}
+              </>
+            );
+          })()}
 
           {/* ── 3. TEAM DATA ANALYSIS ── */}
           <div className="section-title">Team Data Analysis</div>
