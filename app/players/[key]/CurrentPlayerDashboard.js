@@ -6,6 +6,7 @@ import FilterSidebar from '../../../components/FilterSidebar';
 import { VsTeamsTable } from '../../../components/VsTeamsTable';
 import TeamLogo from '../../../components/TeamLogo';
 import { img } from '../../../lib/images';
+import { resolvePlayer } from '../../../lib/identity';
 
 // Current-tournament rich player dashboard — the recreated PH player page, scoped to
 // the featured edition (MSC 2026). Basics only; the 12 advanced-analytics tabs are a
@@ -173,6 +174,15 @@ export default function CurrentPlayerDashboard({ playerKey, scope, season, initi
   const s = data?.stats;
   const player = data?.player;
   const playerRole = player?.role_lane;
+  // This is the live-edition dashboard, so the name shown is the ERA IGN for this
+  // edition — not the raw Moonton IGN (player_name, an alias) and not the global
+  // display name. resolvePlayer wants the era IGN under player_name and the global
+  // under current_player; the endpoint supplies them as player_name_era /
+  // current_player. See identity-rules.md Rule 8.
+  const playerDisplayName = player
+    ? resolvePlayer({ player_name: player.player_name_era, current_player: player.current_player }, 'current').name
+      || player.player_name
+    : '';
   const winP = s ? pct(s.wins, s.games) : 0;
 
   const allEnriched = useMemo(() => allPlayers.map(p => ({
@@ -289,9 +299,9 @@ export default function CurrentPlayerDashboard({ playerKey, scope, season, initi
           </div>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: 20, flexWrap: 'wrap' }}>
-            <PlayerPhoto photoUrl={player.photo_url} name={player.player_name} size={88} zoom={1.3} />
+            <PlayerPhoto photoUrl={player.photo_url} name={playerDisplayName} size={88} zoom={1.3} />
             <div style={{ flex: 1, minWidth: 200 }}>
-              <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 32, fontWeight: 900, color: 'var(--text)', lineHeight: 1.1, margin: 0, textTransform: 'uppercase', letterSpacing: '0.02em' }}>{player.player_name}</h1>
+              <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 32, fontWeight: 900, color: 'var(--text)', lineHeight: 1.1, margin: 0, textTransform: 'uppercase', letterSpacing: '0.02em' }}>{playerDisplayName}</h1>
               <div style={{ fontFamily: 'var(--font-mono)', fontSize: 12, color: 'var(--muted)', marginTop: 8, display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
                 {player.role_lane && <span style={{ color: 'var(--accent)', fontWeight: 700 }}>{player.role_lane}</span>}
                 {player.role_lane && player.team_code && <span>·</span>}
