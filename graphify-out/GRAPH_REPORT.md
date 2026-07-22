@@ -1,16 +1,16 @@
-# Graph Report - mpl-intl  (2026-07-18)
+# Graph Report - mpl-intl  (2026-07-23)
 
 ## Corpus Check
-- 109 files · ~126,007 words
+- 109 files · ~126,148 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 817 nodes · 1492 edges · 48 communities (44 shown, 4 thin omitted)
+- 817 nodes · 1495 edges · 53 communities (48 shown, 5 thin omitted)
 - Extraction: 99% EXTRACTED · 1% INFERRED · 0% AMBIGUOUS · INFERRED: 15 edges (avg confidence: 0.58)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `35d6e55d`
+- Built from commit: `47b44f64`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -62,6 +62,11 @@
 - msc2026MainBracket.js
 - page.js
 - route.js
+- identity.js
+- MatchCard.js
+- ItemTimings.js
+- msc2026MainBracket.js
+- PageHead.js
 
 ## God Nodes (most connected - your core abstractions)
 1. `resolveCurrent()` - 27 edges
@@ -84,17 +89,17 @@
   app/history/heroes/page.js → lib/featured.js
 - `HistoryMatchesPage()` --calls--> `resolveSelection()`  [EXTRACTED]
   app/history/matches/page.js → lib/featured.js
-- `HistoryTeams()` --calls--> `resolveSelection()`  [EXTRACTED]
-  app/history/teams/page.js → lib/featured.js
+- `HistoryPlayers()` --calls--> `resolveSelection()`  [EXTRACTED]
+  app/history/players/page.js → lib/featured.js
 
 ## Import Cycles
 - None detected.
 
-## Communities (48 total, 4 thin omitted)
+## Communities (53 total, 5 thin omitted)
 
 ### Community 0 - "DashboardView.js"
-Cohesion: 0.20
-Nodes (6): metadata, CurrentPlayerPage(), ErrorBox(), buildBracket(), MatchesView(), api
+Cohesion: 0.19
+Nodes (8): metadata, HistoryPlayers(), metadata, metadata, PlayersPage(), PlayerStatsView(), api, PLAYER_COLUMNS
 
 ### Community 1 - "featured.js"
 Cohesion: 0.06
@@ -102,11 +107,11 @@ Nodes (35): 1. Wide tables — horizontal scroll + sticky first column, 2. Compa
 
 ### Community 2 - "api.js"
 Cohesion: 0.15
-Nodes (12): DraftPage(), metadata, HeroesPage(), metadata, MatchesPage(), metadata, DashboardPage(), metadata (+4 more)
+Nodes (14): apiToMap(), C1_SHADES, C2_SHADES, CAMP_ABBR, campStateAt(), fmtTime(), GOLD_SOURCES, MapReview() (+6 more)
 
 ### Community 3 - "MatchViewer.js"
-Cohesion: 0.06
-Nodes (31): apiToMap(), C1_SHADES, C2_SHADES, CAMP_ABBR, campStateAt(), fmtTime(), GOLD_SOURCES, MapReview() (+23 more)
+Cohesion: 0.07
+Nodes (30): DonutChart(), DualBar(), fmtK(), GOLD_SOURCES, GoldDistribution(), MatchAnalysis(), PIE_STATS, PlayerVsPlayer() (+22 more)
 
 ### Community 4 - "Move Computation to the Backend — Audit + Plan"
 Cohesion: 0.05
@@ -114,27 +119,27 @@ Nodes (35): Architecture Rules — International Site (`mpl-intl`), Enforcement,
 
 ### Community 5 - "MatchResultsGrid.js"
 Cohesion: 0.15
-Nodes (12): FilterSidebar(), ROLES, selStyle, WEEKS, getTier(), getWrColor(), HeroCard(), CurrentHeroStatsView() (+4 more)
+Nodes (12): FilterSidebar(), ROLES, selStyle, WEEKS, getTier(), getWrColor(), HeroCard(), TeamImg() (+4 more)
 
 ### Community 6 - "MLBB International — UI/UX Upgrade Plan (Plan-Only)"
 Cohesion: 0.11
 Nodes (22): avg(), dotRadius(), fmtK(), fmtPct(), fmtTime(), icon(), normSeq(), OBJ_TYPES (+14 more)
 
 ### Community 7 - "ObjectiveTimingChart.js"
-Cohesion: 0.06
-Nodes (22): HistoryDashboardPage(), metadata, DashboardMainTabs(), DashboardStatsTabs(), MatchResultsGrid(), DashboardView(), fmtHms(), fmtPct() (+14 more)
+Cohesion: 0.08
+Nodes (12): HistoryDashboardPage(), metadata, DashboardMainTabs(), DashboardStatsTabs(), DashboardView(), fmtHms(), fmtPct(), fmtSec() (+4 more)
 
 ### Community 8 - "PlayerLegacy.js"
-Cohesion: 0.36
-Nodes (7): CurrentTeamDashboard(), getPct(), ROSTER_COLUMNS, TeamDetail(), dec(), pct(), wrClass()
+Cohesion: 0.20
+Nodes (10): BracketCol(), QualifiedCol(), SeriesBox(), SubHead(), LAYOUT_LABELS, MatchResultsGrid(), buildSeries(), computeDecider() (+2 more)
 
 ### Community 9 - "International Team Logos — Liquipedia Scrape Plan"
 Cohesion: 0.22
 Nodes (10): buildLines(), CMP_MODES, fmtTime(), MAP_COLORS, PAD, pickScale(), pickYStep(), STAT_CONFIGS (+2 more)
 
 ### Community 10 - "Design System: MLBB International"
-Cohesion: 0.06
-Nodes (35): HistoryMatchesPage(), metadata, BracketCol(), QualifiedCol(), SeriesBox(), SubHead(), BracketView(), computeGeometry() (+27 more)
+Cohesion: 0.22
+Nodes (10): HistoryMatchesPage(), metadata, GenericMatchesView(), MatchesListView(), STAGES, getMatchMeta(), findStage(), FORMATS (+2 more)
 
 ### Community 11 - "CurrentHeroStatsView.js"
 Cohesion: 0.10
@@ -157,8 +162,8 @@ Cohesion: 0.07
 Nodes (27): Allowed APIs / current behavior (with sources), Anti-pattern guards, Anti-pattern guards, Anti-pattern guards, Anti-pattern guards, Deferred backlog (not in this phase), Documentation references, Documentation references (+19 more)
 
 ### Community 16 - "Current-vs-History Identity Enforcement — Audit + Plan"
-Cohesion: 0.22
-Nodes (11): CategorySelect(), ALL_CATS, formatGameInfo(), getUrlWithParams(), HistoryRecordsPage(), metadata, PLAYER_GROUPS, td (+3 more)
+Cohesion: 0.23
+Nodes (10): CategorySelect(), ALL_CATS, formatGameInfo(), getUrlWithParams(), HistoryRecordsPage(), metadata, PLAYER_GROUPS, td (+2 more)
 
 ### Community 17 - "Integrate Upcoming Tournaments — Plan & Status"
 Cohesion: 0.12
@@ -169,12 +174,12 @@ Cohesion: 0.36
 Nodes (6): apiToMap(), CATEGORIES, ROLE_COLOR, ROLES, TeamKdaDistribution(), toPx()
 
 ### Community 19 - "MatchAnalysis.js"
-Cohesion: 0.19
-Nodes (12): RuneImg(), big(), computeHighlights(), cs(), fmtCC(), LOWER_BETTER, PlayerRow(), PlayerTable() (+4 more)
+Cohesion: 0.17
+Nodes (13): RuneImg(), SkillImg(), big(), computeHighlights(), cs(), fmtCC(), LOWER_BETTER, PlayerRow() (+5 more)
 
 ### Community 20 - "scripts"
-Cohesion: 0.18
-Nodes (13): DonutChart(), DualBar(), fmtK(), GOLD_SOURCES, GoldDistribution(), MatchAnalysis(), PIE_STATS, PlayerVsPlayer() (+5 more)
+Cohesion: 0.31
+Nodes (7): PlayerPhoto(), TeamLogo(), big(), n(), VsTeamsTable(), cdnify(), img
 
 ### Community 21 - "Separate Current-Tournament vs History — Architecture Split"
 Cohesion: 0.13
@@ -185,16 +190,16 @@ Cohesion: 0.14
 Nodes (13): Decisions (locked in with BOK, 2026-07-04), Hard constraints (from repo rules), Phase 1 — Extract view components (NO behavior change)  ✅, Phase 2 — Add `resolveCurrent` + lock the current pages, Phase 3 — Rename /results -> /matches, Phase 4 — Build History parity, Phase 5 — Re-point cross-links + cleanup, Phases (+5 more)
 
 ### Community 23 - "TeamStatsTimeline.js"
-Cohesion: 0.08
-Nodes (30): HistoryHeroes(), metadata, HistoryPlayerDetail(), HistoryTeams(), metadata, metadata, TeamsPage(), PageHead() (+22 more)
+Cohesion: 0.15
+Nodes (13): HistoryHeroes(), metadata, HeroStatsView(), COMBAT_AVG, CURRENT_PLAYER_COLUMNS, DAMAGE, GROUP, HERO_COLUMNS (+5 more)
 
 ### Community 24 - "MatchBreakdown.js"
-Cohesion: 0.14
-Nodes (12): metadata, BoxScore(), fmtCC(), HeroBanImg(), ItemImg(), RoleImg(), fmtTime(), ItemTimings() (+4 more)
+Cohesion: 0.23
+Nodes (6): metadata, BoxScore(), fmtCC(), HeroBanImg(), fmtTime(), MatchBreakdown()
 
 ### Community 25 - "MatchViewer.js"
-Cohesion: 0.20
-Nodes (13): big(), COMPARE_STATS, CurrentPlayerDashboard(), n(), pct(), PERF_FILTERS, rankAmong(), rankAmongRole() (+5 more)
+Cohesion: 0.24
+Nodes (11): big(), COMPARE_STATS, CurrentPlayerDashboard(), n(), pct(), PERF_FILTERS, rankAmong(), rankAmongRole() (+3 more)
 
 ### Community 26 - "Security Rules — International Site (`mpl-intl`)"
 Cohesion: 0.20
@@ -237,52 +242,68 @@ Cohesion: 0.18
 Nodes (10): Breakpoint scale (the five groups), Core techniques (used everywhere), Current state (audit findings), Out of scope, Phase 0 — Foundations (globals.css + shell), Phase 1 — Current MSC 2026 pages (priority), Phase 2 — History section, Phase 3 — Long tail + polish (+2 more)
 
 ### Community 39 - "TeamKdaDistribution.js"
-Cohesion: 0.38
-Nodes (5): metadata, NationsPage(), NationsView(), regionCards(), NATION_COLUMNS
+Cohesion: 0.21
+Nodes (9): HistoryTeams(), metadata, metadata, TeamsPage(), DEFS, StatLegend(), TeamStatsView(), TEAM_COLUMNS (+1 more)
 
 ### Community 40 - "HistoryDashboardClient.js"
 Cohesion: 0.36
 Nodes (6): HeroPoint(), HeroScatterChart(), median(), METRICS, Tip(), winColor()
 
 ### Community 41 - "MatchCard.js"
-Cohesion: 0.17
-Nodes (13): ROLE_ORDER, HeroImg(), PHOTO_FALLBACK, PlayerAvatar(), PlayerPhoto(), SkillImg(), TeamImg(), SynergyTable() (+5 more)
+Cohesion: 0.22
+Nodes (9): ROLE_ORDER, HeroImg(), PHOTO_FALLBACK, PlayerAvatar(), RoleImg(), SynergyTable(), dash(), DraftStatsView() (+1 more)
 
 ### Community 42 - "TeamKdaDistribution.js"
-Cohesion: 0.38
-Nodes (9): editionOptionLabel(), FilterBar(), GAMES, STAGES, activeFilters(), editionTitle(), effectiveFilters(), familyLabel() (+1 more)
+Cohesion: 0.23
+Nodes (10): BracketView(), computeGeometry(), elbowPath(), FallbackBracket(), LayoutBracket(), LB_ROUNDS, UB_ROUNDS, getKnockoutLayout() (+2 more)
 
 ### Community 43 - "MatchCard.js"
-Cohesion: 0.32
-Nodes (5): metadata, metadata, RegionsPage(), COLUMNS, RegionsView()
+Cohesion: 0.22
+Nodes (8): M1, M2, M3, M4, M5, M6, M7, MAPS
 
 ### Community 44 - "LoadingSkeleton.js"
-Cohesion: 0.16
-Nodes (17): HistoryNations(), metadata, fmtDuration(), HistoryOverview(), metadata, tdWithLink, th, HistoryPlayers() (+9 more)
+Cohesion: 0.06
+Nodes (57): DraftPage(), metadata, HeroesPage(), metadata, HistoryNations(), metadata, fmtDuration(), HistoryOverview() (+49 more)
 
 ### Community 46 - "page.js"
-Cohesion: 0.13
-Nodes (33): big(), card, CareerSection(), COMPARE_ROWS, CompareSection(), d2(), duration(), HeroesSection() (+25 more)
+Cohesion: 0.16
+Nodes (27): big(), card, CareerSection(), COMPARE_ROWS, CompareSection(), d2(), duration(), HeroesSection() (+19 more)
+
+### Community 48 - "identity.js"
+Cohesion: 0.36
+Nodes (7): HistoryPlayerDetail(), fieldSet(), isEraMode(), PLAYER_ROW, resolveTeam(), TEAM_ROW, teamFieldKeys()
+
+### Community 50 - "ItemTimings.js"
+Cohesion: 0.33
+Nodes (5): ItemImg(), fmtTime(), ItemTimings(), PlayerTimingRow(), ROLE_ORDER
+
+### Community 51 - "msc2026MainBracket.js"
+Cohesion: 0.33
+Nodes (5): MAIN_GROUPS, MAIN_QUALIFIER_REFS, MAIN_TREE, refLabel(), resolveMainGroup()
+
+### Community 52 - "PageHead.js"
+Cohesion: 0.47
+Nodes (3): PageHead(), buildBracket(), MatchesView()
 
 ## Knowledge Gaps
 - **330 isolated node(s):** `metadata`, `ROLE_KEYS`, `PERF_FILTERS`, `COMPARE_STATS`, `WL_STATS` (+325 more)
   These have ≤1 connection - possible missing edges or undocumented components.
-- **4 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **5 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `img` connect `MatchResultsGrid.js` to `MatchViewer.js`, `mpl-intl — Project Instructions`, `ObjectiveTimingChart.js`, `PlayerLegacy.js`, `MatchCard.js`, `Design System: MLBB International`, `HistoryDashboardClient.js`, `LoadingSkeleton.js`, `Nav.js`, `page.js`, `Current-vs-History Identity Enforcement — Audit + Plan`, `PlayerTable.js`, `TeamStatsTimeline.js`, `MatchBreakdown.js`, `MatchViewer.js`, `page.js`?**
-  _High betweenness centrality (0.070) - this node is a cross-community bridge._
-- **Why does `api` connect `DashboardView.js` to `api.js`, `MLBB International — UI/UX Upgrade Plan (Plan-Only)`, `ObjectiveTimingChart.js`, `PlayerLegacy.js`, `MatchCard.js`, `International Team Logos — Liquipedia Scrape Plan`, `TeamKdaDistribution.js`, `LoadingSkeleton.js`, `MatchCard.js`, `Current-vs-History Identity Enforcement — Audit + Plan`, `PlayerTable.js`, `TeamStatsTimeline.js`, `MatchBreakdown.js`, `page.js`?**
+- **Why does `img` connect `scripts` to `api.js`, `MatchViewer.js`, `mpl-intl — Project Instructions`, `MatchResultsGrid.js`, `ObjectiveTimingChart.js`, `PlayerLegacy.js`, `MatchCard.js`, `HistoryDashboardClient.js`, `LoadingSkeleton.js`, `Nav.js`, `page.js`, `Current-vs-History Identity Enforcement — Audit + Plan`, `MatchCard.js`, `PlayerTable.js`, `identity.js`, `MatchBreakdown.js`, `MatchViewer.js`, `page.js`?**
+  _High betweenness centrality (0.069) - this node is a cross-community bridge._
+- **Why does `api` connect `DashboardView.js` to `MLBB International — UI/UX Upgrade Plan (Plan-Only)`, `ObjectiveTimingChart.js`, `TeamKdaDistribution.js`, `MatchCard.js`, `International Team Logos — Liquipedia Scrape Plan`, `LoadingSkeleton.js`, `Current-vs-History Identity Enforcement — Audit + Plan`, `PlayerTable.js`, `scripts`, `PageHead.js`, `TeamStatsTimeline.js`, `MatchBreakdown.js`, `page.js`?**
   _High betweenness centrality (0.026) - this node is a cross-community bridge._
-- **Why does `TeamLogo()` connect `MatchCard.js` to `mpl-intl — Project Instructions`, `MatchResultsGrid.js`, `ObjectiveTimingChart.js`, `PlayerLegacy.js`, `Design System: MLBB International`, `LoadingSkeleton.js`, `page.js`, `Current-vs-History Identity Enforcement — Audit + Plan`, `MatchBreakdown.js`, `MatchViewer.js`, `page.js`?**
+- **Why does `TeamLogo()` connect `scripts` to `mpl-intl — Project Instructions`, `MatchResultsGrid.js`, `ObjectiveTimingChart.js`, `PlayerLegacy.js`, `MatchCard.js`, `LoadingSkeleton.js`, `page.js`, `Current-vs-History Identity Enforcement — Audit + Plan`, `MatchCard.js`, `MatchBreakdown.js`, `MatchViewer.js`, `page.js`?**
   _High betweenness centrality (0.022) - this node is a cross-community bridge._
 - **What connects `metadata`, `ROLE_KEYS`, `PERF_FILTERS` to the rest of the system?**
   _330 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `featured.js` be split into smaller, more focused modules?**
   _Cohesion score 0.05555555555555555 - nodes in this community are weakly interconnected._
+- **Should `api.js` be split into smaller, more focused modules?**
+  _Cohesion score 0.14619883040935672 - nodes in this community are weakly interconnected._
 - **Should `MatchViewer.js` be split into smaller, more focused modules?**
-  _Cohesion score 0.06201550387596899 - nodes in this community are weakly interconnected._
-- **Should `Move Computation to the Backend — Audit + Plan` be split into smaller, more focused modules?**
-  _Cohesion score 0.05263157894736842 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.06612685560053981 - nodes in this community are weakly interconnected._
