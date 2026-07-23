@@ -37,6 +37,10 @@ const securityHeaders = [
 ];
 
 const nextConfig = {
+  // Filter changes are soft navigations to the same route with new searchParams.
+  // Next 14.2's client Router Cache otherwise serves the stale (unfiltered) page,
+  // so History filters appeared to do nothing in prod. 0 = always refetch.
+  experimental: { staleTimes: { dynamic: 0, static: 0 } },
   images: {
     remotePatterns: [
       {

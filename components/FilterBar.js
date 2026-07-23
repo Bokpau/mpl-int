@@ -64,7 +64,14 @@ export default function FilterBar({ editions = [], featured = null, showEvent = 
       else params.delete(k);
     }
     const qs = params.toString();
-    startTransition(() => router.push(qs ? `${pathname}?${qs}` : pathname));
+    startTransition(() => {
+      router.push(qs ? `${pathname}?${qs}` : pathname);
+      // Force a server round-trip. Filter changes are soft navigations to the same
+      // route with new searchParams; without this the Router Cache reuses the stale
+      // RSC payload, so server components (and the eff prop they pass to client views
+      // like PlayerStatsView) never re-render and the table keeps the old filter.
+      router.refresh();
+    });
   }
 
   function onFamily(val) {

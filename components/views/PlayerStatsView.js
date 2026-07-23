@@ -77,7 +77,14 @@ export default function PlayerStatsView({ eff, label, initialRows, context = 'cu
       isInitialMount.current = false;
       return;
     }
-    
+
+    // History is URL/server-driven: Event/Edition/Stage/Games live in the FilterBar,
+    // are resolved server-side, and arrive as `initialRows` (adopted by the sync
+    // effect below). This client refetch is only for the current-edition dashboard,
+    // whose scope/season are fixed; running it in history would apply the MSC/2026
+    // fallbacks and query the wrong tournament (e.g. ?scope=MWC&season=2026 -> empty).
+    if (context !== 'current') return;
+
     setLoading(true);
     setError(null);
     
@@ -95,7 +102,16 @@ export default function PlayerStatsView({ eff, label, initialRows, context = 'cu
         setError(err.message);
         setLoading(false);
       });
-  }, [scope, season, stage, side, result, patch]);
+  }, [scope, season, stage, side, result, patch, context]);
+
+  // Adopt the server-computed rows whenever they change. The global Event/Edition
+  // (scope/season) filter is driven by the URL and resolved server-side into
+  // `initialRows`; this component's own scope/season fall back to MSC/2026, so the
+  // refetch effect above never fires for those. Without this sync the table keeps
+  // the first render's rows and history filter changes appear to do nothing.
+  useEffect(() => {
+    setRows(initialRows || []);
+  }, [initialRows]);
 
   // Client-side populated team list based on the active rows. Current pages are
   // era-locked, so the filter must key on the era code (FLCM), never the franchise
