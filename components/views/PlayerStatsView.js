@@ -144,7 +144,11 @@ export default function PlayerStatsView({ eff, label, initialRows, context = 'cu
     });
   }, [rows, roleFilter, teamFilter]);
 
-  const isFiltered = stage !== '' || side !== '' || result !== '' || patch !== 'all' || roleFilter !== 'ALL' || teamFilter !== 'ALL';
+  // Only count filters the user can actually see: history hides Stage/Side/W-L/Patch
+  // (those are URL-driven there), so a Reset button for them would be a dead control.
+  const isFiltered = context === 'current'
+    ? (stage !== '' || side !== '' || result !== '' || patch !== 'all' || roleFilter !== 'ALL' || teamFilter !== 'ALL')
+    : (roleFilter !== 'ALL' || teamFilter !== 'ALL');
   const resetFilters = () => {
     setStage('');
     setSide('');
@@ -162,7 +166,11 @@ export default function PlayerStatsView({ eff, label, initialRows, context = 'cu
 
       {/* Filters Card */}
       <div className="card" style={{ marginBottom: 20, display: 'flex', flexDirection: 'column', gap: 16, padding: 18 }}>
-        {/* Global/Refetch Filters (Stage, Side, W/L, Patch) */}
+        {/* Global/Refetch Filters (Stage, Side, W/L, Patch) — current edition only.
+            These drive the client refetch, which is gated to the current dashboard;
+            history filters live in the URL-driven FilterBar (Event/Edition/Stage/
+            Games), so showing these here would render dead controls. */}
+        {context === 'current' && (
         <div style={{ display: 'flex', gap: 24, flexWrap: 'wrap', alignItems: 'flex-end' }}>
           {/* Stage */}
           <div className="filter-group">
@@ -227,9 +235,11 @@ export default function PlayerStatsView({ eff, label, initialRows, context = 'cu
             </div>
           )}
         </div>
+        )}
 
-        {/* Client-side Filters (Role, Team) */}
-        <div style={{ display: 'flex', gap: 24, flexWrap: 'wrap', borderTop: '1px solid var(--border)', paddingTop: 16 }}>
+        {/* Client-side Filters (Role, Team) — these filter the loaded rows in the
+            browser, so they work in both contexts. */}
+        <div style={{ display: 'flex', gap: 24, flexWrap: 'wrap', ...(context === 'current' ? { borderTop: '1px solid var(--border)', paddingTop: 16 } : {}) }}>
           {/* Role */}
           <div className="filter-group">
             <label>Role</label>
