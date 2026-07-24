@@ -15,8 +15,12 @@ import { CURRENT_PLAYER_COLUMNS as COLUMNS, STAT_GROUPS } from '../../lib/column
 // Supports interactive filters: Stage (Overall, Wild Card, Main), Side (Blue, Red),
 // W/L (Wins, Losses), Patches list, and client-side Role and Team filters.
 export default function PlayerStatsView({ eff, label, initialRows, context = 'current', columns = COLUMNS }) {
-  const scope = eff.scope || 'MSC';
-  const season = eff.season || '2026';
+  // Never invent an edition. Current-edition pages pin both from the featured
+  // edition; history resolves them from the URL and may legitimately have neither
+  // (the all-editions aggregate). A hardcoded default would silently query the
+  // wrong tournament — e.g. M-Series + season "2026", which matches nothing.
+  const scope = eff.scope || '';
+  const season = eff.season || '';
 
   const configuredColumns = useMemo(() => {
     const division = eff?.division === 'female' ? 'women' : 'open';
@@ -46,9 +50,11 @@ export default function PlayerStatsView({ eff, label, initialRows, context = 'cu
 
   const isInitialMount = useRef(true);
 
-  // Fetch available patches for this tournament on mount
+  // Fetch available patches for this tournament on mount. Patches are per-edition,
+  // so this is meaningless without both — skip rather than query a partial edition.
   useEffect(() => {
-    fetch(`/api/intl/patches?scope=${scope}&season=${season}`)
+    if (!scope || !season) { setPatches([]); return; }
+    fetch(`/api/intl/patches?scope=${encodeURIComponent(scope)}&season=${encodeURIComponent(season)}`)
       .then(res => {
         if (!res.ok) throw new Error();
         return res.json();
@@ -60,8 +66,8 @@ export default function PlayerStatsView({ eff, label, initialRows, context = 'cu
   // Build unified query parameters string
   const buildQ = (stageVal = stage, sideVal = side, resultVal = result, patchVal = patch) => {
     const p = new URLSearchParams();
-    p.set('scope', scope);
-    p.set('season', season);
+    if (scope) p.set('scope', scope);
+    if (season) p.set('season', season);
     if (stageVal) p.set('stage', stageVal);
     if (sideVal) p.set('side', sideVal);
     if (resultVal) p.set('result', resultVal);
@@ -81,8 +87,8 @@ export default function PlayerStatsView({ eff, label, initialRows, context = 'cu
     // History is URL/server-driven: Event/Edition/Stage/Games live in the FilterBar,
     // are resolved server-side, and arrive as `initialRows` (adopted by the sync
     // effect below). This client refetch is only for the current-edition dashboard,
-    // whose scope/season are fixed; running it in history would apply the MSC/2026
-    // fallbacks and query the wrong tournament (e.g. ?scope=MWC&season=2026 -> empty).
+    // whose scope/season are pinned; history's Side/W-L/Patch controls are hidden,
+    // so there is nothing here for it to react to.
     if (context !== 'current') return;
 
     setLoading(true);
@@ -104,11 +110,10 @@ export default function PlayerStatsView({ eff, label, initialRows, context = 'cu
       });
   }, [scope, season, stage, side, result, patch, context]);
 
-  // Adopt the server-computed rows whenever they change. The global Event/Edition
-  // (scope/season) filter is driven by the URL and resolved server-side into
-  // `initialRows`; this component's own scope/season fall back to MSC/2026, so the
-  // refetch effect above never fires for those. Without this sync the table keeps
-  // the first render's rows and history filter changes appear to do nothing.
+  // Adopt the server-computed rows whenever they change. In history the Event/Edition
+  // filter lives in the URL and is resolved server-side into `initialRows`, and the
+  // refetch effect above is gated off there — so without this sync the table would
+  // keep the first render's rows and filter changes would appear to do nothing.
   useEffect(() => {
     setRows(initialRows || []);
   }, [initialRows]);
