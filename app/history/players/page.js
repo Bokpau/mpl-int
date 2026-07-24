@@ -24,6 +24,11 @@ export default async function HistoryPlayers({ searchParams }) {
         ...c,
         isHistory: true,
         isSeasonFiltered,
+        // PLAYER_COLUMNS points at the current-edition dashboard. From history the
+        // name must lead to the career profile, matching the row link in
+        // PlayerStatsView — otherwise clicking the name lands on the current
+        // dashboard (or a redirect) instead of the historical page.
+        hrefBase: '/history/players/',
         subKey: isSeasonFiltered ? 'latest_team_name_era' : 'latest_team',
         subFallbackKey: isSeasonFiltered ? 'latest_team_code_era' : 'latest_team_code'
       };
