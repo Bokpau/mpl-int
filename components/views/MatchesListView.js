@@ -184,7 +184,9 @@ export default function MatchesListView({ q = '', label = '', isHistory = false,
       const wa = a.info.week_number || 0, wb = b.info.week_number || 0;
       const da = a.info.day_number || 0, db = b.info.day_number || 0;
       const ma = a.info.match_number || 0, mb = b.info.match_number || 0;
-      return wb - wa || db - da || mb - ma;
+      const ta = a.info.played_at || a.info.match_code || '';
+      const tb = b.info.played_at || b.info.match_code || '';
+      return wb - wa || db - da || mb - ma || String(tb).localeCompare(String(ta));
     });
   }, [normGames, stage]);
 
