@@ -1,11 +1,8 @@
 import { api } from '../../lib/api';
-import { num } from '../../lib/format';
 import ErrorBox from '../ErrorBox';
 import PageHead from '../PageHead';
 import StatTable from '../StatTable';
-
-// How many countries to include in the head-to-head matrix (by games played).
-const MATRIX_N = 8;
+import H2HSection from '../H2HSection';
 
 const COLUMNS = [
   { key: '__rank', type: 'rank', label: '#' },
@@ -29,13 +26,7 @@ export default async function RegionsView({ q, label }) {
 
   const standings = data?.standings || [];
   const h2h = data?.h2h || [];
-
-  // Directed wins lookup: "WINNER|LOSER" -> wins.
-  const wmap = {};
-  for (const r of h2h) wmap[`${r.winner_country}|${r.loser_country}`] = num(r.wins);
-
-  // Top countries by games for the matrix; carry flag for headers.
-  const top = [...standings].sort((a, b) => num(b.games) - num(a.games)).slice(0, MATRIX_N);
+  const matchH2h = data?.match_h2h || [];
 
   return (
     <div className="container">
@@ -52,46 +43,8 @@ export default async function RegionsView({ q, label }) {
           <div className="section-title">Standings</div>
           <StatTable columns={COLUMNS} rows={standings} rowKey="country_code" defaultLimit={20} />
 
-          <div className="section-title">Head-to-Head</div>
-          <p className="sub note-tight">
-            Top {top.length} regions by games. Cell = row region&apos;s wins over the column region (win% shaded).
-          </p>
-          <div className="table-wrap tbl-sticky">
-            <table className="h2h">
-              <thead>
-                <tr>
-                  <th className="l corner">vs</th>
-                  {top.map((c) => (
-                    <th key={c.country_code} title={c.country || c.country_code}>
-                      <span className="flag-sm">{c.flag_emoji || ''}</span> {c.country_code}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {top.map((row) => (
-                  <tr key={row.country_code}>
-                    <td className="l corner">
-                      <span className="flag-sm">{row.flag_emoji || ''}</span> {row.country_code}
-                    </td>
-                    {top.map((col) => {
-                      if (row.country_code === col.country_code) return <td key={col.country_code} className="diag">—</td>;
-                      const a = wmap[`${row.country_code}|${col.country_code}`] || 0;
-                      const b = wmap[`${col.country_code}|${row.country_code}`] || 0;
-                      const total = a + b;
-                      if (!total) return <td key={col.country_code} className="sub">·</td>;
-                      const wr = (a / total) * 100;
-                      return (
-                        <td key={col.country_code} className={wr >= 50 ? 'pos' : 'neg'} title={`${a}–${b}`}>
-                          {a}<span className="sub">–{b}</span>
-                        </td>
-                      );
-                    })}
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+          <div className="section-title" style={{ marginTop: 40 }}>Head-to-Head</div>
+          <H2HSection standings={standings} h2h={h2h} matchH2h={matchH2h} />
         </>
       )}
     </div>

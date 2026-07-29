@@ -4,6 +4,7 @@ import { num, int, pct } from '../../lib/format';
 import ErrorBox from '../ErrorBox';
 import PageHead from '../PageHead';
 import StatTable from '../StatTable';
+import H2HSection from '../H2HSection';
 import { NATION_COLUMNS as COLUMNS, STAT_GROUPS } from '../../lib/columns';
 
 // "By Region" now uses the TEAM-SLOT basis (represented country -> region_group),
@@ -30,7 +31,12 @@ export default async function NationsView({ q, label }) {
   const [natRes, regRes] = await Promise.allSettled([api.nations(q), api.regions(q)]);
   const rows = natRes.status === 'fulfilled' ? natRes.value : null;
   const error = natRes.status === 'rejected' ? natRes.reason?.message : null;
-  const regions = regRes.status === 'fulfilled' ? regionCards(regRes.value.standings || []) : [];
+  
+  const regData = regRes.status === 'fulfilled' ? regRes.value : null;
+  const regions = regData ? regionCards(regData.standings || []) : [];
+  const standings = regData?.standings || [];
+  const h2h = regData?.h2h || [];
+  const matchH2h = regData?.match_h2h || [];
 
   return (
     <div className="container">
@@ -61,6 +67,13 @@ export default async function NationsView({ q, label }) {
 
           <div className="section-title">By Country <span className="sub">(player nationality)</span></div>
           <StatTable columns={COLUMNS} groups={STAT_GROUPS} rows={rows} rowKey="country_code" defaultLimit={20} />
+
+          {standings.length > 0 && (
+            <>
+              <div className="section-title" style={{ marginTop: 40 }}>Head-to-Head <span className="sub">(team representation)</span></div>
+              <H2HSection standings={standings} h2h={h2h} matchH2h={matchH2h} />
+            </>
+          )}
         </>
       )}
     </div>

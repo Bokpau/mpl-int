@@ -583,6 +583,98 @@ table.h2h thead th.corner { z-index: 3; }
 table.h2h td.diag { color: var(--border-strong); }
 table.h2h td .sub { font-size: 11px; }
 
+/* ─── Head-to-head section controls & detail ────────────────────── */
+.h2h-section { margin-top: 16px; margin-bottom: 40px; }
+.h2h-controls-bar {
+  display: flex; flex-direction: column; gap: 12px; margin-bottom: 16px;
+}
+.h2h-toggles {
+  display: flex; flex-wrap: wrap; gap: 12px; align-items: center;
+}
+.segmented-control {
+  display: inline-flex; background: var(--surface2); border: 1px solid var(--border);
+  border-radius: var(--radius-sm, 8px); padding: 2px; gap: 2px;
+}
+.segmented-btn {
+  padding: 6px 14px; font-size: 11px; font-weight: 700; font-family: var(--font-mono);
+  letter-spacing: 0.05em; color: var(--muted2); background: transparent; border: none;
+  border-radius: 6px; cursor: pointer; transition: all 0.15s ease;
+}
+.segmented-btn:hover { color: var(--text, #fff); }
+.segmented-btn.active {
+  color: var(--accent, #FFD700); background: var(--surface, #14141F);
+  box-shadow: 0 1px 4px rgba(0,0,0,0.3);
+}
+
+/* Matrix selection highlights */
+table.h2h td.cell-selected {
+  outline: 2px solid var(--accent, #FFD700); z-index: 2; font-weight: bold;
+}
+.h2h-matrix-wrap { margin-bottom: 24px; }
+
+/* Matchup Detail Card */
+.h2h-detail-card {
+  background: var(--surface, #14141F); border: 1px solid var(--border-strong, #26263E);
+  border-radius: 10px; padding: 20px; margin-bottom: 28px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+  animation: fadeIn 0.2s ease-in-out;
+}
+.h2h-detail-header {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-bottom: 16px; border-bottom: 1px solid var(--border); padding-bottom: 12px;
+}
+.h2h-detail-title {
+  display: flex; align-items: center; gap: 8px; font-size: 16px; color: var(--text, #fff);
+}
+.h2h-close-btn {
+  background: transparent; border: none; color: var(--muted2); font-size: 16px;
+  cursor: pointer; padding: 4px 8px; border-radius: 4px;
+}
+.h2h-close-btn:hover { color: var(--text, #fff); background: var(--surface2); }
+.h2h-detail-grid {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px;
+}
+.h2h-stat-box {
+  background: var(--surface2, #1a1a2b); border: 1px solid var(--border);
+  border-radius: 8px; padding: 14px 18px;
+}
+.h2h-stat-label {
+  font-size: 11px; text-transform: uppercase; font-family: var(--font-mono);
+  color: var(--muted2); letter-spacing: 0.05em; margin-bottom: 4px;
+}
+.h2h-stat-val {
+  font-family: var(--font-mono); font-size: 24px; font-weight: 700; color: var(--text, #fff);
+}
+
+/* Pairwise Full List Table */
+.h2h-list-container { margin-top: 32px; }
+.h2h-list-header {
+  display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center;
+  gap: 12px; margin-bottom: 14px;
+}
+.h2h-search {
+  position: relative; display: flex; align-items: center;
+}
+.h2h-search-input {
+  background: var(--surface2, #1a1a2b); border: 1px solid var(--border, #26263E);
+  border-radius: 6px; padding: 7px 28px 7px 12px; font-size: 12px;
+  color: var(--text, #fff); width: 220px; outline: none; transition: border-color 0.15s ease;
+}
+.h2h-search-input:focus { border-color: var(--accent, #FFD700); }
+.h2h-search-clear {
+  position: absolute; right: 8px; background: transparent; border: none;
+  color: var(--muted2); font-size: 12px; cursor: pointer;
+}
+
+.h2h-list-table tr.h2h-row { transition: background 0.15s ease; }
+.h2h-list-table tr.h2h-row:hover { background: var(--surface2, #1a1a2b); }
+.h2h-list-table tr.row-selected { background: rgba(255, 215, 0, 0.08) !important; border-left: 3px solid var(--accent, #FFD700); }
+.h2h-matchup-cell {
+  display: inline-flex; align-items: center; gap: 6px; font-weight: 600;
+}
+.country-tag { font-family: var(--font-mono); font-size: 13px; color: var(--text, #fff); }
+.vs-tag { font-size: 11px; color: var(--muted2); font-style: italic; }
+
 .empty { padding: 60px 20px; text-align: center; color: var(--muted2); }
 .error-box {
   margin: 30px 0; padding: 18px 20px; border: 1px solid var(--loss); border-radius: 12px;
