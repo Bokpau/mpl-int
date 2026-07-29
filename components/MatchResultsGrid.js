@@ -295,10 +295,10 @@ export default function MatchResultsGrid({
   // Resolved by team pairing off ALL Main games (mainGames), so the bracket spans
   // the whole stage and advances regardless of the schedule's match_code numbering.
   const mainGroups = useMemo(() => {
-    if (season !== 'MSC 2026' || isWildCard) return null;
+    if (season !== 'MSC 2026' || isQualifierOnly) return null;
     const all = buildSeries(mainGames);
     return { A: resolveMainGroup('A', all), B: resolveMainGroup('B', all) };
-  }, [mainGames, isWildCard, season]);
+  }, [mainGames, isQualifierOnly, season]);
 
   // Route all non-MSC-2026 editions to generic match-row view.
   if (season !== 'MSC 2026') {
@@ -353,7 +353,7 @@ export default function MatchResultsGrid({
   const showWildCard = stage === 'all' || stage === 'qualifier';
 
   const allMainSeries = buildSeries(mainGames);
-  const hasDecider = wc.deciderSemis.some((m) => m.series) || wc.finalSeries || wc.finalA || wc.finalB;
+  const hasDecider = wc ? (wc.deciderSemis.some((m) => m.series) || wc.finalSeries || wc.finalA || wc.finalB) : false;
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
@@ -373,7 +373,7 @@ export default function MatchResultsGrid({
         </>
       )}
 
-      {showWildCard && (
+      {showWildCard && wc && (
         <>
           {wc.groupDays.length > 0 && (
             <Section title="Wild Card — Group Stage">
