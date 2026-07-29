@@ -169,7 +169,7 @@ export default function MatchResultsGrid({
   season = null, isHistory = false, division,
 }) {
   const [active, setActive] = useState(null); // open match_code
-  const isWildCard = stage !== 'main';
+  const isQualifierOnly = stage === 'qualifier';
 
   useEffect(() => {
     if (!active) return;
@@ -182,9 +182,7 @@ export default function MatchResultsGrid({
 
   // match_code -> { info, games, match_mvp } for the popover MatchCard.
   const byCode = useMemo(() => {
-    const src = season !== 'MSC 2026'
-      ? [...wildCardGames, ...mainGames]
-      : isWildCard ? wildCardGames : mainGames;
+    const src = [...wildCardGames, ...mainGames];
     const m = {};
     for (const g of src) {
       const c = g.match_code || g.battle_id;
@@ -193,7 +191,7 @@ export default function MatchResultsGrid({
       if (g.match_mvp?.roleid) m[c].match_mvp = g.match_mvp;
     }
     return m;
-  }, [wildCardGames, mainGames, season, isWildCard]);
+  }, [wildCardGames, mainGames]);
 
   // The breakdown is a single screen-centered modal (not an inline popover): the
   // match rows / series boxes are narrow and in columns, so an anchored popover
@@ -351,84 +349,85 @@ export default function MatchResultsGrid({
     );
   };
 
-  if (!isWildCard) {
-    const allMainSeries = buildSeries(mainGames);
-    return (
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
-        {mainGroups && groupBracket('Group A', mainGroups.A)}
-        {mainGroups && groupBracket('Group B', mainGroups.B)}
-        <Section title="Knockout Stage">
-          <BracketView
-            series={allMainSeries}
-            season={season}
-            teamByKey={teamByKey}
-            toggle={toggle}
-            active={active}
-          />
-        </Section>
-        {modal}
-      </div>
-    );
-  }
+  const showMain = stage === 'all' || stage === 'main';
+  const showWildCard = stage === 'all' || stage === 'qualifier';
 
+  const allMainSeries = buildSeries(mainGames);
   const hasDecider = wc.deciderSemis.some((m) => m.series) || wc.finalSeries || wc.finalA || wc.finalB;
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
-      {/* Group Stage — Day 1 / Day 2 match rows */}
-      {wc.groupDays.length > 0 && (
-        <Section title="Group Stage">
-          <div style={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
-          <div style={{ display: 'grid', gridTemplateColumns: `repeat(${wc.groupDays.length}, minmax(0, 1fr))`, minWidth: wc.groupDays.length * 280 }}>
-            {wc.groupDays.map((d, i) => (
-              <div key={d.day} className="results-day-block" style={i > 0 ? { borderLeft: '1px solid var(--border)' } : undefined}>
-                <div className="results-day-header">DAY {d.day}</div>
-                <div className="results-day-matches">{d.matches.map(s => renderMatchRow(s))}</div>
-              </div>
-            ))}
-          </div>
-          </div>
-        </Section>
+      {showMain && (
+        <>
+          {mainGroups && groupBracket('Group A', mainGroups.A)}
+          {mainGroups && groupBracket('Group B', mainGroups.B)}
+          <Section title="Knockout Stage">
+            <BracketView
+              series={allMainSeries}
+              season={season}
+              teamByKey={teamByKey}
+              toggle={toggle}
+              active={active}
+            />
+          </Section>
+        </>
       )}
 
-      {/* Cross-Group Gauntlet — Day 3 bracket */}
-      {(wc.gauntletR1.length > 0 || wc.gauntletR2.length > 0) && (
-        <Section title="Cross-Group Gauntlet">
-          <div style={{ padding: 16, display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 16, alignItems: 'start' }}>
-            <BracketCol title="Round 1" series={wc.gauntletR1} renderBox={(s) => boxFor(s)} />
-            <BracketCol title="Round 2" series={wc.gauntletR2} renderBox={(s) => boxFor(s)} />
-          </div>
-        </Section>
-      )}
-
-      {/* Decider — semifinals → grand final → Main Stage qualifier */}
-      {hasDecider && (
-        <Section title="Decider">
-          <div style={{ padding: 16, display: 'flex', flexDirection: 'column', gap: 8 }}>
-            <SubHead>Wild Card Decider</SubHead>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 12, alignItems: 'center' }}>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                {wc.deciderSemis.map((m) => (
-                  m.series
-                    ? boxFor(m.series, { title: m.label, compact: true })
-                    : <SeriesBox key={m.label} title={m.label} teamMeta={metaByEra} compact aCode={m.a} bCode={m.b} scaffold />
+      {showWildCard && (
+        <>
+          {wc.groupDays.length > 0 && (
+            <Section title="Wild Card — Group Stage">
+              <div style={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: `repeat(${wc.groupDays.length}, minmax(0, 1fr))`, minWidth: wc.groupDays.length * 280 }}>
+                {wc.groupDays.map((d, i) => (
+                  <div key={d.day} className="results-day-block" style={i > 0 ? { borderLeft: '1px solid var(--border)' } : undefined}>
+                    <div className="results-day-header">DAY {d.day}</div>
+                    <div className="results-day-matches">{d.matches.map(s => renderMatchRow(s))}</div>
+                  </div>
                 ))}
               </div>
-              {wc.finalSeries
-                ? boxFor(wc.finalSeries, { title: DECIDER.final.label, compact: true })
-                : <SeriesBox title={DECIDER.final.label} teamMeta={metaByEra} compact aCode={wc.finalA} bCode={wc.finalB} scaffold />}
-              <QualifiedCol title="To Main Stage" codes={wc.mainStageQualifier ? [wc.mainStageQualifier] : []} teamMeta={metaByEra} />
-            </div>
-            {!wc.finalSeries ? (
-              <div style={{ fontSize: 10, color: 'var(--muted2)', fontFamily: 'var(--font-mono)' }}>
-                Fills in as each series is played; the Grand Final winner qualifies for the Main Stage.
               </div>
-            ) : null}
-          </div>
-        </Section>
+            </Section>
+          )}
+
+          {(wc.gauntletR1.length > 0 || wc.gauntletR2.length > 0) && (
+            <Section title="Wild Card — Cross-Group Gauntlet">
+              <div style={{ padding: 16, display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 16, alignItems: 'start' }}>
+                <BracketCol title="Round 1" series={wc.gauntletR1} renderBox={(s) => boxFor(s)} />
+                <BracketCol title="Round 2" series={wc.gauntletR2} renderBox={(s) => boxFor(s)} />
+              </div>
+            </Section>
+          )}
+
+          {hasDecider && (
+            <Section title="Wild Card — Decider">
+              <div style={{ padding: 16, display: 'flex', flexDirection: 'column', gap: 8 }}>
+                <SubHead>Wild Card Decider</SubHead>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 12, alignItems: 'center' }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                    {wc.deciderSemis.map((m) => (
+                      m.series
+                        ? boxFor(m.series, { title: m.label, compact: true })
+                        : <SeriesBox key={m.label} title={m.label} teamMeta={metaByEra} compact aCode={m.a} bCode={m.b} scaffold />
+                    ))}
+                  </div>
+                  {wc.finalSeries
+                    ? boxFor(wc.finalSeries, { title: DECIDER.final.label, compact: true })
+                    : <SeriesBox title={DECIDER.final.label} teamMeta={metaByEra} compact aCode={wc.finalA} bCode={wc.finalB} scaffold />}
+                  <QualifiedCol title="To Main Stage" codes={wc.mainStageQualifier ? [wc.mainStageQualifier] : []} teamMeta={metaByEra} />
+                </div>
+                {!wc.finalSeries ? (
+                  <div style={{ fontSize: 10, color: 'var(--muted2)', fontFamily: 'var(--font-mono)' }}>
+                    Fills in as each series is played; the Grand Final winner qualifies for the Main Stage.
+                  </div>
+                ) : null}
+              </div>
+            </Section>
+          )}
+        </>
       )}
 
-      {wc.groupDays.length === 0 && !hasDecider && wc.gauntletR1.length === 0 && (
+      {!showMain && !showWildCard && (
         <div className="empty"><div>No matches found for the selected filter.</div></div>
       )}
       {modal}
