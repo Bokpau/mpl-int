@@ -118,32 +118,33 @@ function elbowPath(from, to) {
   return `M ${x1} ${y1} H ${midX} V ${y2} H ${x2}`;
 }
 
-function LayoutBracket({ layout, series, teamByKey, toggle, active }) {
+function LayoutBracket({ layout, series, season, teamByKey, toggle, active }) {
   const { shape, bo, slots } = layout;
   const { pos, colOf, lbTop, thirdTop, width, height } = useMemo(() => computeGeometry(layout), [layout]);
 
   const byMc = useMemo(() => {
     const m = {};
-    for (const s of series) m[s.match_code] = s;
+    for (const s of series || []) m[s.match_code] = s;
     return m;
   }, [series]);
 
   const dynKnockout = useMemo(() => {
-    if (!series || !series.length) return null;
-    const isMsc2026 = series.some((s) => String(s.season || s.info?.season || '').includes('MSC 2026'));
+    const isMsc2026 = (season && String(season).includes('MSC 2026')) ||
+      (series && series.some((s) => String(s.season || s.info?.season || '').includes('MSC 2026')));
     if (!isMsc2026) return null;
-    const gA = resolveMainGroup('A', series);
-    const gB = resolveMainGroup('B', series);
-    const nodes = resolveKnockoutBracket(series, gA.qualifiers, gB.qualifiers);
+    const sList = series || [];
+    const gA = resolveMainGroup('A', sList);
+    const gB = resolveMainGroup('B', sList);
+    const nodes = resolveKnockoutBracket(sList, gA.qualifiers, gB.qualifiers);
     const nodeMap = {};
     for (const n of nodes) nodeMap[n.id] = n;
     return nodeMap;
-  }, [series]);
+  }, [series, season]);
 
   // era-code → team metadata (logo/flag) for SeriesBox.
   const metaByEra = useMemo(() => {
     const m = { ...teamByKey };
-    for (const s of series) {
+    for (const s of series || []) {
       if (s.team_a && s.team_a_key && teamByKey[s.team_a_key]) m[s.team_a] = teamByKey[s.team_a_key];
       if (s.team_b && s.team_b_key && teamByKey[s.team_b_key]) m[s.team_b] = teamByKey[s.team_b_key];
     }
@@ -202,6 +203,7 @@ function LayoutBracket({ layout, series, teamByKey, toggle, active }) {
     const bottomScore = s ? (s.team_a === topCode ? s.b_wins : s.a_wins) : (dyn?.bScore ?? null);
     const winner = s?.winner_code || dyn?.winner;
     const isGf = slotId === 'gf0';
+    const isScaffold = !s || s.games === 0 || (!s.a_wins && !s.b_wins && !winner);
     return (
       <div key={slotId} style={{
         position: 'absolute', left: p.x, top: p.yCenter - BOX_H / 2, width: BOX_W,
@@ -213,7 +215,7 @@ function LayoutBracket({ layout, series, teamByKey, toggle, active }) {
           aLabel={topLabel}     bLabel={bottomLabel}
           aScore={topScore}     bScore={bottomScore}
           winner={winner}
-          scaffold={!s}
+          scaffold={isScaffold}
           matchCode={s?.match_code}
           open={s ? active === s.match_code : false}
           onToggle={s ? () => toggle(s.match_code) : undefined}
@@ -331,7 +333,7 @@ function FallbackBracket({ series, season, teamByKey, toggle, active }) {
 export default function BracketView({ series, season, teamByKey = {}, toggle, active }) {
   const layout = getKnockoutLayout(season);
   if (layout) {
-    return <LayoutBracket layout={layout} series={series} teamByKey={teamByKey} toggle={toggle} active={active} />;
+    return <LayoutBracket layout={layout} series={series} season={season} teamByKey={teamByKey} toggle={toggle} active={active} />;
   }
   return <FallbackBracket series={series} season={season} teamByKey={teamByKey} toggle={toggle} active={active} />;
 }
