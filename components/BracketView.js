@@ -198,8 +198,8 @@ function LayoutBracket({ layout, series, teamByKey, toggle, active }) {
     const bottomCode = slot.bottom || (dyn ? dyn.b : s?.team_b) || null;
     const topLabel = dyn?.aLabel || null;
     const bottomLabel = dyn?.bLabel || null;
-    const topScore = s ? (slot.top ? (s.team_a === slot.top ? s.a_wins : s.b_wins) : (topCode ? (s.team_a === topCode ? s.a_wins : s.b_wins) : s.a_wins)) : (dyn?.aScore ?? null);
-    const bottomScore = s ? (slot.top ? (s.team_a === slot.top ? s.b_wins : s.a_wins) : (topCode ? (s.team_a === topCode ? s.b_wins : s.a_wins) : s.b_wins)) : (dyn?.bScore ?? null);
+    const topScore = s ? (s.team_a === topCode ? s.a_wins : s.b_wins) : (dyn?.aScore ?? null);
+    const bottomScore = s ? (s.team_a === topCode ? s.b_wins : s.a_wins) : (dyn?.bScore ?? null);
     const winner = s?.winner_code || dyn?.winner;
     const isGf = slotId === 'gf0';
     return (
@@ -213,7 +213,7 @@ function LayoutBracket({ layout, series, teamByKey, toggle, active }) {
           aLabel={topLabel}     bLabel={bottomLabel}
           aScore={topScore}     bScore={bottomScore}
           winner={winner}
-          scaffold={!s && !winner}
+          scaffold={!s}
           matchCode={s?.match_code}
           open={s ? active === s.match_code : false}
           onToggle={s ? () => toggle(s.match_code) : undefined}
