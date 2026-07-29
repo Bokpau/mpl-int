@@ -3,7 +3,7 @@
 import { useState, useMemo } from 'react';
 import { num, pct, int } from '../lib/format';
 
-export default function H2HSection({ standings = [], h2h = [], matchH2h = [] }) {
+export default function H2HSection({ standings = [], h2h = [], matchH2h = [], match_h2h = [] }) {
   const [metric, setMetric] = useState('games'); // 'games' | 'matches'
   const [scope, setScope] = useState('top8');   // 'top8' | 'all'
   const [search, setSearch] = useState('');
@@ -11,10 +11,16 @@ export default function H2HSection({ standings = [], h2h = [], matchH2h = [] }) 
   const [sortDir, setSortDir] = useState('desc');
   const [selectedPair, setSelectedPair] = useState(null); // { c1, c2 }
 
+  const effectiveMatchH2h = useMemo(() => {
+    if (Array.isArray(matchH2h) && matchH2h.length > 0) return matchH2h;
+    if (Array.isArray(match_h2h) && match_h2h.length > 0) return match_h2h;
+    return [];
+  }, [matchH2h, match_h2h]);
+
   // Directed game wins lookup: "WINNER|LOSER" -> wins
   const gameWMap = useMemo(() => {
     const map = {};
-    for (const r of h2h) {
+    for (const r of (h2h || [])) {
       map[`${r.winner_country}|${r.loser_country}`] = num(r.wins);
     }
     return map;
@@ -23,11 +29,11 @@ export default function H2HSection({ standings = [], h2h = [], matchH2h = [] }) 
   // Directed match wins lookup: "WINNER|LOSER" -> match wins
   const matchWMap = useMemo(() => {
     const map = {};
-    for (const r of (matchH2h || [])) {
+    for (const r of effectiveMatchH2h) {
       map[`${r.winner_country}|${r.loser_country}`] = num(r.wins);
     }
     return map;
-  }, [matchH2h]);
+  }, [effectiveMatchH2h]);
 
   // Active matrix lookup based on metric
   const activeWMap = metric === 'matches' ? matchWMap : gameWMap;

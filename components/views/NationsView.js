@@ -71,7 +71,7 @@ export default async function NationsView({ q, label }) {
           {standings.length > 0 && (
             <>
               <div className="section-title" style={{ marginTop: 40 }}>Head-to-Head <span className="sub">(team representation)</span></div>
-              <H2HSection standings={standings} h2h={h2h} matchH2h={matchH2h} />
+              <H2HSection standings={standings} h2h={h2h} matchH2h={matchH2h} match_h2h={matchH2h} />
             </>
           )}
         </>

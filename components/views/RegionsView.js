@@ -44,7 +44,7 @@ export default async function RegionsView({ q, label }) {
           <StatTable columns={COLUMNS} rows={standings} rowKey="country_code" defaultLimit={20} />
 
           <div className="section-title" style={{ marginTop: 40 }}>Head-to-Head</div>
-          <H2HSection standings={standings} h2h={h2h} matchH2h={matchH2h} />
+          <H2HSection standings={standings} h2h={h2h} matchH2h={matchH2h} match_h2h={matchH2h} />
         </>
       )}
     </div>
