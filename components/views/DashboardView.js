@@ -11,6 +11,7 @@ import { resolveTeam, identityMode } from '../../lib/identity';
 import { PlayerPhoto } from '../Images';
 import DashboardStatsTabs from '../DashboardStatsTabs';
 import DashboardMainTabs from '../DashboardMainTabs';
+import BracketView from '../BracketView';
 
 // WILD_CARD_GROUPS, DECIDER, GAUNTLET_SERIES and buildSeries now live in
 // lib/msc2026Bracket.js (shared with the Matches page Grid view) — imported above.
@@ -116,6 +117,10 @@ export default async function DashboardView({ q, label, eff, editions = [], feat
             <MainGroupBracket title="Group B" group={b} teamMeta={eraMeta} />
             <div style={{ fontSize: 10, color: 'var(--muted2)', fontFamily: 'var(--font-mono)' }}>
               Bo3 double elimination · fills in as each series is played · top 4 of each group advance to the Knockout.
+            </div>
+            <div style={{ marginTop: 16 }}>
+              <SectionHeader>Knockout Stage</SectionHeader>
+              <BracketView series={[]} season="MSC 2026" teamByKey={eraMeta} />
             </div>
           </div>
         </div>
@@ -337,6 +342,10 @@ export default async function DashboardView({ q, label, eff, editions = [], feat
               <MainGroupBracket title="Group B" group={mainB} teamMeta={mergedMeta} />
               <div style={{ fontSize: 10, color: 'var(--muted2)', fontFamily: 'var(--font-mono)' }}>
                 Bo3 double elimination · fills in as each series is played · top 4 of each group advance to the Knockout.
+              </div>
+              <div style={{ marginTop: 24 }}>
+                <SectionHeader>Knockout Stage</SectionHeader>
+                <BracketView series={allSeries} season="MSC 2026" teamByKey={mergedMeta} />
               </div>
             </>
           ) : isWildCard ? (

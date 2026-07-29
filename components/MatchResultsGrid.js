@@ -352,10 +352,20 @@ export default function MatchResultsGrid({
   };
 
   if (!isWildCard) {
+    const allMainSeries = buildSeries(mainGames);
     return (
       <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
         {mainGroups && groupBracket('Group A', mainGroups.A)}
         {mainGroups && groupBracket('Group B', mainGroups.B)}
+        <Section title="Knockout Stage">
+          <BracketView
+            series={allMainSeries}
+            season={season}
+            teamByKey={teamByKey}
+            toggle={toggle}
+            active={active}
+          />
+        </Section>
         {modal}
       </div>
     );

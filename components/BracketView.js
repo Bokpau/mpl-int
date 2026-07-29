@@ -4,6 +4,8 @@ import { useMemo } from 'react';
 import { getMatchMeta } from '../lib/matchRoundMap';
 import { getKnockoutLayout } from '../lib/knockoutBracketLayout';
 import { SeriesBox, BracketCol } from './BracketBits';
+import { resolveMainGroup } from '../lib/msc2026MainBracket';
+import { resolveKnockoutBracket } from '../lib/msc2026KnockoutBracket';
 
 // Double-elimination bracket view.
 //
@@ -126,9 +128,21 @@ function LayoutBracket({ layout, series, teamByKey, toggle, active }) {
     return m;
   }, [series]);
 
+  const dynKnockout = useMemo(() => {
+    if (!series || !series.length) return null;
+    const isMsc2026 = series.some((s) => String(s.season || s.info?.season || '').includes('MSC 2026'));
+    if (!isMsc2026) return null;
+    const gA = resolveMainGroup('A', series);
+    const gB = resolveMainGroup('B', series);
+    const nodes = resolveKnockoutBracket(series, gA.qualifiers, gB.qualifiers);
+    const nodeMap = {};
+    for (const n of nodes) nodeMap[n.id] = n;
+    return nodeMap;
+  }, [series]);
+
   // era-code → team metadata (logo/flag) for SeriesBox.
   const metaByEra = useMemo(() => {
-    const m = {};
+    const m = { ...teamByKey };
     for (const s of series) {
       if (s.team_a && s.team_a_key && teamByKey[s.team_a_key]) m[s.team_a] = teamByKey[s.team_a_key];
       if (s.team_b && s.team_b_key && teamByKey[s.team_b_key]) m[s.team_b] = teamByKey[s.team_b_key];
@@ -170,13 +184,23 @@ function LayoutBracket({ layout, series, teamByKey, toggle, active }) {
     if (c.lb)    headers.push(header(label(c.lb), x, lbTop));
   });
 
+  const slotToNodeId = {
+    qf0: 'QF1', qf1: 'QF2', qf2: 'QF3', qf3: 'QF4',
+    sf0: 'SF1', sf1: 'SF2', third0: '3RD', gf0: 'GF',
+  };
+
   const boxes = Object.entries(slots).map(([slotId, slot]) => {
-    const s = byMc[slot.mc];
     const p = pos[slotId];
     if (!p) return null;
-    // Map DB scores onto the Liquipedia top/bottom display order.
-    const topScore = s ? (s.team_a === slot.top ? s.a_wins : s.b_wins) : null;
-    const bottomScore = s ? (s.team_a === slot.top ? s.b_wins : s.a_wins) : null;
+    const dyn = dynKnockout ? dynKnockout[slotToNodeId[slotId]] : null;
+    const s = byMc[slot.mc] || dyn?.series;
+    const topCode = slot.top || (dyn ? dyn.a : s?.team_a) || null;
+    const bottomCode = slot.bottom || (dyn ? dyn.b : s?.team_b) || null;
+    const topLabel = dyn?.aLabel || null;
+    const bottomLabel = dyn?.bLabel || null;
+    const topScore = s ? (slot.top ? (s.team_a === slot.top ? s.a_wins : s.b_wins) : (topCode ? (s.team_a === topCode ? s.a_wins : s.b_wins) : s.a_wins)) : (dyn?.aScore ?? null);
+    const bottomScore = s ? (slot.top ? (s.team_a === slot.top ? s.b_wins : s.a_wins) : (topCode ? (s.team_a === topCode ? s.b_wins : s.a_wins) : s.b_wins)) : (dyn?.bScore ?? null);
+    const winner = s?.winner_code || dyn?.winner;
     const isGf = slotId === 'gf0';
     return (
       <div key={slotId} style={{
@@ -185,10 +209,11 @@ function LayoutBracket({ layout, series, teamByKey, toggle, active }) {
       }}>
         <SeriesBox
           teamMeta={metaByEra}
-          aCode={slot.top}    bCode={slot.bottom}
-          aScore={topScore}   bScore={bottomScore}
-          winner={s?.winner_code}
-          scaffold={!s}
+          aCode={topCode}       bCode={bottomCode}
+          aLabel={topLabel}     bLabel={bottomLabel}
+          aScore={topScore}     bScore={bottomScore}
+          winner={winner}
+          scaffold={!s && !winner}
           matchCode={s?.match_code}
           open={s ? active === s.match_code : false}
           onToggle={s ? () => toggle(s.match_code) : undefined}
