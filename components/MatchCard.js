@@ -137,9 +137,13 @@ export default function MatchCard({ info, games, match_mvp, teamByKey = {}, roun
 
   let aWins = 0, bWins = 0;
   for (const g of sorted) {
-    if (!g.winner_key) continue;
-    if (g.winner_key === aKey) aWins++;
-    else if (g.winner_key === bKey) bWins++;
+    const wKey = g.winner_key;
+    const wEra = g.winner_era || g.winner;
+    const wCamp = g.win_camp;
+    if ((wKey && aKey && wKey === aKey) || (wEra && (wEra === aEra || wEra === info.team_a))) aWins++;
+    else if ((wKey && bKey && wKey === bKey) || (wEra && (wEra === bEra || wEra === info.team_b))) bWins++;
+    else if (wCamp === 1) aWins++;
+    else if (wCamp === 2) bWins++;
   }
   const aWon = aWins > bWins;
   const bWon = bWins > aWins;
