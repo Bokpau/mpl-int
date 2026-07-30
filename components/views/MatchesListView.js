@@ -7,6 +7,7 @@ import MatchResultsGrid from '../MatchResultsGrid';
 import PageHead from '../PageHead';
 import { getFormat } from '../../lib/tournamentFormats';
 import { getMatchMeta } from '../../lib/matchRoundMap';
+import { scheduleInStage } from '../../lib/filters';
 
 // Client Matches view — the intl port of the PH /matches list. Fetches the current
 // edition's rich games once (all stages), then filters by stage (Wild Card / Main)
@@ -193,10 +194,9 @@ export default function MatchesListView({ q = '', label = '', isHistory = false,
   const stats = useMemo(() => {
     const matchesPlayed = series.length;
     const gamesPlayed = series.reduce((n, s) => n + s.games.length, 0);
-    const relevant = stage === 'all' ? schedule : schedule.filter(s => {
-      const p = String(s.phase || '').toLowerCase();
-      return stage === 'qualifier' ? p.includes('wild') : !p.includes('wild');
-    });
+    // Same phase→stage mapping the Dashboard uses (this view's `stage` is 'all'
+    // rather than '' when unfiltered, which scheduleInStage treats the same way).
+    const relevant = schedule.filter(s => scheduleInStage(s, stage));
     const totalMatches = new Set(relevant.map(s => s.match_code).filter(Boolean)).size || relevant.length;
     return { matchesPlayed, gamesPlayed, remainingMatches: Math.max(0, totalMatches - matchesPlayed) };
   }, [series, schedule, stage]);

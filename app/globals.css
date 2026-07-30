@@ -16,6 +16,11 @@
   --loss: #F0506E;
   --blue-side: #40B8FF;
   --red-side: var(--loss);
+  /* Translucent --blue-side, for chips/panels tinted with the blue-side hue
+     (e.g. the MVP chips on a match card) — keeps those surfaces on-palette
+     instead of hardcoding rgba(64,184,255,…) at the call site. */
+  --blue-side-tint: rgba(64, 184, 255, 0.07);
+  --blue-side-tint-border: rgba(64, 184, 255, 0.25);
 
   --text: #F0F0FF;
   --muted: #C0C8F0;

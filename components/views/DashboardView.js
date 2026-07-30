@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { api } from '../../lib/api';
 import { img, cdnify } from '../../lib/images';
 import { num, int, dec } from '../../lib/format';
+import { scheduleInStage } from '../../lib/filters';
 import { WILD_CARD_GROUPS, DECIDER, GAUNTLET_SERIES, buildSeries } from '../../lib/msc2026Bracket';
 import { resolveMainGroup } from '../../lib/msc2026MainBracket';
 import ErrorBox from '../ErrorBox';
@@ -185,7 +186,11 @@ export default async function DashboardView({ q, label, eff, editions = [], feat
     .slice(0, 3)
     .reverse();
   const playedMatchCodes = new Set(matches.map((m) => m.match_code));
+  // `playedMatchCodes` only covers the selected stage, so the schedule rows have
+  // to be narrowed to that same stage — otherwise the other stage's finished
+  // series show up as UPCOMING cards (see scheduleInStage).
   const upcoming = schedule
+    .filter((s) => scheduleInStage(s, eff.stage))
     .filter((s) => s.home_team && s.away_team && !playedMatchCodes.has(s.match_code))
     .sort((a, b) => (a.week - b.week) || (a.day - b.day) || (a.match - b.match))
     .slice(0, 3);

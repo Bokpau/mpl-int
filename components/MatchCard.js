@@ -53,8 +53,8 @@ function GameMvpChip({ label, player }) {
   return (
     <div style={{
       display: 'flex', alignItems: 'center', gap: 6,
-      background: 'rgba(64,184,255,0.07)',
-      border: '1px solid rgba(64,184,255,0.25)',
+      background: 'var(--blue-side-tint)',
+      border: '1px solid var(--blue-side-tint-border)',
       padding: '4px 8px',
     }}>
       {heroUrl && (
@@ -140,10 +140,14 @@ export default function MatchCard({ info, games, match_mvp, teamByKey = {}, roun
     const wKey = g.winner_key;
     const wEra = g.winner_era || g.winner;
     const wCamp = g.win_camp;
+    // A game's team_a/team_b are its blue/red side and swap between games, while
+    // aKey/bKey are fixed for the series — so win_camp (1 = that game's blue side)
+    // has to be mapped through this game's orientation before it's counted.
+    const gFlipped = (g.team_a_key && aKey) ? g.team_a_key === bKey : (g.team_a_era || g.team_a) === bEra;
     if ((wKey && aKey && wKey === aKey) || (wEra && (wEra === aEra || wEra === info.team_a))) aWins++;
     else if ((wKey && bKey && wKey === bKey) || (wEra && (wEra === bEra || wEra === info.team_b))) bWins++;
-    else if (wCamp === 1) aWins++;
-    else if (wCamp === 2) bWins++;
+    else if (wCamp === 1) { gFlipped ? bWins++ : aWins++; }
+    else if (wCamp === 2) { gFlipped ? aWins++ : bWins++; }
   }
   const aWon = aWins > bWins;
   const bWon = bWins > aWins;
