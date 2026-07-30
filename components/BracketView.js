@@ -4,7 +4,6 @@ import { useMemo } from 'react';
 import { getMatchMeta } from '../lib/matchRoundMap';
 import { getKnockoutLayout } from '../lib/knockoutBracketLayout';
 import { SeriesBox, BracketCol } from './BracketBits';
-import { resolveMainGroup } from '../lib/msc2026MainBracket';
 import { resolveKnockoutBracket } from '../lib/msc2026KnockoutBracket';
 
 // Double-elimination bracket view.
@@ -118,6 +117,12 @@ function elbowPath(from, to) {
   return `M ${x1} ${y1} H ${midX} V ${y2} H ${x2}`;
 }
 
+// Layout slot id → knockout node id (SE3P shape).
+const slotToNodeId = {
+  qf0: 'QF1', qf1: 'QF2', qf2: 'QF3', qf3: 'QF4',
+  sf0: 'SF1', sf1: 'SF2', third0: '3RD', gf0: 'GF',
+};
+
 function LayoutBracket({ layout, series, season, teamByKey, toggle, active }) {
   const { shape, bo, slots } = layout;
   const { pos, colOf, lbTop, thirdTop, width, height } = useMemo(() => computeGeometry(layout), [layout]);
@@ -133,13 +138,18 @@ function LayoutBracket({ layout, series, season, teamByKey, toggle, active }) {
       (series && series.some((s) => String(s.season || s.info?.season || '').includes('MSC 2026')));
     if (!isMsc2026) return null;
     const sList = series || [];
-    const gA = resolveMainGroup('A', sList);
-    const gB = resolveMainGroup('B', sList);
-    const nodes = resolveKnockoutBracket(sList, gA.qualifiers, gB.qualifiers);
+    // Scheduled match_code per node, so a played series is found by code rather
+    // than by guessing the pairing from group seeds.
+    const mcById = {};
+    for (const [slotId, nodeId] of Object.entries(slotToNodeId)) {
+      const mc = slots?.[slotId]?.mc;
+      if (mc) mcById[nodeId] = mc;
+    }
+    const nodes = resolveKnockoutBracket(sList, mcById);
     const nodeMap = {};
     for (const n of nodes) nodeMap[n.id] = n;
     return nodeMap;
-  }, [series, season]);
+  }, [series, season, slots]);
 
   // era-code → team metadata (logo/flag) for SeriesBox.
   const metaByEra = useMemo(() => {
@@ -185,18 +195,16 @@ function LayoutBracket({ layout, series, season, teamByKey, toggle, active }) {
     if (c.lb)    headers.push(header(label(c.lb), x, lbTop));
   });
 
-  const slotToNodeId = {
-    qf0: 'QF1', qf1: 'QF2', qf2: 'QF3', qf3: 'QF4',
-    sf0: 'SF1', sf1: 'SF2', third0: '3RD', gf0: 'GF',
-  };
-
   const boxes = Object.entries(slots).map(([slotId, slot]) => {
     const p = pos[slotId];
     if (!p) return null;
     const dyn = dynKnockout ? dynKnockout[slotToNodeId[slotId]] : null;
     const s = byMc[slot.mc] || dyn?.series;
-    const topCode = slot.top || (dyn ? dyn.a : s?.team_a) || null;
-    const bottomCode = slot.bottom || (dyn ? dyn.b : s?.team_b) || null;
+    // A resolved node backed by a played series wins over the layout's static
+    // teams — the schedule can pair a slot differently from what was seeded.
+    const resolved = dyn?.series ? dyn : null;
+    const topCode = resolved?.a || slot.top || (dyn ? dyn.a : s?.team_a) || null;
+    const bottomCode = resolved?.b || slot.bottom || (dyn ? dyn.b : s?.team_b) || null;
     const topLabel = dyn?.aLabel || null;
     const bottomLabel = dyn?.bLabel || null;
     const topScore = s ? (s.team_a === topCode ? s.a_wins : s.b_wins) : (dyn?.aScore ?? null);
