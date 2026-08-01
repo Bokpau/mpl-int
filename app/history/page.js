@@ -74,14 +74,19 @@ export default async function HistoryOverview({ searchParams }) {
   let error = null;
   try {
     editions = await api.editions(queryStr);
+    // Era teams exist only to surface the live edition's rosters before its games
+    // land in the stats tables. Unscoped, /era-teams returns every era row ever
+    // (459 rows / 198 keys vs 24 for MSC 2026), and the dashboard's merge would
+    // append ~62 teams with an empty seasons array. So: no live edition, no fetch.
     const liveEd = editions.find(e => String(e.status).toLowerCase() === 'live');
-    const eraQ = liveEd ? `?season=${encodeURIComponent(liveEd.season)}&division=${division}` : `?division=${division}`;
     const [accs, ov, stds, tms, eTms, pls, ...bansList] = await Promise.all([
       api.accolades(queryStr),
       api.overview(queryStr),
       api.standings(queryStr),
       api.teams(queryStr),
-      api.eraTeams(eraQ),
+      liveEd
+        ? api.eraTeams(`?season=${encodeURIComponent(liveEd.season)}&division=${division}`)
+        : Promise.resolve([]),
       api.leaderboard(queryStr),
       ...editions.map(e => api.heroBansSummary(`?season=${encodeURIComponent(e.season)}&division=${division}`).catch(() => []))
     ]);
