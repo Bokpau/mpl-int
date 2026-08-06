@@ -1,8 +1,8 @@
 import { Suspense } from 'react';
-import Link from 'next/link';
 import { Analytics } from '@vercel/analytics/next';
 import './globals.css';
 import Nav from '../components/Nav';
+import Footer from '../components/Footer';
 
 const SITE = 'MSC & M-Series';
 const SITE_SUB = 'By the Bok';
@@ -31,9 +31,7 @@ export default function RootLayout({ children }) {
           <Nav siteName={SITE} siteNameSub={SITE_SUB} />
         </Suspense>
         <main id="main">{children}</main>
-        <footer style={{ padding: '24px 20px', textAlign: 'center', fontSize: 12, color: 'var(--muted2)' }}>
-          <Link href="/privacy" style={{ color: 'inherit' }}>Privacy Policy</Link>
-        </footer>
+        <Footer />
         <Analytics />
         {isDev && (
           <>

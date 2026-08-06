@@ -2263,3 +2263,140 @@ table.h2h td.cell-selected {
     display: none;
   }
 }
+
+/* ─── Site Footer ───────────────────────────────────────────────────
+   Ported from the PH site. Two local differences: this app has no fixed
+   bottom nav, so the legal bar needs no extra mobile clearance; and `main`
+   already carries 80px of bottom padding, so the footer adds no margin of
+   its own (PH's does) or the gap above it would read as a layout bug. */
+.site-footer {
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+}
+
+.footer-inner {
+  display: grid;
+  grid-template-columns: 1.6fr 1fr 1fr;
+  gap: 32px 24px;
+  padding-top: 44px;
+  padding-bottom: 36px;
+}
+
+.footer-brand {
+  min-width: 0;
+}
+
+.footer-logo {
+  font-family: var(--font-display);
+  font-size: 22px;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: var(--text);
+  line-height: 1.1;
+}
+
+.footer-logo-accent {
+  color: var(--accent);
+}
+
+.footer-byline {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: .18em;
+  text-transform: uppercase;
+  color: var(--muted2);
+  margin-top: 5px;
+}
+
+.footer-blurb {
+  color: var(--muted2);
+  font-size: 13px;
+  line-height: 1.6;
+  margin: 14px 0 0;
+  max-width: 34ch;
+}
+
+.footer-socials {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  margin-top: 16px;
+}
+
+.footer-col-title {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 12px;
+}
+
+.footer-col-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+
+.footer-link {
+  color: var(--muted2);
+  font-size: 13px;
+  text-decoration: none;
+  transition: color var(--dur-fast) var(--ease);
+}
+
+.footer-link:hover,
+.footer-link:focus-visible {
+  color: var(--accent);
+}
+
+.footer-legal {
+  border-top: 1px solid var(--border);
+  padding-top: 20px;
+  padding-bottom: 32px;
+}
+
+.footer-legal-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--muted2);
+}
+
+.footer-sep {
+  color: var(--border-strong);
+}
+
+.footer-source {
+  font-size: 12px;
+  color: var(--muted2);
+  margin: 10px 0 0;
+}
+
+/* No --neutral2 in this palette (PH has one); dim --muted2 instead so the
+   disclaimer sits a step below the rest of the legal bar. */
+.footer-disclaimer {
+  font-size: 11px;
+  line-height: 1.65;
+  color: var(--muted2);
+  opacity: .72;
+  margin: 12px 0 0;
+  max-width: 92ch;
+}
+
+@media (max-width: 767px) {
+  .footer-inner {
+    grid-template-columns: 1fr 1fr;
+    gap: 28px 20px;
+    padding-top: 32px;
+    padding-bottom: 28px;
+  }
+  .footer-brand {
+    grid-column: 1 / -1;
+  }
+}
