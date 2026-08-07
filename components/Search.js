@@ -64,7 +64,12 @@ export default function Search() {
   const [open, setOpen] = useState(false);
   const [active, setActive] = useState(0);
   const [index, setIndex] = useState(null);
+  // ≤767px the field collapses behind an icon (see .search-toggle in
+  // globals.css) — at 375px the nav simply has no room for a text input beside
+  // the brand, the section icons and the division toggle.
+  const [mobileOpen, setMobileOpen] = useState(false);
   const boxRef = useRef(null);
+  const inputRef = useRef(null);
 
   // Lazy-load the index once, on first focus.
   function loadIndex() {
@@ -81,14 +86,23 @@ export default function Search() {
 
   useEffect(() => { setActive(0); }, [q]);
 
-  // Close on outside click.
+  // Close on outside click. On mobile this also puts the field away again,
+  // otherwise the panel would stay over the page after the user moves on.
   useEffect(() => {
     function onDoc(e) {
-      if (boxRef.current && !boxRef.current.contains(e.target)) setOpen(false);
+      if (boxRef.current && !boxRef.current.contains(e.target)) {
+        setOpen(false);
+        setMobileOpen(false);
+      }
     }
     document.addEventListener('mousedown', onDoc);
     return () => document.removeEventListener('mousedown', onDoc);
   }, []);
+
+  // Focus the field as it appears, so opening it takes one tap, not two.
+  useEffect(() => {
+    if (mobileOpen) inputRef.current?.focus();
+  }, [mobileOpen]);
 
   function go(r) {
     if (!r) return;
@@ -103,12 +117,28 @@ export default function Search() {
     if (e.key === 'ArrowDown') { e.preventDefault(); setActive((i) => Math.min(i + 1, results.length - 1)); }
     else if (e.key === 'ArrowUp') { e.preventDefault(); setActive((i) => Math.max(i - 1, 0)); }
     else if (e.key === 'Enter') { e.preventDefault(); go(results[active]); }
-    else if (e.key === 'Escape') { setOpen(false); }
+    else if (e.key === 'Escape') { setOpen(false); setMobileOpen(false); }
   }
 
   return (
-    <div className="search" ref={boxRef}>
+    <div className={`search${mobileOpen ? ' mobile-open' : ''}`} ref={boxRef}>
+      {/* Icon-only trigger, shown only ≤767px. Above that the field is always
+          visible and this button is display:none. */}
+      <button
+        type="button"
+        className="search-toggle"
+        aria-label="Search"
+        aria-expanded={mobileOpen}
+        onClick={() => { loadIndex(); setMobileOpen((v) => !v); }}
+      >
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" style={{ width: 18, height: 18 }}>
+          <circle cx="11" cy="11" r="7" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
+        </svg>
+      </button>
+
+      <div className="search-field">
       <input
+        ref={inputRef}
         type="search"
         className="search-input"
         placeholder="Search players, teams, heroes…"
@@ -142,6 +172,7 @@ export default function Search() {
           )}
         </div>
       ) : null}
+      </div>
     </div>
   );
 }

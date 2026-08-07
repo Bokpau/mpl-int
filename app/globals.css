@@ -715,6 +715,10 @@ table.h2h td.cell-selected {
 
 /* ─── Global search ─────────────────────────────────────────────── */
 .search { position: relative; margin-left: auto; }
+/* Icon trigger for the collapsed mobile field — desktop keeps the input
+   itself, so the button only turns on in the ≤767px block below. */
+.search-toggle { display: none; }
+.search-field { position: relative; }
 .search-input {
   width: 240px; max-width: 42vw; padding: 8px 12px; font-size: 13px;
   background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm);
@@ -811,17 +815,24 @@ table.h2h td.cell-selected {
   .search { margin-left: 8px; flex-shrink: 0; }
   .search-input { width: 150px; }
 }
-/* sm/xs: single-row nav — brand, toggle icons, and search bar aligned horizontally */
+/* sm/xs: single-row nav — brand, section icons, division toggle, search icon.
+   At 375px the four of them only fit once the search field collapses behind an
+   icon (a text input beside them measured 0px wide, i.e. unusable) and the
+   division toggle tightens. overflow-x:auto is the safety net: if a longer
+   brand or a third toggle option ever overruns the row again, the NAV scrolls
+   rather than the whole page gaining a horizontal scrollbar. */
 @media (max-width: 767px) {
   :root { --nav-h: 60px; }
   .nav {
-    overflow-x: visible;
+    overflow-x: auto;
+    scrollbar-width: none;
     height: var(--nav-h);
     flex-wrap: nowrap;
     justify-content: space-between;
     padding: 0 16px;
     gap: 8px;
   }
+  .nav::-webkit-scrollbar { display: none; }
   .nav .brand {
     flex: 0 1 auto;
   }
@@ -837,15 +848,53 @@ table.h2h td.cell-selected {
   }
   .search {
     margin-left: 0;
-    flex: 1 1 auto;
+    flex: 0 0 auto;
     display: flex;
     justify-content: flex-end;
-    min-width: 0;
+  }
+  .search-toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    border: none;
+    background: none;
+    color: var(--muted);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+  }
+  .search-toggle:hover { color: var(--text); background: var(--surface); }
+  /* Collapsed by default; opening pins the field across the viewport under the
+     nav. Fixed (not absolute) so the nav's own overflow-x can't clip it. */
+  .search-field { display: none; }
+  .search.mobile-open .search-field {
+    display: block;
+    position: fixed;
+    left: 12px;
+    right: 12px;
+    top: calc(var(--nav-h) + 4px);
+    z-index: 60;
   }
   .search-input {
     width: 100%;
-    max-width: 130px;
-    min-width: 60px;
+    max-width: none;
+    min-width: 0;
+  }
+  .search-results {
+    left: 0;
+    right: 0;
+    width: auto;
+    max-width: none;
+  }
+  /* The division toggle is the widest thing in the row after the brand; at
+     375px its default 149px is what pushed the search off-screen. */
+  .division-toggle { padding: 2px; gap: 2px; }
+  .division-toggle .toggle-btn {
+    font-size: 10px;
+    letter-spacing: 0.2px;
+    padding: 5px 9px;
   }
   /* pin dropdown to viewport so it never clips off the right edge */
   .dropdown {
@@ -863,18 +912,21 @@ table.h2h td.cell-selected {
     gap: 4px;
   }
   .nav .brand {
-    font-size: 15px;
+    font-size: 14px;
   }
   .brand-line2 {
     font-size: 9px;
   }
   .navgroup-link, .navgroup-btn {
-    padding: 6px 6px;
+    padding: 6px 4px;
+  }
+  .navgroups { gap: 1px; }
+  .division-toggle .toggle-btn {
+    padding: 5px 7px;
   }
   .search-input {
-    max-width: 95px;
-    padding: 6px 8px;
-    font-size: 12px;
+    padding: 8px 10px;
+    font-size: 13px;
   }
 }
 
