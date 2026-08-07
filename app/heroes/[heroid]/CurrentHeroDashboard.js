@@ -8,6 +8,7 @@ import StatTable from '../../../components/StatTable';
 import { PLAYER_COLUMNS, STAT_GROUPS } from '../../../lib/columns';
 import { img } from '../../../lib/images';
 import SynergyTable from '../../../components/SynergyTable';
+import HeroSkills from '../../../components/HeroSkills';
 
 const API = '';
 
@@ -507,6 +508,12 @@ export default function CurrentHeroDashboard({ heroid, scope, season, initialOve
         roleFilter={heroBaseRoles.length > 1 ? roleFilter : undefined}
         setRoleFilter={heroBaseRoles.length > 1 ? setRoleFilter : undefined}
       />
+
+      {/* ── Skills ──
+          The kit is a static hero fact, so it sits above everything the filters
+          touch and does not re-fetch when they change. Renders nothing while
+          loading or if the kit is unavailable. */}
+      <HeroSkills heroid={heroid} />
 
       {/* ── Performance Overview ── */}
           <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
